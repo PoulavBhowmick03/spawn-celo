@@ -1,0 +1,29 @@
+[profile.default]
+src = "src"
+out = "out"
+libs = ["lib"]
+remappings = ["@openzeppelin/contracts/=lib/openzeppelin-contracts/contracts/"]
+solc_version = "0.8.28"
+
+# Note: Status Network needs evm_version = "paris" (no PUSH0).
+# For Status deploys: forge create --evm-version paris --gas-price 0 --legacy
+[profile.filecoin]
+src = "src"
+out = "out"
+libs = ["lib"]
+remappings = ["@openzeppelin/contracts/=lib/openzeppelin-contracts/contracts/"]
+solc_version = "0.8.28"
+evm_version = "paris"
+
+[profile.integration]
+src = "src"
+out = "out"
+libs = ["lib"]
+remappings = ["@openzeppelin/contracts/=lib/openzeppelin-contracts/contracts/"]
+solc_version = "0.8.28"
+fork_url = "https://rpc.mantle.xyz"
+
+[rpc_endpoints]
+mantle = "https://rpc.mantle.xyz"
+status_testnet = "https://public.sepolia.rpc.status.network"
+filecoin_calibration = "https://api.calibration.node.glif.io/rpc/v1"
