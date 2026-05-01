@@ -2,10 +2,7 @@
 pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/proxy/Clones.sol";
-
-interface IERC8004Identity {
-    function register(address agent) external returns (uint256 agentId);
-}
+import "./interfaces/IERC8004Identity.sol";
 
 interface IChildAgent {
     function initialize(address parent, address wallet) external;
