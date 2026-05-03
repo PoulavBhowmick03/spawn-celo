@@ -6,11 +6,31 @@ contract LineageRegistry {
     mapping(string => uint256) public generation;
 
     event LineageUpdated(string indexed lineageKey, string cid, uint256 generation, uint256 timestamp);
+    event GenerationResult(
+        string indexed lineageKey,
+        string summary,
+        uint256 avgYieldBps,
+        uint256 agentsTerminated,
+        uint256 generation,
+        uint256 timestamp
+    );
 
     function pushCID(string calldata lineageKey, string calldata cid) external {
         lineageCIDs[lineageKey].push(cid);
         generation[lineageKey]++;
         emit LineageUpdated(lineageKey, cid, generation[lineageKey], block.timestamp);
+    }
+
+    function postGenerationResult(
+        string calldata lineageKey,
+        string calldata veniceGeneratedSummary,
+        uint256 avgYieldBps,
+        uint256 agentsTerminated,
+        uint256 generationNumber
+    ) external {
+        emit GenerationResult(
+            lineageKey, veniceGeneratedSummary, avgYieldBps, agentsTerminated, generationNumber, block.timestamp
+        );
     }
 
     function getLineage(string calldata lineageKey) external view returns (string[] memory) {
