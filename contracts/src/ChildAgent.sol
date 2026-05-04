@@ -16,6 +16,8 @@ contract ChildAgent {
 
     function initialize(address _parent, address _wallet) external {
         require(parent == address(0), "Already initialized");
+        require(_parent != address(0), "ChildAgent: zero parent");
+        require(_wallet != address(0), "ChildAgent: zero wallet");
         parent = _parent;
         wallet = _wallet;
         active = true;
