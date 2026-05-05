@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 
 export function Navbar() {
@@ -33,6 +34,12 @@ export function Navbar() {
             <div className="brand-sub">Forensic Terminal · Mantle Mainnet</div>
           </div>
         </div>
+        <nav className="site-nav" aria-label="Primary">
+          <Link href="/">Landing</Link>
+          <Link href="/terminal">Terminal</Link>
+          <Link href="/judge-flow">Judge Flow</Link>
+          <Link href="/lineage">Lineage</Link>
+        </nav>
         <div className="meta-bar">
           <span>
             <span className="live-dot" />
