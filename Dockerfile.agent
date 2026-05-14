@@ -9,12 +9,14 @@ RUN cd agent && npm install
 # Copy agent source
 COPY agent/ ./agent/
 
-# Create a writable location for agent_log.json (persisted via Railway volume)
+# Create persistent data dir (mount Railway volume at /app/data)
 RUN mkdir -p /app/data
 
-# The swarm process writes to ../agent_log.json relative to agent/src/
-# So we symlink /app/agent_log.json -> /app/data/agent_log.json for persistence
+# Symlink all runtime state files into /app/data so they survive container restarts
 RUN ln -sf /app/data/agent_log.json /app/agent_log.json
+RUN ln -sf /app/data/swarm_state.json /app/swarm_state.json
+RUN ln -sf /app/data/swarm_events.json /app/swarm_events.json
+RUN ln -sf /app/data/judge_flow_state.json /app/judge_flow_state.json
 
 WORKDIR /app/agent
 

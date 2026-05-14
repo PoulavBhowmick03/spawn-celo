@@ -2,10 +2,11 @@ import { fork, type ChildProcess } from "child_process";
 import { mkdirSync, writeFileSync } from "fs";
 import { dirname, join } from "path";
 import { fileURLToPath } from "url";
-import { decodeEventLog, getAddress, keccak256, parseEther, parseUnits, stringToHex, toBytes } from "viem";
+import { decodeEventLog, formatUnits, getAddress, keccak256, parseEther, parseUnits, stringToHex, toBytes } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { ChildAgentABI, SpawnFactoryABI } from "./abis.js";
 import { getWalletClient, publicClient } from "./chain.js";
+import { getBenchmarkYield, getUSDEAavePosition, withdrawFromAave } from "./aave.js";
 import { startControlServer } from "./control-server.js";
 import { pinToIPFS } from "./ipfs.js";
 import { postGenerationResult, pushLineageCID } from "./lineage.js";
@@ -489,6 +490,82 @@ async function spawnManagedChild(lineageKey: string, generation: number, eventTy
   );
 }
 
+async function sweepChildFunds(
+  lineageKey: string,
+  generation: number,
+  childWalletAddress: `0x${string}`
+): Promise<void> {
+  const label = labelFor(lineageKey, generation);
+
+  if (process.env.ALLOW_LIVE_CHILD_WRITES !== "true") {
+    console.log(`[Sweep] DRY RUN: would sweep funds from ${childWalletAddress} → treasury`);
+    return;
+  }
+
+  const treasuryKey = process.env.TREASURY_PRIVATE_KEY as `0x${string}` | undefined;
+  if (!treasuryKey) {
+    console.warn(`[Sweep] ${label}: TREASURY_PRIVATE_KEY not set — skipping fund sweep`);
+    return;
+  }
+  const treasuryAddress = privateKeyToAccount(treasuryKey).address;
+  const { privateKey: childPrivateKey } = deriveChildWallet(lineageKey, generation);
+
+  // 1. Withdraw any Aave USDe position back to the child wallet first
+  try {
+    const aaveBalance = await getUSDEAavePosition(childWalletAddress);
+    if (aaveBalance > 0.01) {
+      console.log(`[Sweep] ${label}: withdrawing $${aaveBalance.toFixed(4)} USDe from Aave`);
+      await withdrawFromAave(childPrivateKey, "USDE", aaveBalance);
+    }
+  } catch (err: any) {
+    console.warn(`[Sweep] ${label}: Aave withdraw failed — ${err?.message ?? String(err)}`);
+  }
+
+  // 2. Transfer all USDe from child wallet to treasury
+  const usdeAddr = process.env.USDE_ADDRESS as `0x${string}` | undefined;
+  if (usdeAddr) {
+    try {
+      const usdeBalance = await publicClient.readContract({
+        address: usdeAddr,
+        abi: ERC20_ABI,
+        functionName: "balanceOf",
+        args: [childWalletAddress],
+      }) as bigint;
+      if (usdeBalance > 0n) {
+        const walletClient = getWalletClient(childPrivateKey);
+        const hash = await walletClient.writeContract({
+          address: usdeAddr,
+          abi: ERC20_ABI,
+          functionName: "transfer",
+          args: [treasuryAddress, usdeBalance],
+        });
+        await publicClient.waitForTransactionReceipt({ hash });
+        console.log(`[Sweep] ${label}: returned ${formatUnits(usdeBalance, 18)} USDe → treasury (${hash})`);
+      }
+    } catch (err: any) {
+      console.warn(`[Sweep] ${label}: USDe transfer failed — ${err?.message ?? String(err)}`);
+    }
+  }
+
+  // 3. Transfer remaining MNT to treasury, keeping 0.005 MNT as gas buffer
+  const GAS_BUFFER = parseEther("0.005");
+  try {
+    const mntBalance = await publicClient.getBalance({ address: childWalletAddress });
+    const sweepable = mntBalance > GAS_BUFFER ? mntBalance - GAS_BUFFER : 0n;
+    if (sweepable > 0n) {
+      const walletClient = getWalletClient(childPrivateKey);
+      const hash = await walletClient.sendTransaction({
+        to: treasuryAddress,
+        value: sweepable,
+      });
+      await publicClient.waitForTransactionReceipt({ hash });
+      console.log(`[Sweep] ${label}: returned ${formatUnits(sweepable, 18)} MNT → treasury (${hash})`);
+    }
+  } catch (err: any) {
+    console.warn(`[Sweep] ${label}: MNT transfer failed — ${err?.message ?? String(err)}`);
+  }
+}
+
 async function terminateAndRespawn(managed: ManagedChild) {
   const key = managed.state.contractAddress.toLowerCase();
   if (terminationLocks.has(key)) return;
@@ -543,6 +620,13 @@ async function terminateAndRespawn(managed: ManagedChild) {
     managedChildren.delete(key);
 
     await sleep(500);
+
+    await sweepChildFunds(
+      managed.state.lineageKey,
+      managed.state.generation,
+      managed.state.walletAddress as `0x${string}`
+    );
+
     await spawnManagedChild(
       managed.state.lineageKey,
       managed.state.generation + 1,

@@ -133,32 +133,71 @@ type SwarmChildState = {
   mantleRecallTxHash?: string;
 };
 
+type SwarmStateResponse = {
+  agents: SwarmChildState[];
+  cycleCount: number;
+  uptime: number;
+  isLive: boolean;
+  lastEvaluation: number;
+  swarmStartTime: number;
+};
+
 type SwarmEvent = {
-  type: "SPAWN" | "YIELD_REPORT" | "TERMINATION" | "RESPAWN";
-  timestamp: string;
+  type: "SPAWN" | "TERMINATION" | "YIELD_REPORT" | "RESPAWN" | "GENERATION_RESULT";
+  timestamp: number;
   lineageKey: string;
   generation: number;
-  agentLabel: string;
+  data: Record<string, unknown>;
+};
+
+type GenerationResult = {
+  lineageKey: string;
+  generation: number;
+  avgYieldPct: number;
+  benchmarkYieldPct: number;
+  agentsTerminated: number;
+  riskAdjustedScore: number;
+  mantlescanLink: string;
+};
+
+type SwarmStateFile = Partial<SwarmStateResponse> & {
+  children?: SwarmChildState[];
+  updatedAt?: string;
+};
+
+type SwarmEventsFile = {
+  updatedAt?: string;
+  events?: unknown[];
+};
+
+type OldSwarmEvent = {
+  type?: string;
+  timestamp?: string | number;
+  lineageKey?: string;
+  generation?: number;
+  agentLabel?: string;
   txHash?: string;
   contractAddress?: string;
+  avgRiskAdjustedScore?: number;
+  avgYieldPct?: number;
+  benchmarkYieldPct?: number;
   currentYieldPct?: number;
   actionTaken?: string;
   failureReason?: string;
   ipfsCid?: string;
   recallTxHash?: string;
+  mantleRecallTxHash?: string;
   newAgentLabel?: string;
   lineageDepth?: number;
   spawnTxHash?: string;
+  mantleSpawnTxHash?: string;
+  mantleTxHash?: string;
+  agentsTerminated?: number;
+  riskAdjustedScore?: number;
+  data?: Record<string, unknown>;
 };
 
-type GenerationStats = {
-  generation: number;
-  agentCount: number;
-  terminatedCount: number;
-  avgRiskAdjustedScore: number;
-  avgYieldPct: number;
-  benchmarkYieldPct: number;
-};
+const CONTROL_SERVER_START_TIME = Date.now();
 
 const EMPTY_STATE = {
   runId: null,
@@ -188,11 +227,17 @@ const EMPTY_BUDGET_STATE = {
   lastUpdatedAt: null,
 };
 
-function json(res: ServerResponse, status: number, body: unknown, cors = false) {
+function applyCors(res: ServerResponse) {
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+}
+
+function json(res: ServerResponse, status: number, body: unknown) {
   res.statusCode = status;
   res.setHeader("content-type", "application/json");
   res.setHeader("cache-control", "no-store");
-  if (cors) res.setHeader("access-control-allow-origin", "*");
+  applyCors(res);
   res.end(JSON.stringify(body));
 }
 
@@ -315,10 +360,116 @@ function deriveStateFromLog(): SwarmChildState[] {
   return [...children.values()];
 }
 
-function readSwarmState(): SwarmChildState[] {
-  const fromFile = safeReadJson<{ children?: SwarmChildState[] }>(SWARM_STATE_PATH);
-  if (Array.isArray(fromFile?.children)) return fromFile.children;
-  return [];
+function numberOr(value: unknown, fallback: number): number {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : fallback;
+}
+
+function timestampMs(value: unknown, fallback = Date.now()): number {
+  if (typeof value === "number" && Number.isFinite(value)) return value;
+  if (typeof value === "string") {
+    const numeric = Number(value);
+    if (Number.isFinite(numeric)) return numeric;
+    const parsed = new Date(value).getTime();
+    if (Number.isFinite(parsed)) return parsed;
+  }
+  return fallback;
+}
+
+function liveModeFromEnv(): boolean {
+  return (
+    process.env.ALLOW_LIVE_SPAWN === "true" ||
+    process.env.ALLOW_LIVE_RECALL === "true" ||
+    process.env.ALLOW_LIVE_CHILD_WRITES === "true" ||
+    process.env.ALLOW_LIVE_GENERATION_POSTS === "true"
+  );
+}
+
+function readSwarmStateResponse(): SwarmStateResponse {
+  const fromFile = safeReadJson<SwarmStateFile>(SWARM_STATE_PATH);
+  const agents = Array.isArray(fromFile?.agents)
+    ? fromFile.agents
+    : Array.isArray(fromFile?.children)
+      ? fromFile.children
+      : deriveStateFromLog();
+  const fallbackStart =
+    agents.length > 0
+      ? Math.min(...agents.map((agent) => timestampMs(agent.spawnTime, CONTROL_SERVER_START_TIME)))
+      : CONTROL_SERVER_START_TIME;
+  const swarmStartTime = timestampMs(fromFile?.swarmStartTime, fallbackStart);
+
+  return {
+    agents,
+    cycleCount: numberOr(
+      fromFile?.cycleCount,
+      agents.reduce((max, agent) => Math.max(max, numberOr(agent.cycleCount, 0)), 0)
+    ),
+    uptime: Math.max(0, Date.now() - swarmStartTime),
+    isLive: typeof fromFile?.isLive === "boolean" ? fromFile.isLive : liveModeFromEnv(),
+    lastEvaluation: timestampMs(fromFile?.lastEvaluation, 0),
+    swarmStartTime,
+  };
+}
+
+function toEventType(value: unknown): SwarmEvent["type"] | null {
+  if (
+    value === "SPAWN" ||
+    value === "TERMINATION" ||
+    value === "YIELD_REPORT" ||
+    value === "RESPAWN" ||
+    value === "GENERATION_RESULT"
+  ) {
+    return value;
+  }
+  return null;
+}
+
+function normalizeSwarmEvent(raw: unknown): SwarmEvent | null {
+  const event = raw as OldSwarmEvent;
+  const type = toEventType(event?.type);
+  if (!event || !type || typeof event.lineageKey !== "string") return null;
+
+  const data =
+    event.data && typeof event.data === "object" && !Array.isArray(event.data)
+      ? { ...event.data }
+      : {};
+
+  if (event.agentLabel !== undefined) data.agentLabel = event.agentLabel;
+  if (event.txHash !== undefined) data.txHash = event.txHash;
+  if (event.contractAddress !== undefined) data.contractAddress = event.contractAddress;
+  if (event.currentYieldPct !== undefined) data.currentYieldPct = event.currentYieldPct;
+  if (event.actionTaken !== undefined) data.actionTaken = event.actionTaken;
+  if (event.failureReason !== undefined) data.failureReason = event.failureReason;
+  if (event.ipfsCid !== undefined) data.ipfsCid = event.ipfsCid;
+  if (event.newAgentLabel !== undefined) data.newAgentLabel = event.newAgentLabel;
+  if (event.lineageDepth !== undefined) data.lineageDepth = event.lineageDepth;
+
+  if (type === "SPAWN" || type === "RESPAWN") {
+    data.mantleSpawnTxHash =
+      data.mantleSpawnTxHash ?? event.mantleSpawnTxHash ?? event.spawnTxHash ?? event.txHash ?? null;
+  }
+
+  if (type === "TERMINATION") {
+    data.mantleRecallTxHash =
+      data.mantleRecallTxHash ?? event.mantleRecallTxHash ?? event.recallTxHash ?? event.txHash ?? null;
+  }
+
+  if (type === "GENERATION_RESULT") {
+    data.avgYieldPct = data.avgYieldPct ?? event.avgYieldPct ?? 0;
+    data.benchmarkYieldPct = data.benchmarkYieldPct ?? event.benchmarkYieldPct ?? BENCHMARK_YIELD_PCT;
+    data.agentsTerminated = data.agentsTerminated ?? event.agentsTerminated ?? 0;
+    data.riskAdjustedScore =
+      data.riskAdjustedScore ?? event.riskAdjustedScore ?? event.avgRiskAdjustedScore ?? 0;
+    data.mantleTxHash = data.mantleTxHash ?? event.mantleTxHash ?? event.txHash ?? null;
+  }
+
+  return {
+    type,
+    timestamp: timestampMs(event.timestamp),
+    lineageKey: event.lineageKey,
+    generation: numberOr(event.generation, 1),
+    data,
+  };
 }
 
 function deriveEventsFromLog(): SwarmEvent[] {
@@ -327,7 +478,7 @@ function deriveEventsFromLog(): SwarmEvent[] {
   const events: SwarmEvent[] = [];
 
   for (const log of logs) {
-    const ts: string = log.timestamp ?? new Date().toISOString();
+    const ts = timestampMs(log.timestamp);
 
     if (log.action === "spawn_child" && log.ensLabel) {
       const label: string = log.ensLabel;
@@ -336,13 +487,15 @@ function deriveEventsFromLog(): SwarmEvent[] {
         timestamp: ts,
         lineageKey: labelLineageKey(label),
         generation: labelGeneration(label),
-        agentLabel: label,
-        txHash: log.txHash,
-        contractAddress:
-          typeof log.childAddress === "string" && log.childAddress.startsWith("0x")
-            ? log.childAddress
-            : undefined,
-        spawnTxHash: log.txHash,
+        data: {
+          agentLabel: label,
+          txHash: log.txHash,
+          contractAddress:
+            typeof log.childAddress === "string" && log.childAddress.startsWith("0x")
+              ? log.childAddress
+              : undefined,
+          mantleSpawnTxHash: log.txHash ?? null,
+        },
       });
     }
 
@@ -354,10 +507,12 @@ function deriveEventsFromLog(): SwarmEvent[] {
           timestamp: ts,
           lineageKey: labelLineageKey(termLabel),
           generation: labelGeneration(termLabel),
-          agentLabel: termLabel,
-          failureReason: `alignment_score_${log.terminatedAlignment ?? "unknown"}`,
-          recallTxHash: log.respawnTxHash ?? log.txHash,
-          txHash: log.respawnTxHash ?? log.txHash,
+          data: {
+            agentLabel: termLabel,
+            failureReason: `alignment_score_${log.terminatedAlignment ?? "unknown"}`,
+            mantleRecallTxHash: log.respawnTxHash ?? log.txHash ?? null,
+            txHash: log.respawnTxHash ?? log.txHash,
+          },
         });
       }
       const respawnLabel: string = log.respawnedChild ?? "";
@@ -368,11 +523,13 @@ function deriveEventsFromLog(): SwarmEvent[] {
           timestamp: ts,
           lineageKey: labelLineageKey(respawnLabel),
           generation: gen,
-          agentLabel: respawnLabel,
-          txHash: log.respawnTxHash,
-          spawnTxHash: log.respawnTxHash,
-          newAgentLabel: respawnLabel,
-          lineageDepth: gen,
+          data: {
+            agentLabel: respawnLabel,
+            txHash: log.respawnTxHash,
+            mantleSpawnTxHash: log.respawnTxHash ?? null,
+            newAgentLabel: respawnLabel,
+            lineageDepth: gen,
+          },
         });
       }
     }
@@ -384,10 +541,12 @@ function deriveEventsFromLog(): SwarmEvent[] {
         timestamp: ts,
         lineageKey: labelLineageKey(termLabel),
         generation: labelGeneration(termLabel),
-        agentLabel: termLabel,
-        txHash: log.txHash,
-        failureReason: typeof log.details === "string" ? log.details.slice(0, 200) : undefined,
-        recallTxHash: log.txHash,
+        data: {
+          agentLabel: termLabel,
+          txHash: log.txHash,
+          failureReason: typeof log.details === "string" ? log.details.slice(0, 200) : undefined,
+          mantleRecallTxHash: log.txHash ?? null,
+        },
       });
     }
 
@@ -398,44 +557,74 @@ function deriveEventsFromLog(): SwarmEvent[] {
         timestamp: ts,
         lineageKey: labelLineageKey(label),
         generation: labelGeneration(label),
-        agentLabel: label,
-        txHash: log.txHash,
-        currentYieldPct: 0,
-        actionTaken: "evaluate_alignment",
+        data: {
+          agentLabel: label,
+          txHash: log.txHash,
+          currentYieldPct: 0,
+          actionTaken: "evaluate_alignment",
+        },
       });
     }
   }
 
-  return events.sort((a, b) => a.timestamp.localeCompare(b.timestamp));
+  return events.sort((a, b) => a.timestamp - b.timestamp);
 }
 
 function readSwarmEvents(): SwarmEvent[] {
-  const fromFile = safeReadJson<{ events?: SwarmEvent[] }>(SWARM_EVENTS_PATH);
-  if (Array.isArray(fromFile?.events)) return fromFile.events;
-  return [];
+  const fromFile = safeReadJson<SwarmEventsFile>(SWARM_EVENTS_PATH);
+  const source = Array.isArray(fromFile?.events) ? fromFile.events : deriveEventsFromLog();
+  return source
+    .map(normalizeSwarmEvent)
+    .filter((event): event is SwarmEvent => event !== null)
+    .sort((a, b) => a.timestamp - b.timestamp);
 }
 
-function deriveGenerations(children: SwarmChildState[]): GenerationStats[] {
-  const byGen = new Map<number, { scores: number[]; yields: number[]; terminated: number }>();
-  for (const child of children) {
-    const g = child.generation;
-    if (!byGen.has(g)) byGen.set(g, { scores: [], yields: [], terminated: 0 });
-    const entry = byGen.get(g)!;
-    entry.scores.push(child.riskAdjustedScore);
-    entry.yields.push(child.currentYieldPct);
-    if (child.status === "TERMINATED") entry.terminated++;
+function readGenerationResults(): GenerationResult[] {
+  const latestByKey = new Map<string, SwarmEvent>();
+  for (const event of readSwarmEvents()) {
+    if (event.type !== "GENERATION_RESULT") continue;
+    latestByKey.set(`${event.lineageKey}:${event.generation}`, event);
   }
-  return [...byGen.entries()]
-    .sort(([a], [b]) => a - b)
-    .map(([generation, { scores, yields, terminated }]) => ({
-      generation,
-      agentCount: scores.length,
-      terminatedCount: terminated,
-      avgRiskAdjustedScore:
-        scores.length > 0 ? scores.reduce((s, v) => s + v, 0) / scores.length : 0,
-      avgYieldPct: yields.length > 0 ? yields.reduce((s, v) => s + v, 0) / yields.length : 0,
-      benchmarkYieldPct: BENCHMARK_YIELD_PCT,
-    }));
+
+  return [...latestByKey.values()]
+    .sort((a, b) => a.lineageKey.localeCompare(b.lineageKey) || a.generation - b.generation)
+    .map((event) => {
+      const mantleTxHash = typeof event.data.mantleTxHash === "string" ? event.data.mantleTxHash : "";
+      return {
+        lineageKey: event.lineageKey,
+        generation: event.generation,
+        avgYieldPct: numberOr(event.data.avgYieldPct, 0),
+        benchmarkYieldPct: numberOr(event.data.benchmarkYieldPct, BENCHMARK_YIELD_PCT),
+        agentsTerminated: numberOr(event.data.agentsTerminated, 0),
+        riskAdjustedScore: numberOr(event.data.riskAdjustedScore, 0),
+        mantlescanLink: mantleTxHash ? `https://mantlescan.xyz/tx/${mantleTxHash}` : "",
+      };
+    });
+}
+
+function readLineage(lineageKey: string) {
+  const state = readSwarmStateResponse();
+  const events = readSwarmEvents();
+  const cids = new Set<string>();
+  let generationCount = 0;
+
+  for (const agent of state.agents) {
+    if (agent.lineageKey !== lineageKey) continue;
+    generationCount = Math.max(generationCount, numberOr(agent.generation, 0));
+    if (agent.ipfsCid) cids.add(agent.ipfsCid);
+  }
+
+  for (const event of events) {
+    if (event.lineageKey !== lineageKey) continue;
+    generationCount = Math.max(generationCount, numberOr(event.generation, 0));
+    if (typeof event.data.ipfsCid === "string") cids.add(event.data.ipfsCid);
+  }
+
+  return {
+    lineageKey,
+    cids: [...cids],
+    generationCount,
+  };
 }
 
 function normalizeEvent(log: JudgeExecutionLog): JudgeEvent {
@@ -573,8 +762,20 @@ export function startControlServer() {
     const method = req.method || "GET";
     const url = new URL(req.url || "/", `http://${req.headers.host || "localhost"}`);
 
+    if (method === "OPTIONS") {
+      applyCors(res);
+      res.writeHead(204);
+      res.end();
+      return;
+    }
+
     if (method === "GET" && url.pathname === "/health") {
-      return json(res, 200, { ok: true, service: "spawn-swarm-control" });
+      const state = readSwarmStateResponse();
+      return json(res, 200, {
+        status: "ok",
+        uptime: state.uptime,
+        cycleCount: state.cycleCount,
+      });
     }
 
     if (method === "GET" && url.pathname === "/judge-flow") {
@@ -657,26 +858,25 @@ export function startControlServer() {
       return json(res, 200, receipt);
     }
 
-    // CORS preflight for dashboard polling
-    if (method === "OPTIONS" && url.pathname.startsWith("/api/")) {
-      res.statusCode = 204;
-      res.setHeader("access-control-allow-origin", "*");
-      res.setHeader("access-control-allow-methods", "GET, OPTIONS");
-      res.setHeader("access-control-allow-headers", "content-type");
-      res.end();
-      return;
-    }
-
     if (method === "GET" && url.pathname === "/api/state") {
-      return json(res, 200, readSwarmState(), true);
+      return json(res, 200, readSwarmStateResponse());
     }
 
     if (method === "GET" && url.pathname === "/api/events") {
-      return json(res, 200, readSwarmEvents(), true);
+      const events = readSwarmEvents();
+      return json(res, 200, {
+        events: events.slice(-200),
+        total: events.length,
+      });
     }
 
     if (method === "GET" && url.pathname === "/api/generations") {
-      return json(res, 200, deriveGenerations(readSwarmState()), true);
+      return json(res, 200, { generations: readGenerationResults() });
+    }
+
+    if (method === "GET" && url.pathname.startsWith("/api/lineage/")) {
+      const lineageKey = decodeURIComponent(url.pathname.slice("/api/lineage/".length));
+      return json(res, 200, readLineage(lineageKey));
     }
 
     return json(res, 404, { error: "Not found" });

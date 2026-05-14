@@ -159,6 +159,18 @@ export async function getAaveYield(asset: "USDE" | "METH"): Promise<number> {
   }
 }
 
+export async function getBenchmarkYield(): Promise<number> {
+  try {
+    const live = await getAaveYield("USDE");
+    // Require 0.25% above live rate — achievable and produces meaningful signal
+    const target = live + 0.25;
+    console.log(`[Aave] Live benchmark set: ${live.toFixed(4)}% + 0.25% = ${target.toFixed(4)}%`);
+    return target;
+  } catch {
+    return parseFloat(process.env.AAVE_USDE_BENCHMARK ?? "4.50");
+  }
+}
+
 // Returns the wallet's aUSDe balance, which equals USDe supplied + accrued interest (1:1)
 export async function getUSDEAavePosition(walletAddress: `0x${string}`): Promise<number> {
   if (!USDE_ATOKEN) return 0;

@@ -104,12 +104,33 @@ export const ChildAgentABI = [
     stateMutability: "nonpayable",
   },
   {
+    type: "function",
+    name: "recordDecisionHash",
+    inputs: [
+      { name: "hash", type: "bytes32" },
+      { name: "actionType", type: "string" },
+      { name: "amountBps", type: "uint256" },
+    ],
+    outputs: [],
+    stateMutability: "nonpayable",
+  },
+  {
     type: "event",
     name: "RecallChild",
     inputs: [
       { indexed: true, name: "child", type: "address" },
       { indexed: false, name: "reason", type: "string" },
       { indexed: false, name: "ipfsCid", type: "string" },
+      { indexed: false, name: "timestamp", type: "uint256" },
+    ],
+  },
+  {
+    type: "event",
+    name: "AgentDecisionExecuted",
+    inputs: [
+      { indexed: true, name: "decisionHash", type: "bytes32" },
+      { indexed: false, name: "actionType", type: "string" },
+      { indexed: false, name: "amountBps", type: "uint256" },
       { indexed: false, name: "timestamp", type: "uint256" },
     ],
   },
