@@ -3,6 +3,13 @@ import type { ChildState, TerminationPostMortem, YieldAction } from "./types.js"
 const VENICE_API = "https://api.venice.ai/api/v1/chat/completions";
 const VENICE_MODEL = "llama-3.3-70b";
 
+// Venice Privacy: All API calls use Venice's zero-data-retention policy.
+// No conversation data is stored server-side by Venice.
+// include_venice_system_prompt: false ensures Venice's default assistant
+// prompts do not prepend to the carefully crafted yield/postmortem prompts.
+// Note: the old E2EE request flag is NOT a valid API parameter (it was removed).
+// E2EE is a model-level feature selected by model ID, not a request flag.
+
 export function parseVeniceJSON<T>(raw: string): T {
   const clean = raw.replace(/```json|```/g, "").trim();
   return JSON.parse(clean) as T;
@@ -12,19 +19,35 @@ type MarketState = {
   aaveUSDEYield: number;
   aaveMETHYield: number;
   moeLPYield: number;
+  rawAaveUSDEYield?: number;
+  rawAaveMETHYield?: number;
+  rawMoeLPYield?: number;
   currentAaveUSDE: number;
   currentAaveMETH: number;
   currentMoeLP: number;
+  currentCashReserve: number;
   totalPortfolioUSD: number;
+  decisionProfile?: {
+    label: string;
+    targetAaveUSDeBps: number;
+    targetCashBps: number;
+    maxTradeBps: number;
+    minimumSpreadBps: number;
+  };
 };
 
-type VeniceDecision = {
+export type VeniceDecision = {
   action: YieldAction;
   amountUSD: number;
   asset: string;
   rationale: string;
   riskNote?: string;
 };
+
+function clampAmount(amount: number, min = 0, max = Number.POSITIVE_INFINITY) {
+  if (!Number.isFinite(amount)) return min;
+  return Math.max(min, Math.min(max, amount));
+}
 
 function fallbackDecision(marketState: MarketState): VeniceDecision {
   const candidates = [
@@ -44,11 +67,72 @@ function fallbackDecision(marketState: MarketState): VeniceDecision {
     };
   }
 
+  const profile = marketState.decisionProfile;
+  const availableCash = clampAmount(
+    marketState.currentCashReserve,
+    0,
+    marketState.totalPortfolioUSD
+  );
+  const maxTradeUSD = profile
+    ? (marketState.totalPortfolioUSD * profile.maxTradeBps) / 10_000
+    : availableCash;
+
+  if (availableCash <= 0.01 || maxTradeUSD <= 0.01) {
+    return {
+      action: "HOLD",
+      amountUSD: 0,
+      asset: best.asset,
+      rationale: "Fallback reasoning found no deployable cash inside the active strategy profile.",
+      riskNote: profile
+        ? `${profile.label} is already at or beyond its target deployable allocation.`
+        : "No cash is available for a new position.",
+    };
+  }
+
+  if (best.action === "AAVE_SUPPLY_USDE") {
+    const targetAaveUSDe = profile
+      ? (marketState.totalPortfolioUSD * profile.targetAaveUSDeBps) / 10_000
+      : marketState.totalPortfolioUSD;
+    const deployRoom = Math.max(0, targetAaveUSDe - marketState.currentAaveUSDE);
+    const amountUSD = clampAmount(deployRoom, 0, Math.min(availableCash, maxTradeUSD));
+
+    if (amountUSD <= 0.01) {
+      return {
+        action: "HOLD",
+        amountUSD: 0,
+        asset: best.asset,
+        rationale: "Fallback reasoning held because the strategy's Aave USDe target is already filled.",
+        riskNote: profile
+          ? `${profile.label} target Aave USDe allocation is filled.`
+          : "Aave USDe allocation is filled.",
+      };
+    }
+
+    return {
+      action: best.action,
+      amountUSD,
+      asset: best.asset,
+      rationale: `Fallback routing selected ${profile?.label ?? "default"} Aave USDe carry up to its target allocation at ${best.apy.toFixed(4)}% adjusted APY.`,
+      riskNote: "Decision generated without Venice due to missing or failing API access.",
+    };
+  }
+
+  const amountUSD = clampAmount(availableCash, 0, maxTradeUSD);
+  if (amountUSD <= 0.01) {
+    return {
+      action: "HOLD",
+      amountUSD: 0,
+      asset: best.asset,
+      rationale: "Fallback reasoning held because the profile trade cap leaves no executable amount.",
+      riskNote: "No executable cash amount after profile limits.",
+    };
+  }
+
   return {
     action: best.action,
-    amountUSD: Math.max(25, Math.round(marketState.totalPortfolioUSD * 0.1)),
+    amountUSD,
     asset: best.asset,
-    rationale: `Fallback routing selected the highest observed APY path at ${best.apy.toFixed(4)}%.`,
+    rationale: `Fallback routing selected the highest profile-adjusted APY path at ${best.apy.toFixed(4)}%.`,
     riskNote: "Decision generated without Venice due to missing or failing API access.",
   };
 }
@@ -64,11 +148,14 @@ async function callVenice(systemPrompt: string, userPrompt: string): Promise<str
         Authorization: `Bearer ${process.env.VENICE_API_KEY}`,
       },
       body: JSON.stringify({
-        model: VENICE_MODEL,
+        model: process.env.VENICE_MODEL ?? VENICE_MODEL,
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: userPrompt },
         ],
+        venice_parameters: {
+          include_venice_system_prompt: false,
+        },
       }),
     });
 
@@ -89,15 +176,34 @@ export async function executeYieldReasoning(
   marketState: MarketState
 ): Promise<VeniceDecision> {
   const fallback = fallbackDecision(marketState);
+  const profile = marketState.decisionProfile;
+  const profileBlock = profile
+    ? `\nStrategy profile: ${profile.label}
+Target Aave USDe allocation: ${(profile.targetAaveUSDeBps / 100).toFixed(2)}%
+Target cash reserve: ${(profile.targetCashBps / 100).toFixed(2)}%
+Maximum single trade: ${(profile.maxTradeBps / 100).toFixed(2)}%
+Minimum rebalance spread: ${(profile.minimumSpreadBps / 100).toFixed(2)}%`
+    : "";
+  const rawYieldBlock = marketState.rawAaveUSDEYield !== undefined
+    ? `\nRaw live APYs:
+Aave USDe APY: ${marketState.rawAaveUSDEYield.toFixed(4)}%
+Aave mETH APY: ${(marketState.rawAaveMETHYield ?? marketState.aaveMETHYield).toFixed(4)}%
+Merchant Moe LP APY: ${(marketState.rawMoeLPYield ?? marketState.moeLPYield).toFixed(4)}%
+
+Profile-adjusted APYs for this agent's decision:
+Aave USDe adjusted APY: ${marketState.aaveUSDEYield.toFixed(4)}%
+Aave mETH adjusted APY: ${marketState.aaveMETHYield.toFixed(4)}%
+Merchant Moe LP adjusted APY: ${marketState.moeLPYield.toFixed(4)}%`
+    : `\nAave USDe APY: ${marketState.aaveUSDEYield.toFixed(4)}%
+Aave mETH APY: ${marketState.aaveMETHYield.toFixed(4)}%
+Merchant Moe LP APY: ${marketState.moeLPYield.toFixed(4)}%`;
   const content = await callVenice(
     systemPrompt,
-    `Current Mantle yield surface:
-Aave USDe APY: ${marketState.aaveUSDEYield.toFixed(4)}%
-Aave mETH APY: ${marketState.aaveMETHYield.toFixed(4)}%
-Merchant Moe LP APY: ${marketState.moeLPYield.toFixed(4)}%
+    `Current Mantle yield surface:${profileBlock}${rawYieldBlock}
 Aave USDe position: $${marketState.currentAaveUSDE.toFixed(2)}
 Aave mETH position: $${marketState.currentAaveMETH.toFixed(2)}
 Merchant Moe LP position: $${marketState.currentMoeLP.toFixed(2)}
+Cash reserve: $${marketState.currentCashReserve.toFixed(2)}
 Total portfolio: $${marketState.totalPortfolioUSD.toFixed(2)}
 
 Respond only with valid JSON:
@@ -193,6 +299,18 @@ positionSummary=${state.positionSummary}`
     },
     inheritanceConstraints: parsed.inheritanceConstraints,
   };
+}
+
+export async function testVeniceConnection(): Promise<{ ok: boolean; model: string; responsePreview: string }> {
+  const model = process.env.VENICE_MODEL ?? VENICE_MODEL;
+  const content = await callVenice(
+    "You are a connection test for Spawn Protocol.",
+    "Respond with exactly: OK"
+  );
+  if (!content) {
+    return { ok: false, model, responsePreview: "(no response — check VENICE_API_KEY)" };
+  }
+  return { ok: true, model, responsePreview: content.slice(0, 80) };
 }
 
 export async function generateGenerationSummary(state: ChildState): Promise<string> {

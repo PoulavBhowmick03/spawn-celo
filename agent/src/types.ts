@@ -50,10 +50,14 @@ export interface ChildIPCReport {
   type: "YIELD_REPORT" | "ERROR";
   walletAddress: string;
   currentYieldPct: number;
+  adjustedYieldPct?: number;
   drawdownPct: number;
   positionSummary: string;
   aaveSupplyUSDE: number;
   aaveSupplyMETH: number;
   moeLPValue: number;
   timestamp: number;
+  numTradesLastEval: number;
+  stdDevYieldLastEval: number;
+  riskProfileModifier?: number;
 }

@@ -12,26 +12,17 @@ import { pinToIPFS } from "./ipfs.js";
 import { postGenerationResult, pushLineageCID } from "./lineage.js";
 import type { ChildIPCReport, ChildState } from "./types.js";
 import { generateGenerationSummary, generatePostMortem } from "./venice.js";
-import type { ChildRuntimeConfig } from "./child.js";
+import type { ChildRuntimeConfig, ChildStrategyProfile } from "./child.js";
 
 type SwarmEvent = {
-  type: "SPAWN" | "YIELD_REPORT" | "TERMINATION" | "RESPAWN";
-  timestamp: string;
+  type: "SPAWN" | "TERMINATION" | "YIELD_REPORT" | "RESPAWN" | "GENERATION_RESULT";
+  timestamp: number;
   lineageKey: string;
   generation: number;
-  agentLabel: string;
-  txHash?: string;
-  contractAddress?: string;
-  currentYieldPct?: number;
-  actionTaken?: string;
-  failureReason?: string;
-  ipfsCid?: string;
-  recallTxHash?: string;
-  newAgentLabel?: string;
-  lineageDepth?: number;
-  spawnTxHash?: string;
-  inheritanceConstraints?: string[];
+  data: Record<string, unknown>;
 };
+
+type SerializedChildState = Omit<ChildState, "agentId"> & { agentId: string };
 
 const ERC20_ABI = [
   {
@@ -58,6 +49,11 @@ type ChildReportEnvelope = {
   cycleCount: number;
   actionTaken: string;
   rationale: string;
+  decisionHash: `0x${string}`;
+  decisionPayload: string;
+  decisionPromptPrefix: string;
+  decisionTimestamp: number;
+  amountBps: number;
 };
 
 type ChildErrorEnvelope = {
@@ -82,8 +78,87 @@ const LOCAL_CID_DIR = join(REPO_ROOT, "runtime_ipfs");
 const CHILD_COUNT = Number(process.env.SWARM_CHILD_COUNT || "5");
 const CHILD_INTERVAL_MS = Number(process.env.CHILD_CYCLE_INTERVAL_MS || "30000");
 const EVALUATION_INTERVAL_MS = Number(process.env.PARENT_EVALUATION_INTERVAL_MS || "75000");
-const BENCHMARK_YIELD_PCT = Number(process.env.AAVE_USDE_BENCHMARK || "7.47");
-const RISK_THRESHOLD = Number(process.env.RISK_THRESHOLD || "0");
+// Live Aave V3 USDe supply APY on Mantle as of 2026-05-13: 4.30-4.63%
+// Updated from stale benchmark which was incorrect
+const DEFAULT_BENCHMARK_PCT = parseFloat(
+  process.env.AAVE_USDE_BENCHMARK ?? "4.50"
+);
+// Threshold: riskAdjustedScore below this for 2 consecutive cycles triggers termination.
+// Formula: (excessYield / drawdown) + activityScore - volatilityPenalty
+// With typical 4.5% benchmark and 1 trade/cycle, scores cluster 0.2–1.4.
+// 0.5 requires slight positive performance. 3.0 was too aggressive for small positions.
+const TERMINATION_THRESHOLD = parseFloat(
+  process.env.RISK_THRESHOLD ?? "0.5"
+);
+const CHILD_SEED_USDE = 15;
+
+const STRATEGY_PROFILES: ChildStrategyProfile[] = [
+  {
+    id: "conservative-carry",
+    label: "Conservative Carry",
+    systemPrompt:
+      "Prioritize capital preservation. Prefer Aave USDe, keep meaningful dry powder, and avoid moving cash unless the adjusted APY advantage is clear.",
+    targetAaveUSDeBps: 7_000,
+    targetCashBps: 3_000,
+    maxTradeBps: 7_000,
+    minimumSpreadBps: 55,
+    yieldBiasBps: { usde: 8, meth: -85, moe: -70 },
+    yieldNoiseBps: 5,
+    riskScoreModifier: 0.18,
+  },
+  {
+    id: "balanced-carry",
+    label: "Balanced Carry",
+    systemPrompt:
+      "Run a steady USDe carry book. Deploy most cash to Aave USDe, preserve enough cash to respond to recalls, and rebalance only on moderate adjusted spreads.",
+    targetAaveUSDeBps: 8_000,
+    targetCashBps: 2_000,
+    maxTradeBps: 8_000,
+    minimumSpreadBps: 30,
+    yieldBiasBps: { usde: 0, meth: -55, moe: -35 },
+    yieldNoiseBps: 8,
+    riskScoreModifier: 0.04,
+  },
+  {
+    id: "aggressive-carry",
+    label: "Aggressive Carry",
+    systemPrompt:
+      "Maximize productive USDe carry. Prefer being nearly fully deployed in Aave USDe and tolerate smaller adjusted spread uncertainty before acting.",
+    targetAaveUSDeBps: 9_500,
+    targetCashBps: 500,
+    maxTradeBps: 9_500,
+    minimumSpreadBps: 15,
+    yieldBiasBps: { usde: 22, meth: -40, moe: -15 },
+    yieldNoiseBps: 14,
+    riskScoreModifier: -0.14,
+  },
+  {
+    id: "dry-powder-rotator",
+    label: "Dry Powder Rotator",
+    systemPrompt:
+      "Keep a larger reserve for successor optionality. Deploy only a modest Aave USDe base position and require a high adjusted spread before increasing exposure.",
+    targetAaveUSDeBps: 5_500,
+    targetCashBps: 4_500,
+    maxTradeBps: 5_500,
+    minimumSpreadBps: 80,
+    yieldBiasBps: { usde: -10, meth: -90, moe: -45 },
+    yieldNoiseBps: 10,
+    riskScoreModifier: 0.24,
+  },
+  {
+    id: "moe-scout",
+    label: "Moe Scout",
+    systemPrompt:
+      "Watch Merchant Moe as an experimental route, but do not add LP unless its adjusted APY beats Aave USDe after risk and liquidity penalties. Keep cash available for that optionality.",
+    targetAaveUSDeBps: 6_500,
+    targetCashBps: 3_500,
+    maxTradeBps: 6_500,
+    minimumSpreadBps: 45,
+    yieldBiasBps: { usde: -4, meth: -70, moe: 65 },
+    yieldNoiseBps: 18,
+    riskScoreModifier: -0.08,
+  },
+];
 
 /**
  * FUND RECOVERY: If parent.ts crashes with active children, recover funds by
@@ -95,8 +170,13 @@ const RISK_THRESHOLD = Number(process.env.RISK_THRESHOLD || "0");
  */
 
 const managedChildren = new Map<string, ManagedChild>();
+const recentlyTerminatedChildren: SerializedChildState[] = [];
 const swarmEvents: SwarmEvent[] = [];
 const terminationLocks = new Set<string>();
+let decisionProofQueue: Promise<void> = Promise.resolve();
+let parentCycleCount = 0;
+let lastEvaluation = 0;
+const swarmStartTime = Date.now();
 
 function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -104,6 +184,12 @@ function sleep(ms: number) {
 
 function labelFor(lineageKey: string, generation: number) {
   return `${lineageKey}-v${generation}`;
+}
+
+function strategyProfileForLineage(lineageKey: string): ChildStrategyProfile {
+  const match = lineageKey.match(/-(\d+)$/);
+  const index = match ? Number(match[1]) : 0;
+  return STRATEGY_PROFILES[index % STRATEGY_PROFILES.length] ?? STRATEGY_PROFILES[0];
 }
 
 function pseudoHash(seed: string): `0x${string}` {
@@ -115,21 +201,66 @@ function pseudoAddress(seed: string): `0x${string}` {
   return getAddress(`0x${hash.slice(-40)}`) as `0x${string}`;
 }
 
-function serializeChildState(state: ChildState) {
+function serializeChildState(state: ChildState): SerializedChildState {
   return {
     ...state,
     agentId: state.agentId.toString(),
   };
 }
 
+function isLiveRuntime() {
+  return (
+    process.env.ALLOW_LIVE_SPAWN === "true" ||
+    process.env.ALLOW_LIVE_RECALL === "true" ||
+    process.env.ALLOW_LIVE_CHILD_WRITES === "true" ||
+    process.env.ALLOW_LIVE_GENERATION_POSTS === "true"
+  );
+}
+
+function persistedAgents() {
+  const byAddress = new Map<string, SerializedChildState>();
+  for (const state of recentlyTerminatedChildren) {
+    byAddress.set(state.contractAddress.toLowerCase(), state);
+  }
+  for (const { state } of managedChildren.values()) {
+    byAddress.set(state.contractAddress.toLowerCase(), serializeChildState(state));
+  }
+
+  return [...byAddress.values()].sort(
+    (a, b) => a.lineageKey.localeCompare(b.lineageKey) || a.generation - b.generation
+  );
+}
+
+function rememberTerminatedChild(state: ChildState) {
+  const serialized = serializeChildState(state);
+  const key = serialized.contractAddress.toLowerCase();
+  const existingIndex = recentlyTerminatedChildren.findIndex(
+    (child) => child.contractAddress.toLowerCase() === key
+  );
+  if (existingIndex >= 0) recentlyTerminatedChildren.splice(existingIndex, 1);
+  recentlyTerminatedChildren.unshift(serialized);
+  if (recentlyTerminatedChildren.length > 50) recentlyTerminatedChildren.length = 50;
+}
+
 function persistSwarmState() {
-  const children = [...managedChildren.values()]
-    .map(({ state }) => serializeChildState(state))
-    .sort((a, b) => a.lineageKey.localeCompare(b.lineageKey) || a.generation - b.generation);
+  const agents = persistedAgents();
 
   writeFileSync(
     SWARM_STATE_PATH,
-    JSON.stringify({ updatedAt: new Date().toISOString(), children }, null, 2)
+    JSON.stringify(
+      {
+        updatedAt: new Date().toISOString(),
+        agents,
+        children: agents,
+        cycleCount: parentCycleCount,
+        uptime: Date.now() - swarmStartTime,
+        isLive: isLiveRuntime(),
+        lastEvaluation,
+        swarmStartTime,
+      },
+      null,
+      2
+    )
   );
 }
 
@@ -158,10 +289,29 @@ function updateRiskMetrics(state: ChildState, report: ChildIPCReport, cycleCount
   state.currentYieldPct = report.currentYieldPct;
   state.maxDrawdownPct = Math.max(state.maxDrawdownPct, report.drawdownPct);
   state.positionSummary = report.positionSummary;
+
+  // Risk formula v2 — not gameable by HOLD strategy
+  // activityScore rewards actual trading decisions (capped to prevent abuse)
+  // drawdownDenom uses tighter floor (0.003 not 0.01) to avoid score inflation
+  // volatilityPenalty punishes erratic yield swings
+  const scoringYieldPct = report.adjustedYieldPct ?? report.currentYieldPct;
+  const excessYield = scoringYieldPct - state.benchmarkYieldPct;
+  const numTrades = report.numTradesLastEval ?? 0;
+  const stdDevYield = report.stdDevYieldLastEval ?? 0;
+  const riskProfileModifier = report.riskProfileModifier ?? 0;
+
+  const activityScore = Math.min(numTrades * 1.2, 6.0);
+  const drawdownDenom = Math.max(Math.abs(state.maxDrawdownPct), 0.003);
+  const volatilityPenalty = Math.max(0, stdDevYield - 0.5);
+
   state.riskAdjustedScore =
-    (state.currentYieldPct - state.benchmarkYieldPct) / Math.abs(report.drawdownPct || 0.01);
-  state.consecutiveBelowThreshold =
-    state.riskAdjustedScore < RISK_THRESHOLD ? state.consecutiveBelowThreshold + 1 : 0;
+    (excessYield / drawdownDenom) + activityScore - volatilityPenalty + riskProfileModifier;
+
+  if (state.riskAdjustedScore < TERMINATION_THRESHOLD) {
+    state.consecutiveBelowThreshold++;
+  } else {
+    state.consecutiveBelowThreshold = 0;
+  }
 }
 
 function terminatedCountForLineage(lineageKey: string) {
@@ -169,24 +319,49 @@ function terminatedCountForLineage(lineageKey: string) {
 }
 
 async function postEvaluationResultIfEnabled(state: ChildState) {
-  if (process.env.ALLOW_LIVE_GENERATION_POSTS !== "true") return;
+  const liveGenerationPosts = process.env.ALLOW_LIVE_GENERATION_POSTS === "true";
+  const agentsTerminated = terminatedCountForLineage(state.lineageKey);
+  let mantleTxHash: string | null = null;
 
-  try {
-    const summary = await generateGenerationSummary(state);
-    const avgYieldBps = Math.round(state.currentYieldPct * 100);
-    const txHash = await postGenerationResult(
-      state.lineageKey,
-      summary,
-      avgYieldBps,
-      terminatedCountForLineage(state.lineageKey),
-      state.generation
+  if (!liveGenerationPosts) {
+    console.log(`[Parent] DRY RUN: would post generation result for ${labelFor(state.lineageKey, state.generation)}`);
+    mantleTxHash = pseudoHash(
+      `generation-result:${state.lineageKey}:${state.generation}:${state.currentYieldPct}:${agentsTerminated}:${Date.now()}`
     );
-    if (txHash) {
-      console.log(`[Parent] Posted GenerationResult for ${labelFor(state.lineageKey, state.generation)} → ${txHash}`);
+  } else {
+    try {
+      const summary = await generateGenerationSummary(state);
+      const avgYieldBps = Math.round(state.currentYieldPct * 100);
+      mantleTxHash = await postGenerationResult(
+        state.lineageKey,
+        summary,
+        avgYieldBps,
+        agentsTerminated,
+        state.generation
+      );
+      if (mantleTxHash) {
+        console.log(`[Parent] Posted GenerationResult for ${labelFor(state.lineageKey, state.generation)} → ${mantleTxHash}`);
+      }
+    } catch (error: any) {
+      console.warn(`[Parent] GenerationResult post failed: ${error?.message ?? String(error)}`);
     }
-  } catch (error: any) {
-    console.warn(`[Parent] GenerationResult post failed: ${error?.message ?? String(error)}`);
   }
+
+  recordEvent({
+    type: "GENERATION_RESULT",
+    timestamp: Date.now(),
+    lineageKey: state.lineageKey,
+    generation: state.generation,
+    data: {
+      agentLabel: labelFor(state.lineageKey, state.generation),
+      avgYieldPct: state.currentYieldPct,
+      benchmarkYieldPct: state.benchmarkYieldPct,
+      agentsTerminated,
+      riskAdjustedScore: state.riskAdjustedScore,
+      mantleTxHash,
+      dryRun: !liveGenerationPosts,
+    },
+  });
 }
 
 function localCIDPath(cid: string) {
@@ -214,6 +389,7 @@ function forkChild(config: ChildRuntimeConfig) {
       CHILD_PRIVATE_KEY: config.privateKey,
       CHILD_WALLET_ADDRESS: config.walletAddress,
       CHILD_CONTRACT_ADDRESS: config.contractAddress,
+      CHILD_SEED_USDE: String(CHILD_SEED_USDE),
     },
     execArgv: ["--import", "tsx"],
     stdio: ["inherit", "inherit", "inherit", "ipc"],
@@ -314,6 +490,49 @@ async function recallOnChainIfPossible(contractAddress: string, reason: string, 
   return txHash;
 }
 
+async function recordDecisionHashIfEnabled(
+  contractAddress: string,
+  decisionHash: `0x${string}`,
+  actionType: string,
+  amountBps: number
+) {
+  const deployerKey = process.env.DEPLOYER_PRIVATE_KEY;
+  const liveProofsEnabled =
+    process.env.ALLOW_LIVE_CHILD_WRITES === "true" &&
+    process.env.ALLOW_LIVE_SPAWN === "true";
+
+  if (!liveProofsEnabled || !deployerKey || !contractAddress.startsWith("0x")) {
+    return;
+  }
+
+  try {
+    const walletClient = getWalletClient(normalizePrivateKey(deployerKey));
+    const txHash = await walletClient.writeContract({
+      address: contractAddress as `0x${string}`,
+      abi: ChildAgentABI,
+      functionName: "recordDecisionHash",
+      args: [decisionHash, actionType, BigInt(Math.round(amountBps))],
+    });
+    await publicClient.waitForTransactionReceipt({ hash: txHash });
+    console.log(`[Parent] Recorded decision proof ${decisionHash} for ${contractAddress} -> ${txHash}`);
+  } catch (err: any) {
+    console.warn("[Parent] recordDecisionHash failed (non-blocking):", err?.message ?? String(err));
+  }
+}
+
+function enqueueDecisionProof(
+  contractAddress: string,
+  decisionHash: `0x${string}`,
+  actionType: string,
+  amountBps: number
+) {
+  decisionProofQueue = decisionProofQueue
+    .then(() => recordDecisionHashIfEnabled(contractAddress, decisionHash, actionType, amountBps))
+    .catch((err: any) => {
+      console.warn("[Parent] decision proof queue failed (non-blocking):", err?.message ?? String(err));
+    });
+}
+
 async function fundChildWallet(
   childWalletAddress: `0x${string}`,
   seedAmountUSD: number = 15
@@ -393,15 +612,17 @@ async function fundChildWallet(
 
 async function spawnManagedChild(lineageKey: string, generation: number, eventType: "SPAWN" | "RESPAWN") {
   const { privateKey: childPrivateKey, address: walletAddress } = deriveChildWallet(lineageKey, generation);
+  const strategyProfile = strategyProfileForLineage(lineageKey);
 
   try {
-    await fundChildWallet(walletAddress, 15);
+    await fundChildWallet(walletAddress, CHILD_SEED_USDE);
   } catch (err) {
     console.error(`[Parent] fundChildWallet failed for ${walletAddress}:`, err);
     return;
   }
 
   const deployment = await spawnOnChainIfPossible(lineageKey, generation, walletAddress);
+  const benchmarkYieldPct = await getBenchmarkYield();
 
   const config: ChildRuntimeConfig = {
     lineageKey,
@@ -409,11 +630,12 @@ async function spawnManagedChild(lineageKey: string, generation: number, eventTy
     contractAddress: deployment.child,
     walletAddress,
     agentId: deployment.agentId.toString(),
-    benchmarkYieldPct: BENCHMARK_YIELD_PCT,
+    benchmarkYieldPct,
     cycleIntervalMs: CHILD_INTERVAL_MS,
     spawnTxHash: deployment.txHash,
     privateKey: childPrivateKey,
     dryRun: process.env.ALLOW_LIVE_CHILD_WRITES !== "true",
+    strategyProfile,
   };
 
   const childProcess = forkChild(config);
@@ -427,7 +649,7 @@ async function spawnManagedChild(lineageKey: string, generation: number, eventTy
     spawnTime: Date.now(),
     cycleCount: 0,
     currentYieldPct: 0,
-    benchmarkYieldPct: BENCHMARK_YIELD_PCT,
+    benchmarkYieldPct,
     maxDrawdownPct: 0,
     riskAdjustedScore: 0,
     consecutiveBelowThreshold: 0,
@@ -442,15 +664,27 @@ async function spawnManagedChild(lineageKey: string, generation: number, eventTy
   const label = labelFor(lineageKey, generation);
   recordEvent({
     type: eventType,
-    timestamp: new Date().toISOString(),
+    timestamp: Date.now(),
     lineageKey,
     generation,
-    agentLabel: label,
-    contractAddress: config.contractAddress,
-    txHash: config.spawnTxHash,
-    spawnTxHash: config.spawnTxHash,
-    newAgentLabel: eventType === "RESPAWN" ? label : undefined,
-    lineageDepth: generation,
+    data: {
+      agentLabel: label,
+      contractAddress: config.contractAddress,
+      walletAddress: config.walletAddress,
+      agentId: deployment.agentId.toString(),
+      mantleSpawnTxHash: config.spawnTxHash,
+      txHash: config.spawnTxHash,
+      strategyProfile: {
+        id: strategyProfile.id,
+        label: strategyProfile.label,
+        targetAaveUSDeBps: strategyProfile.targetAaveUSDeBps,
+        targetCashBps: strategyProfile.targetCashBps,
+        yieldBiasBps: strategyProfile.yieldBiasBps,
+        riskScoreModifier: strategyProfile.riskScoreModifier,
+      },
+      newAgentLabel: eventType === "RESPAWN" ? label : undefined,
+      lineageDepth: generation,
+    },
   });
 
   childProcess.on("message", async (message: ChildReportEnvelope | ChildErrorEnvelope) => {
@@ -463,14 +697,31 @@ async function spawnManagedChild(lineageKey: string, generation: number, eventTy
       persistSwarmState();
       recordEvent({
         type: "YIELD_REPORT",
-        timestamp: new Date(message.report.timestamp).toISOString(),
+        timestamp: message.report.timestamp,
         lineageKey,
         generation,
-        agentLabel: label,
-        contractAddress: config.contractAddress,
-        currentYieldPct: message.report.currentYieldPct,
-        actionTaken: message.actionTaken,
+        data: {
+          agentLabel: label,
+          contractAddress: config.contractAddress,
+          walletAddress: config.walletAddress,
+          currentYieldPct: message.report.currentYieldPct,
+          adjustedYieldPct: message.report.adjustedYieldPct,
+          actionTaken: message.actionTaken,
+          rationale: message.rationale,
+          positionSummary: message.report.positionSummary,
+          decisionHash: message.decisionHash,
+          decisionPayload: message.decisionPayload,
+          decisionPromptPrefix: message.decisionPromptPrefix,
+          decisionTimestamp: message.decisionTimestamp,
+          amountBps: message.amountBps,
+        },
       });
+      enqueueDecisionProof(
+        config.contractAddress,
+        message.decisionHash,
+        message.actionTaken,
+        message.amountBps
+      );
     } else if (message.type === "ERROR") {
       console.error(`[Parent] Child error from ${label}: ${message.error}`);
     }
@@ -482,11 +733,12 @@ async function spawnManagedChild(lineageKey: string, generation: number, eventTy
     if (managed.state.status === "RESPAWNING" || managed.state.status === "TERMINATED") return;
     managed.state.status = "TERMINATED";
     managed.state.positionSummary = `child process exited (code=${code ?? "null"}, signal=${signal ?? "none"})`;
+    rememberTerminatedChild(managed.state);
     persistSwarmState();
   });
 
   console.log(
-    `[Parent] Spawned ${label} | contract=${config.contractAddress} | wallet=${config.walletAddress} | agentId=${deployment.agentId.toString()}`
+    `[Parent] Spawned ${label} | profile=${strategyProfile.id} | contract=${config.contractAddress} | wallet=${config.walletAddress} | agentId=${deployment.agentId.toString()}`
   );
 }
 
@@ -585,6 +837,11 @@ async function terminateAndRespawn(managed: ManagedChild) {
     try {
       cid = await pinToIPFS({ ...draftPostMortem, mantleRecallTxHash: "pending" });
     } catch {
+      console.warn(
+        `[Parent] WARNING: Filebase upload failed — using local fallback CID for ${managed.state.lineageKey}. ` +
+          `Local CIDs are not publicly resolvable and are NOT acceptable as judge evidence. ` +
+          `Fix FILEBASE_API_KEY and FILEBASE_SECRET before final submission.`
+      );
       cid = storeLocalCID(draftPostMortem, managed.state.lineageKey, managed.state.generation);
     }
 
@@ -595,25 +852,37 @@ async function terminateAndRespawn(managed: ManagedChild) {
       writeFileSync(localCIDPath(cid), JSON.stringify(fullPostMortem, null, 2));
     }
 
-    await pushLineageCID(managed.state.lineageKey, cid).catch(() => null);
+    if (process.env.ALLOW_LIVE_RECALL === "true") {
+      await pushLineageCID(managed.state.lineageKey, cid).catch((err) => {
+        console.error(`[Parent] pushLineageCID failed for ${managed.state.lineageKey}:`, err);
+      });
+    } else {
+      console.log(
+        `[Parent] DRY RUN: would push lineage CID ${cid} for ${managed.state.lineageKey}`
+      );
+    }
 
     managed.state.status = "TERMINATED";
     managed.state.ipfsCid = cid;
     managed.state.mantleRecallTxHash = recallTxHash;
+    rememberTerminatedChild(managed.state);
     persistSwarmState();
 
     recordEvent({
       type: "TERMINATION",
-      timestamp: new Date().toISOString(),
+      timestamp: Date.now(),
       lineageKey: managed.state.lineageKey,
       generation: managed.state.generation,
-      agentLabel: labelFor(managed.state.lineageKey, managed.state.generation),
-      contractAddress: managed.state.contractAddress,
-      txHash: recallTxHash,
-      recallTxHash,
-      failureReason: reason,
-      ipfsCid: cid,
-      inheritanceConstraints: draftPostMortem.inheritanceConstraints,
+      data: {
+        agentLabel: labelFor(managed.state.lineageKey, managed.state.generation),
+        contractAddress: managed.state.contractAddress,
+        walletAddress: managed.state.walletAddress,
+        txHash: recallTxHash,
+        mantleRecallTxHash: recallTxHash,
+        failureReason: reason,
+        ipfsCid: cid,
+        inheritanceConstraints: draftPostMortem.inheritanceConstraints,
+      },
     });
 
     managed.process.kill("SIGTERM");
@@ -641,12 +910,17 @@ async function evaluationLoop() {
   while (true) {
     for (const managed of managedChildren.values()) {
       if (managed.state.status !== "ACTIVE") continue;
+      // Grace period: skip termination evaluation for the first 3 cycles so the
+      // agent has time to deploy capital and read ancestor context from IPFS.
+      if (managed.state.cycleCount < 3) continue;
       logEvaluation(managed.state);
       await postEvaluationResultIfEnabled(managed.state);
       if (managed.state.consecutiveBelowThreshold >= 2) {
         await terminateAndRespawn(managed);
       }
     }
+    parentCycleCount++;
+    lastEvaluation = Date.now();
     persistSwarmState();
     persistSwarmEvents();
     await sleep(EVALUATION_INTERVAL_MS);
