@@ -543,7 +543,7 @@ Most competing submissions will be stateless AI agents. The on-chain ancestral m
 | Item | Status |
 |---|---|
 | Contracts deployed on Mantle mainnet | ✅ Complete |
-| Contracts verified on Mantlescan | ⚠️ v2 SpawnFactory/ChildAgent pending |
+| Contracts verified on Mantlescan | ✅ Complete |
 | 134 Foundry tests passing | ✅ Complete |
 | Agent runtime complete (parent + child + venice + aave + lineage + ipfs) | ✅ Complete |
 | Dashboard landing page v2 (atmospheric, polished) | ✅ Complete |

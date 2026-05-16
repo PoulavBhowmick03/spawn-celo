@@ -64,14 +64,14 @@ All transactions are verifiable at [mantlescan.xyz](https://mantlescan.xyz).
 
 | Contract | Address | Mantlescan | Verified |
 |---|---|---|---|
-| SpawnFactory | `0x94171e5D54792149E14fFa19197e3c17E263C740` | [View](https://mantlescan.xyz/address/0x94171e5d54792149e14ffa19197e3c17e263c740) | ⚠️ pending |
+| SpawnFactory | `0x94171e5D54792149E14fFa19197e3c17E263C740` | [View](https://mantlescan.xyz/address/0x94171e5d54792149e14ffa19197e3c17e263c740) | ✅ |
 | LineageRegistry | `0x0466c58d7955cFdfa9E2070077D2f5E26561b59E` | [View](https://mantlescan.xyz/address/0x0466c58d7955cfdfa9e2070077d2f5e26561b59e) | ✅ |
-| ChildAgent implementation | `0xD2d79F4A19E0D77267aBe80d85c33630d0923F72` | [View](https://mantlescan.xyz/address/0xd2d79f4a19e0d77267abe80d85c33630d0923f72) | ⚠️ pending |
+| ChildAgent implementation | `0xD2d79F4A19E0D77267aBe80d85c33630d0923F72` | [View](https://mantlescan.xyz/address/0xd2d79f4a19e0d77267abe80d85c33630d0923f72) | ✅ |
 | ERC-8004 Identity Registry | `0x8004A818BFB912233c491871b3d84c89A494BD9e` | [View](https://mantlescan.xyz/address/0x8004a818bfb912233c491871b3d84c89a494bd9e) | — |
 | Aave V3 Pool (Mantle) | `0x458F293454fE0d67EC0655f3672301301DD51422` | [View](https://mantlescan.xyz/address/0x458f293454fe0d67ec0655f3672301301dd51422) | — |
 | USDe (Ethena) | `0x5d3a1Ff2b6BAb83b63cd9AD0787074081a52ef34` | [View](https://mantlescan.xyz/address/0x5d3a1ff2b6bab83b63cd9ad0787074081a52ef34) | — |
 
-All three Spawn Protocol contracts are deployed on Mantle mainnet. LineageRegistry is source-verified. SpawnFactory and ChildAgent implementation (v2) verification is pending and can be reproduced with the commands below.
+All three Spawn Protocol contracts are deployed and source-verified on Mantle mainnet. Source verification can be reproduced with the commands below.
 
 ### Spawn Transactions
 
@@ -469,7 +469,7 @@ Total: 134 passing, 0 failed, 2 expected skips
 | Requirement | Status |
 |---|---|
 | Smart contract deployed on Mantle Mainnet | ✅ SpawnFactory, LineageRegistry, ChildAgent — all deployed |
-| Contract verified on Mantle Explorer | ⚠️ LineageRegistry verified; SpawnFactory + ChildAgent impl v2 verification pending |
+| Contract verified on Mantle Explorer | ✅ All three source-verified on mantlescan.xyz |
 | AI-powered function callable on-chain | ✅ `postGenerationResult()` writes Venice summaries + `recordDecisionHash()` hashes AI decisions |
 | Frontend demo publicly accessible | ⏳ Deploying to Vercel |
 | Deployment address in DoraHacks submission | ⏳ Submitting before June 15 |
