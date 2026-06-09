@@ -143,7 +143,15 @@ const MAX_UINT256 = (1n << 256n) - 1n;
 
 export async function getAaveYield(asset: "USDE" | "METH"): Promise<number> {
   const assetAddr = asset === "USDE" ? USDE : METH;
-  if (!assetAddr) return 0;
+  // METH has no configured/deployed address on Mantle — treat as unavailable
+  // by throwing so callers fall back deterministically rather than reading a fake 0.
+  if (!assetAddr) {
+    throw new Error(`[Aave] ${asset} address not configured — cannot read live yield`);
+  }
+  // NOTE: do NOT swallow errors here. A swallowed error returning 0 would make the
+  // documented benchmark fallback (AAVE_USDE_BENCHMARK=4.50) unreachable — a 0%
+  // benchmark is presented as if it were a real live read. Propagate instead so
+  // getBenchmarkYield's catch hits the configured fallback. (P3c)
   try {
     const data = await publicClient.readContract({
       address: AAVE_POOL,
@@ -155,7 +163,7 @@ export async function getAaveYield(asset: "USDE" | "METH"): Promise<number> {
     return (Number(data.currentLiquidityRate) / 1e27) * 100;
   } catch (err: any) {
     console.error(`[Aave] getReserveData(${asset}) failed:`, err?.message);
-    return 0;
+    throw new Error(`[Aave] getReserveData(${asset}) failed: ${err?.message ?? String(err)}`);
   }
 }
 
@@ -166,8 +174,41 @@ export async function getBenchmarkYield(): Promise<number> {
     const target = live + 0.25;
     console.log(`[Aave] Live benchmark set: ${live.toFixed(4)}% + 0.25% = ${target.toFixed(4)}%`);
     return target;
-  } catch {
-    return parseFloat(process.env.AAVE_USDE_BENCHMARK ?? "4.50");
+  } catch (err: any) {
+    // RPC failure — fall back to the env-configured static benchmark. This is now
+    // reachable because getAaveYield throws (instead of returning a misleading 0).
+    const fallback = parseFloat(process.env.AAVE_USDE_BENCHMARK ?? "4.50");
+    console.warn(
+      `[Aave] Live benchmark read failed (${err?.message ?? String(err)}); ` +
+      `using AAVE_USDE_BENCHMARK fallback ${fallback.toFixed(4)}%.`
+    );
+    return fallback;
+  }
+}
+
+// Live-vs-fallback benchmark with an explicit source marker so callers/UI can
+// distinguish a real chain read from the static env fallback. (P2b)
+export type BenchmarkYieldResult = {
+  benchmarkYieldPct: number;
+  liveAaveYieldPct: number | null;
+  source: "live" | "fallback";
+};
+
+export async function getBenchmarkYieldWithSource(): Promise<BenchmarkYieldResult> {
+  try {
+    const live = await getAaveYield("USDE");
+    return {
+      benchmarkYieldPct: live + 0.25,
+      liveAaveYieldPct: live,
+      source: "live",
+    };
+  } catch (err: any) {
+    const fallback = parseFloat(process.env.AAVE_USDE_BENCHMARK ?? "4.50");
+    console.warn(
+      `[Aave] getBenchmarkYieldWithSource: live read failed (${err?.message ?? String(err)}); ` +
+      `using AAVE_USDE_BENCHMARK fallback ${fallback.toFixed(4)}%.`
+    );
+    return { benchmarkYieldPct: fallback, liveAaveYieldPct: null, source: "fallback" };
   }
 }
 

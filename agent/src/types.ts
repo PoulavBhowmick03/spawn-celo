@@ -60,4 +60,10 @@ export interface ChildIPCReport {
   numTradesLastEval: number;
   stdDevYieldLastEval: number;
   riskProfileModifier?: number;
+  // True if any yield input this cycle came from the synthetic sine-wave fallback
+  // (backtest/dry-run only) rather than a live Aave read. Never true in a live run. (P3a)
+  yieldIsSimulated?: boolean;
+  // False when Merchant Moe APY/position data could not be sourced from chain and was
+  // excluded from yield math (rather than presented as a fake 0). (P3b)
+  moeDataAvailable?: boolean;
 }

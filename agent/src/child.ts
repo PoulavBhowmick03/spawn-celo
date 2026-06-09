@@ -1,10 +1,17 @@
 import { encodePacked, keccak256 } from "viem";
 import { getAaveYield, supplyToAave, withdrawFromAave } from "./aave.js";
+import { fetchNarrativeContext } from "./elfa.js";
 import { buildAncestorContext } from "./lineage.js";
 import { getMoeLPAPY, getMoeLPValue, addLiquidityToMoe, removeLiquidityFromMoe } from "./merchant-moe.js";
 import { executeYieldReasoning, type VeniceDecision } from "./venice.js";
 import type { ChildIPCReport, YieldAction } from "./types.js";
 
+// Children are seeded in USDe (USDe-native design): the treasury funds each child
+// wallet with USDe (see parent.ts:fundChildWallet) and the core live path is Aave
+// USDe supply/withdraw. USDC_ADDRESS is OPTIONAL and only used for the experimental
+// Merchant Moe USDe/USDC LP route. The USDC leg requires a real USDe->USDC swap that
+// is DEFERRED pending human sign-off, so when USDC_ADDRESS is unset the Moe USDC path
+// degrades gracefully (logs + HOLD) instead of throwing. (P4a)
 const USDE_ADDR = (process.env.USDE_ADDRESS ?? "") as `0x${string}`;
 const USDC_ADDR = (process.env.USDC_ADDRESS ?? "") as `0x${string}`;
 
@@ -100,9 +107,26 @@ function hashSeed(input: string): number {
   return hash;
 }
 
+// Synthetic sine-wave yield. THIS IS SIMULATED DATA and must never be surfaced as a
+// live on-chain rate. It is only permitted behind an explicit backtest/dry-run flag
+// (see SIMULATED_YIELD_ALLOWED) and every value it produces is labeled `isSimulated`
+// in the report payload. (P3a)
 function simulatedYield(base: number, cycleCount: number, seed: number, amplitude: number) {
   const wave = Math.sin((cycleCount + seed % 7) / 2.7) * amplitude;
   return Math.max(0.1, base + wave);
+}
+
+// Synthetic yields are only allowed when explicitly running a backtest, or in dry-run
+// mode where nothing is presented as live on-chain truth. In a live run (child writes
+// enabled) we refuse to fabricate a number: if the live Aave read fails we report the
+// failure rather than a sine-wave value dressed up as live.
+function simulatedYieldAllowed(config: ChildRuntimeConfig): boolean {
+  return (
+    process.env.BACKTEST_MODE === "true" ||
+    process.env.BACKTEST_FORCE_SYNTHETIC === "true" ||
+    config.dryRun === true ||
+    process.env.ALLOW_LIVE_CHILD_WRITES !== "true"
+  );
 }
 
 function normalizeBps(value: number, fallback: number) {
@@ -188,14 +212,19 @@ function clampAmount(amount: number, min = 0, max = Number.POSITIVE_INFINITY) {
   return Math.max(min, Math.min(max, amount));
 }
 
+// Reads the live Aave rate. If `simulatedFallback` is provided (only in
+// backtest/dry-run mode), an RPC failure falls back to that synthetic value and the
+// caller marks the cycle as simulated. If it is undefined (live mode), the error
+// propagates so we never present a fabricated number as a live rate. (P3a)
 async function safeGetAaveYield(
   asset: "USDE" | "METH",
-  fallback: number
-): Promise<number> {
+  simulatedFallback?: number
+): Promise<{ value: number; simulated: boolean }> {
   try {
-    return await getAaveYield(asset);
-  } catch {
-    return fallback;
+    return { value: await getAaveYield(asset), simulated: false };
+  } catch (err) {
+    if (simulatedFallback === undefined) throw err;
+    return { value: simulatedFallback, simulated: true };
   }
 }
 
@@ -259,8 +288,19 @@ async function runAction(
     case "MOE_ADD_LIQUIDITY": {
       const amount = clampAmount(amountUSD, 0, portfolio.cashReserve);
       if (amount <= 0) return 0;
+      // P4a: the live seed is USDe-native (the treasury funds children in USDe; the
+      // USDe->USDC swap needed to source the USDC leg of this LP is deferred pending
+      // human sign-off). If USDC_ADDRESS is unset, do NOT crash the cycle — disable
+      // the live Moe USDC path with a clear log and treat the action as a HOLD.
       if (liveWritesEnabled) {
-        if (!USDE_ADDR || !USDC_ADDR) throw new Error("USDE_ADDRESS and USDC_ADDRESS required for MOE_ADD_LIQUIDITY");
+        if (!USDE_ADDR || !USDC_ADDR) {
+          console.warn(
+            "[Child] MOE_ADD_LIQUIDITY skipped: USDC_ADDRESS is unset. The Moe USDe/USDC " +
+            "path needs a USDC leg (a real USDe->USDC swap) which is deferred pending sign-off. " +
+            "Holding instead of broadcasting."
+          );
+          return 0;
+        }
         // Split 50/50 between USDe (tokenX) and USDC (tokenY) — both ~$1
         const half = amount / 2;
         await addLiquidityToMoe(config.privateKey!, USDE_ADDR, USDC_ADDR, half, half);
@@ -273,7 +313,13 @@ async function runAction(
       const amount = clampAmount(amountUSD, 0, portfolio.moeLPValue);
       if (amount <= 0) return 0;
       if (liveWritesEnabled) {
-        if (!USDE_ADDR || !USDC_ADDR) throw new Error("USDE_ADDRESS and USDC_ADDRESS required for MOE_REMOVE_LIQUIDITY");
+        if (!USDE_ADDR || !USDC_ADDR) {
+          console.warn(
+            "[Child] MOE_REMOVE_LIQUIDITY skipped: USDC_ADDRESS is unset (USDC Moe path disabled). " +
+            "Holding instead of broadcasting."
+          );
+          return 0;
+        }
         const fraction = amount / portfolio.moeLPValue;
         await removeLiquidityFromMoe(config.privateKey!, USDE_ADDR, USDC_ADDR, fraction);
       }
@@ -395,22 +441,62 @@ export async function runChildProcess(config: ChildRuntimeConfig) {
     cycleCount += 1;
 
     try {
+      const allowSimulated = simulatedYieldAllowed(config);
       const baseUSDE = config.benchmarkYieldPct + config.generation * 0.12;
       const baseMETH = 2.15 + config.generation * 0.08;
-      const fallbackUSDE = simulatedYield(baseUSDE, cycleCount, seed, 0.32);
-      const fallbackMETH = simulatedYield(baseMETH, cycleCount, seed + 17, 0.28);
+      // Synthetic fallbacks are ONLY supplied when simulated data is permitted
+      // (backtest/dry-run). In a live run we pass undefined so a failed Aave read
+      // throws instead of returning a sine-wave value disguised as live. (P3a)
+      const fallbackUSDE = allowSimulated
+        ? simulatedYield(baseUSDE, cycleCount, seed, 0.32)
+        : undefined;
+      const fallbackMETH = allowSimulated
+        ? simulatedYield(baseMETH, cycleCount, seed + 17, 0.28)
+        : undefined;
 
-      const rawAaveUSDEYield = await safeGetAaveYield("USDE", fallbackUSDE);
-      const rawAaveMETHYield = await safeGetAaveYield("METH", fallbackMETH);
-      const rawMoeLPYield = await getMoeLPAPY();
+      const usdeRead = await safeGetAaveYield("USDE", fallbackUSDE);
+      const methRead = await safeGetAaveYield("METH", fallbackMETH);
+      const rawAaveUSDEYield = usdeRead.value;
+      const rawAaveMETHYield = methRead.value;
+      // Any cycle that relied on a synthetic fallback is flagged so it is never
+      // mistaken for a fully-live reading downstream.
+      const yieldIsSimulated = usdeRead.simulated || methRead.simulated;
+
+      // Moe APY is unavailable (returns null) — exclude it from yield math rather
+      // than treating a fabricated 0% as a real rate. (P3b)
+      const rawMoeLPYieldOrNull = await getMoeLPAPY();
+      const moeDataAvailable = rawMoeLPYieldOrNull !== null;
+      const rawMoeLPYield = rawMoeLPYieldOrNull ?? 0;
+
       const aaveUSDEYield = adjustedYield(rawAaveUSDEYield, "usde", strategyProfile, cycleCount, seed);
       const aaveMETHYield = adjustedYield(rawAaveMETHYield, "meth", strategyProfile, cycleCount, seed);
       const moeLPYield = adjustedYield(rawMoeLPYield, "moe", strategyProfile, cycleCount, seed);
-      portfolio.moeLPValue = await getMoeLPValue(config.walletAddress);
+
+      // P3b: getMoeLPValue now returns null when the position can't be read. Only
+      // overwrite the tracked LP value with a real on-chain read; never clobber it
+      // with a fabricated 0. Preserves the locally-tracked value otherwise.
+      const moeLPValueRead = await getMoeLPValue(config.walletAddress);
+      if (moeLPValueRead !== null) {
+        portfolio.moeLPValue = moeLPValueRead;
+      }
 
       const totalPortfolioUSD = portfolioTotal(portfolio);
 
-      const rawDecision = await executeYieldReasoning(systemPrompt, {
+      // Fetch Elfa narrative context once per decision cycle (non-blocking,
+      // times out after 5s, returns empty string on any failure). Inject it
+      // after the ancestor context already baked into systemPrompt and before
+      // the decision question posed by executeYieldReasoning.
+      const narrativeContext = await fetchNarrativeContext();
+      if (narrativeContext) {
+        console.log(
+          `[Elfa] Social context injected into ${config.agentId} decision prompt`
+        );
+      }
+      const decisionSystemPrompt = narrativeContext
+        ? `${systemPrompt}\n\n${narrativeContext}`
+        : systemPrompt;
+
+      const rawDecision = await executeYieldReasoning(decisionSystemPrompt, {
         aaveUSDEYield,
         aaveMETHYield,
         moeLPYield,
@@ -470,6 +556,13 @@ export async function runChildProcess(config: ChildRuntimeConfig) {
           rawAaveMETHYield,
           rawMoeLPYield,
         },
+        // Provenance markers so downstream consumers never mistake simulated or
+        // unavailable inputs for fully-live chain data. (P3a/P3b)
+        dataProvenance: {
+          yieldIsSimulated,
+          moeApyAvailable: moeDataAvailable,
+          source: yieldIsSimulated ? "simulated-backtest" : "live-aave",
+        },
       });
       const decisionPromptPrefix = systemPrompt.slice(0, 200);
       const decisionHash = keccak256(
@@ -502,7 +595,9 @@ export async function runChildProcess(config: ChildRuntimeConfig) {
           `rawUSDE=${rawAaveUSDEYield.toFixed(4)}%, ` +
           `adjustedUSDE=${aaveUSDEYield.toFixed(4)}%, ` +
           `adjustedYield=${adjustedYieldPct.toFixed(4)}%, ` +
-          `action=${actionTaken}`,
+          `action=${actionTaken}` +
+          (yieldIsSimulated ? " [SIMULATED yields — backtest/dry-run]" : "") +
+          (moeDataAvailable ? "" : " [moeAPY=unavailable]"),
         aaveSupplyUSDE: portfolio.aaveSupplyUSDE,
         aaveSupplyMETH: portfolio.aaveSupplyMETH,
         moeLPValue: portfolio.moeLPValue,
@@ -510,6 +605,8 @@ export async function runChildProcess(config: ChildRuntimeConfig) {
         numTradesLastEval,
         stdDevYieldLastEval: stdDev(yieldWindow),
         riskProfileModifier: strategyProfile.riskScoreModifier,
+        yieldIsSimulated,
+        moeDataAvailable,
       };
 
       const message: ChildReportMessage = {

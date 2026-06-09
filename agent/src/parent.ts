@@ -400,6 +400,29 @@ function normalizePrivateKey(privateKey: string): `0x${string}` {
   return (privateKey.startsWith("0x") ? privateKey : `0x${privateKey}`) as `0x${string}`;
 }
 
+/**
+ * KEY DERIVATION RISK (5d) — READ BEFORE GOING LIVE WITH REAL FUNDS:
+ *
+ * Each child wallet's private key is derived deterministically as
+ *   keccak256(`${TREASURY_PRIVATE_KEY}:${lineageKey}:${generation}`)
+ * The `lineageKey` and `generation` inputs are PUBLIC (emitted on-chain in spawn
+ * events and written to swarm_state.json). Therefore the ONLY secret protecting
+ * every child wallet is the treasury key itself: anyone who learns
+ * TREASURY_PRIVATE_KEY can regenerate every child private key and drain all child
+ * wallets. This is acceptable only because the treasury already owns those funds —
+ * but it means the treasury key's blast radius is the entire swarm.
+ *
+ * SEPARATE DEPLOYER/TREASURY KEYS: the runtime supports distinct keys —
+ *   - DEPLOYER_PRIVATE_KEY: spawn/recall/decision-proof contract writes + (default)
+ *     child gas funding.
+ *   - TREASURY_PRIVATE_KEY: holds USDe, seeds children, and is the child-key
+ *     derivation root + sweep destination.
+ *   - CHILD_GAS_FUNDER_PRIVATE_KEY: optional override for gas, else DEPLOYER.
+ * Child keys are derived ONLY from the treasury key (never the deployer key), so
+ * setting DEPLOYER != TREASURY correctly isolates contract-admin authority from
+ * fund-custody authority. Do NOT switch the derivation root to the deployer key
+ * without re-deriving/sweeping existing child wallets first.
+ */
 function deriveChildWallet(
   lineageKey: string,
   generation: number
@@ -407,6 +430,9 @@ function deriveChildWallet(
   const treasuryKey = process.env.TREASURY_PRIVATE_KEY;
   if (!treasuryKey) throw new Error("TREASURY_PRIVATE_KEY not set");
 
+  // Derivation root is intentionally the TREASURY key (fund custodian), independent
+  // of DEPLOYER. When the two keys differ, child funds remain recoverable solely via
+  // the treasury key while contract-admin actions use the deployer key.
   const normalizedTreasuryKey = normalizePrivateKey(treasuryKey);
   const childPrivateKey = keccak256(toBytes(`${normalizedTreasuryKey}:${lineageKey}:${generation}`));
   const account = privateKeyToAccount(childPrivateKey);
@@ -754,12 +780,14 @@ async function sweepChildFunds(
     return;
   }
 
-  const treasuryKey = process.env.TREASURY_PRIVATE_KEY as `0x${string}` | undefined;
-  if (!treasuryKey) {
+  const treasuryKeyRaw = process.env.TREASURY_PRIVATE_KEY;
+  if (!treasuryKeyRaw) {
     console.warn(`[Sweep] ${label}: TREASURY_PRIVATE_KEY not set — skipping fund sweep`);
     return;
   }
-  const treasuryAddress = privateKeyToAccount(treasuryKey).address;
+  // Sweep destination is the treasury (fund custodian), which may be a DIFFERENT key
+  // than the deployer. Normalize for 0x-prefix tolerance. (5d)
+  const treasuryAddress = privateKeyToAccount(normalizePrivateKey(treasuryKeyRaw)).address;
   const { privateKey: childPrivateKey } = deriveChildWallet(lineageKey, generation);
 
   // 1. Withdraw any Aave USDe position back to the child wallet first

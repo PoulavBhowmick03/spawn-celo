@@ -165,20 +165,70 @@ async function ensureERC20Approval(
   }
 }
 
-export async function getMoeLPAPY(): Promise<number> {
+// Merchant Moe LB pools do not expose an on-chain APY. A real APY needs fee/volume
+// history from a subgraph/indexer that is not wired up here. Rather than surface a
+// fabricated 0% as if it were a live rate, return null = "unavailable". Callers must
+// treat null as "no Moe data" and exclude it from yield math. (P3b)
+export async function getMoeLPAPY(): Promise<number | null> {
   warnOnce(
     "moe-apy",
-    "[MerchantMoe] LP APY is running in safe read-only fallback mode and returns 0 until pool-specific Mantle wiring is enabled."
+    "[MerchantMoe] LP APY is unavailable (no on-chain APY source / indexer wired). Returning null instead of a fake 0%."
   );
-  return 0;
+  return null;
 }
 
-export async function getMoeLPValue(_walletAddress?: string): Promise<number> {
-  warnOnce(
-    "moe-value",
-    "[MerchantMoe] LP value is running in safe read-only fallback mode and returns 0 until position-specific Mantle wiring is enabled."
-  );
-  return 0;
+// Read the wallet's real LP position value from the USDe/USDC LB pair by valuing its
+// bin balances against the pair reserves. Returns USD value, or null if the position
+// cannot be read from chain (so the UI shows no-data rather than a fabricated 0). (P3b)
+export async function getMoeLPValue(walletAddress?: string): Promise<number | null> {
+  if (!walletAddress || !walletAddress.startsWith("0x")) return null;
+  const account = walletAddress as `0x${string}`;
+
+  try {
+    const activeId = (await publicClient.readContract({
+      address: MOE_PAIR_USDE_USDC,
+      abi: LB_PAIR_ABI,
+      functionName: "getActiveId",
+    })) as number;
+
+    // Total LB token supply per bin is not exposed by this minimal ABI, so we value
+    // the position by reading the wallet's per-bin LB balances over a window around
+    // the active bin. With single-bin spot deposits (deltaIds=[0]), the bin token
+    // balance for a $X deposit is ~X in USD terms for a ~$1/$1 stable pair; we treat
+    // the summed bin balances (scaled by token decimals) as the USD value estimate.
+    const SCAN_RADIUS = 50;
+    const candidateIds: bigint[] = [];
+    for (let delta = -SCAN_RADIUS; delta <= SCAN_RADIUS; delta++) {
+      candidateIds.push(BigInt(activeId + delta));
+    }
+
+    const balances = await Promise.all(
+      candidateIds.map((id) =>
+        publicClient
+          .readContract({
+            address: MOE_PAIR_USDE_USDC,
+            abi: LB_PAIR_ABI,
+            functionName: "balanceOf",
+            args: [account, id],
+          })
+          .catch(() => 0n)
+      )
+    );
+
+    const totalBinBalance = (balances as bigint[]).reduce((sum, b) => sum + b, 0n);
+    if (totalBinBalance === 0n) return 0;
+
+    // LB liquidity tokens are denominated in the pair's internal precision (1e18-ish).
+    // Convert to a USD-scale value. This is an on-chain-derived estimate (no oracle),
+    // so it reflects real position presence rather than a hardcoded number.
+    return Number(totalBinBalance) / Number(PRECISION);
+  } catch (err: any) {
+    warnOnce(
+      "moe-value-read",
+      `[MerchantMoe] LP value read failed (${err?.message ?? String(err)}); returning null (unavailable).`
+    );
+    return null;
+  }
 }
 
 // Single-bin spot deposit into the USDe/USDC LB pair at binStep=1.
@@ -300,6 +350,45 @@ export async function removeLiquidityFromMoe(
     );
   }
 
+  // P4b: derive real min-out slippage bounds instead of (0,0) zero-protection.
+  // Estimate the expected token-out amounts from the pair reserves scaled by the
+  // share of total LB tokens being burned, then require >= 99.5% of that (0.5%
+  // tolerance, mirroring addLiquidity). If reserves cannot be read, fall back to a
+  // conservative non-zero floor derived from the removed bin amounts rather than 0.
+  let amountXMin = 0n;
+  let amountYMin = 0n;
+  try {
+    const [reserveX, reserveY] = (await publicClient.readContract({
+      address: MOE_PAIR_USDE_USDC,
+      abi: LB_PAIR_ABI,
+      functionName: "getReserves",
+    })) as [bigint, bigint];
+
+    // Sum of LB tokens being burned across the scanned bins. Without per-bin total
+    // supply we approximate the withdrawn share via `fraction` (the caller's intended
+    // fraction of their own position) applied to reserves, which is a lower-bound
+    // estimate suitable as a slippage floor.
+    const shareNum = BigInt(Math.floor(fraction * 1_000_000));
+    const expectedX = (reserveX * shareNum) / 1_000_000n;
+    const expectedY = (reserveY * shareNum) / 1_000_000n;
+    // 0.5% tolerance
+    amountXMin = (expectedX * 9950n) / 10000n;
+    amountYMin = (expectedY * 9950n) / 10000n;
+  } catch (err: any) {
+    // Reserves unreadable: use a conservative floor from the removed bin amounts so
+    // we still pass non-zero min-out (never silently accept 0/0). Bin amounts are in
+    // LB-token precision; downscale heavily to avoid over-constraining the swap while
+    // keeping it strictly > 0.
+    const totalRemoved = amounts.reduce((sum, a) => sum + a, 0n);
+    const floor = totalRemoved > 0n ? totalRemoved / 1_000_000n : 1n;
+    amountXMin = floor;
+    amountYMin = floor;
+    warnOnce(
+      "moe-remove-reserves",
+      `[MerchantMoe] getReserves failed (${err?.message ?? String(err)}); using conservative non-zero min-out floor.`
+    );
+  }
+
   // ERC1155 approval for the pair → router
   const approveHash = await walletClient.writeContract({
     address: MOE_PAIR_USDE_USDC,
@@ -316,7 +405,7 @@ export async function removeLiquidityFromMoe(
       address: MOE_ROUTER,
       abi: LB_ROUTER_ABI,
       functionName: "removeLiquidity",
-      args: [tokenA, tokenB, BIN_STEP, 0n, 0n, ids, amounts, userAddress, deadline],
+      args: [tokenA, tokenB, BIN_STEP, amountXMin, amountYMin, ids, amounts, userAddress, deadline],
     });
     await publicClient.waitForTransactionReceipt({ hash });
     console.log(`[MerchantMoe] removeLiquidity ${ids.length} bins fraction=${fraction} → ${hash}`);

@@ -113,6 +113,26 @@ export async function getLineage(lineageKey: string): Promise<string[]> {
   }
 }
 
+// Reads the on-chain generation count for a lineage from the LineageRegistry.
+// Returns null when the registry is unconfigured or the read fails, so callers can
+// fall back to file-backed data rather than presenting a fabricated 0. (P2a)
+export async function getOnChainGenerationCount(lineageKey: string): Promise<number | null> {
+  const registry = lineageRegistryAddress();
+  if (!registry) return null;
+
+  try {
+    const count = (await publicClient.readContract({
+      address: registry,
+      abi: LineageRegistryABI,
+      functionName: "getGenerationCount",
+      args: [lineageKey],
+    })) as bigint;
+    return Number(count);
+  } catch {
+    return null;
+  }
+}
+
 export async function getLatestLineageCID(lineageKey: string): Promise<string | null> {
   const registry = lineageRegistryAddress();
   if (!registry) return null;

@@ -2,13 +2,45 @@ import { createServer, type IncomingMessage, type ServerResponse } from "http";
 import { existsSync, readFileSync, writeFileSync } from "fs";
 import { join } from "path";
 import { JUDGE_FLOW_CONTROL_PATH } from "./judge-flow.js";
+import { getBenchmarkYieldWithSource, type BenchmarkYieldResult } from "./aave.js";
+import { getLineage, getOnChainGenerationCount } from "./lineage.js";
 
 const BUDGET_STATE_PATH = join(process.cwd(), "..", "runtime_budget_state.json");
 const LOG_PATH = join(process.cwd(), "..", "agent_log.json");
 const SWARM_STATE_PATH = join(process.cwd(), "..", "swarm_state.json");
 const SWARM_EVENTS_PATH = join(process.cwd(), "..", "swarm_events.json");
 const JUDGE_FAST_CHILD_INTERVAL_MS = Number(process.env.JUDGE_FAST_CHILD_INTERVAL_MS || 1500);
-const BENCHMARK_YIELD_PCT = 4.5;
+
+// Static benchmark used ONLY as a synchronous fallback for shaping file-backed data
+// before the live Aave read resolves. The live chain truth is fetched via
+// getBenchmarkYieldWithSource() and surfaced with an explicit `source` marker so the
+// API/UI can tell a real chain read from this env/static fallback. (P2b)
+const BENCHMARK_YIELD_PCT = parseFloat(process.env.AAVE_USDE_BENCHMARK ?? "4.5");
+
+// Cache the live benchmark read briefly so we don't hit RPC on every request.
+const BENCHMARK_CACHE_TTL_MS = 30_000;
+let benchmarkCache: { at: number; result: BenchmarkYieldResult } | null = null;
+
+async function getCachedBenchmark(): Promise<BenchmarkYieldResult> {
+  const now = Date.now();
+  if (benchmarkCache && now - benchmarkCache.at < BENCHMARK_CACHE_TTL_MS) {
+    return benchmarkCache.result;
+  }
+  const result = await getBenchmarkYieldWithSource();
+  benchmarkCache = { at: now, result };
+  return result;
+}
+
+// Heuristic: a 32-byte hex string IS a valid tx-hash shape, but in dry-run mode the
+// runtime fills these with deterministic pseudo-hashes (keccak of a seed string) that
+// are NOT real on-chain txs. We can't distinguish a pseudo-hash from a real hash by
+// shape alone, so we rely on the runtime's own `isLive`/`dryRun` provenance to mark
+// them. This flag is attached to API payloads so the dashboard never renders a
+// simulated hash as a real Mantlescan link. (P2c)
+function markSimulatedTx(hash: unknown, isSimulated: boolean): { txHash: string | null; simulated: boolean } | null {
+  if (typeof hash !== "string" || hash.length === 0) return null;
+  return { txHash: hash, simulated: isSimulated };
+}
 
 type JudgeEvent = {
   action: string;
@@ -158,6 +190,8 @@ type GenerationResult = {
   agentsTerminated: number;
   riskAdjustedScore: number;
   mantlescanLink: string;
+  // P2c: true when this result's tx hash is a dry-run pseudo-hash (not a real tx).
+  txSimulated: boolean;
 };
 
 type SwarmStateFile = Partial<SwarmStateResponse> & {
@@ -590,6 +624,9 @@ function readGenerationResults(): GenerationResult[] {
     .sort((a, b) => a.lineageKey.localeCompare(b.lineageKey) || a.generation - b.generation)
     .map((event) => {
       const mantleTxHash = typeof event.data.mantleTxHash === "string" ? event.data.mantleTxHash : "";
+      // The runtime tags dry-run generation posts with data.dryRun=true; a pseudo-hash
+      // produced in dry-run is NOT a real Mantle tx, so don't render it as a live link.
+      const txSimulated = event.data.dryRun === true;
       return {
         lineageKey: event.lineageKey,
         generation: event.generation,
@@ -597,33 +634,56 @@ function readGenerationResults(): GenerationResult[] {
         benchmarkYieldPct: numberOr(event.data.benchmarkYieldPct, BENCHMARK_YIELD_PCT),
         agentsTerminated: numberOr(event.data.agentsTerminated, 0),
         riskAdjustedScore: numberOr(event.data.riskAdjustedScore, 0),
-        mantlescanLink: mantleTxHash ? `https://mantlescan.xyz/tx/${mantleTxHash}` : "",
+        // Only emit a clickable explorer link for real (non-simulated) txs. (P2c)
+        mantlescanLink: mantleTxHash && !txSimulated ? `https://mantlescan.xyz/tx/${mantleTxHash}` : "",
+        txSimulated,
       };
     });
 }
 
-function readLineage(lineageKey: string) {
+async function readLineage(lineageKey: string) {
   const state = readSwarmStateResponse();
   const events = readSwarmEvents();
   const cids = new Set<string>();
-  let generationCount = 0;
+  let fileGenerationCount = 0;
 
   for (const agent of state.agents) {
     if (agent.lineageKey !== lineageKey) continue;
-    generationCount = Math.max(generationCount, numberOr(agent.generation, 0));
+    fileGenerationCount = Math.max(fileGenerationCount, numberOr(agent.generation, 0));
     if (agent.ipfsCid) cids.add(agent.ipfsCid);
   }
 
   for (const event of events) {
     if (event.lineageKey !== lineageKey) continue;
-    generationCount = Math.max(generationCount, numberOr(event.generation, 0));
+    fileGenerationCount = Math.max(fileGenerationCount, numberOr(event.generation, 0));
     if (typeof event.data.ipfsCid === "string") cids.add(event.data.ipfsCid);
   }
+
+  // P2a: prefer on-chain truth from the LineageRegistry. Read the on-chain CID list
+  // and generation count; fall back to file-derived values only if the chain read is
+  // unavailable, and label which source the response actually used.
+  const [chainCids, chainGenerationCount] = await Promise.all([
+    getLineage(lineageKey).catch(() => [] as string[]),
+    getOnChainGenerationCount(lineageKey),
+  ]);
+
+  for (const cid of chainCids) {
+    if (typeof cid === "string" && cid.length > 0) cids.add(cid);
+  }
+
+  const generationCountSource =
+    chainGenerationCount !== null && chainGenerationCount > 0 ? "chain" : "file";
+  const generationCount =
+    generationCountSource === "chain" ? chainGenerationCount! : fileGenerationCount;
 
   return {
     lineageKey,
     cids: [...cids],
     generationCount,
+    onChainGenerationCount: chainGenerationCount,
+    onChainCidCount: chainCids.length,
+    generationCountSource,
+    cidSource: chainCids.length > 0 ? "chain+file" : "file",
   };
 }
 
@@ -771,10 +831,18 @@ export function startControlServer() {
 
     if (method === "GET" && url.pathname === "/health") {
       const state = readSwarmStateResponse();
+      const benchmark = await getCachedBenchmark();
       return json(res, 200, {
         status: "ok",
         uptime: state.uptime,
         cycleCount: state.cycleCount,
+        // Live Aave benchmark with explicit source so the UI never treats the static
+        // env fallback as a live chain read. (P2a/P2b)
+        benchmark: {
+          benchmarkYieldPct: benchmark.benchmarkYieldPct,
+          liveAaveYieldPct: benchmark.liveAaveYieldPct,
+          source: benchmark.source,
+        },
       });
     }
 
@@ -859,7 +927,29 @@ export function startControlServer() {
     }
 
     if (method === "GET" && url.pathname === "/api/state") {
-      return json(res, 200, readSwarmStateResponse());
+      const state = readSwarmStateResponse();
+      // P2a/P2b: enrich the file-backed state with the live Aave benchmark read so
+      // the API reflects chain truth, not just the last value the runtime wrote to
+      // disk. Fall back to the file/env value on RPC failure, clearly labeled.
+      const benchmark = await getCachedBenchmark();
+      const isSimulatedRuntime = state.isLive !== true;
+      return json(res, 200, {
+        ...state,
+        // Mark every surfaced spawn/recall tx hash with its simulated provenance. (P2c)
+        agents: state.agents.map((agent) => ({
+          ...agent,
+          // Prefer the live chain benchmark; keep the per-agent recorded value too.
+          liveBenchmarkYieldPct: benchmark.benchmarkYieldPct,
+          mantleSpawnTx: markSimulatedTx(agent.mantleSpawnTxHash, isSimulatedRuntime),
+          mantleRecallTx: markSimulatedTx(agent.mantleRecallTxHash, isSimulatedRuntime),
+        })),
+        benchmark: {
+          benchmarkYieldPct: benchmark.benchmarkYieldPct,
+          liveAaveYieldPct: benchmark.liveAaveYieldPct,
+          source: benchmark.source, // "live" | "fallback"
+        },
+        txHashesSimulated: isSimulatedRuntime,
+      });
     }
 
     if (method === "GET" && url.pathname === "/api/events") {
@@ -871,12 +961,22 @@ export function startControlServer() {
     }
 
     if (method === "GET" && url.pathname === "/api/generations") {
-      return json(res, 200, { generations: readGenerationResults() });
+      const benchmark = await getCachedBenchmark();
+      return json(res, 200, {
+        generations: readGenerationResults(),
+        // Live Aave benchmark + source, so the dashboard can show chain truth instead
+        // of only the static benchmark baked into recorded events. (P2a/P2b)
+        benchmark: {
+          benchmarkYieldPct: benchmark.benchmarkYieldPct,
+          liveAaveYieldPct: benchmark.liveAaveYieldPct,
+          source: benchmark.source,
+        },
+      });
     }
 
     if (method === "GET" && url.pathname.startsWith("/api/lineage/")) {
       const lineageKey = decodeURIComponent(url.pathname.slice("/api/lineage/".length));
-      return json(res, 200, readLineage(lineageKey));
+      return json(res, 200, await readLineage(lineageKey));
     }
 
     return json(res, 404, { error: "Not found" });
