@@ -12,6 +12,18 @@ const NEW_VALUES = `HARD RULES (agents MUST follow ALL of these, even when they 
 These values deliberately conflict. Agents must make hard tradeoffs and will disagree.`;
 
 async function main() {
+  // SAFETY GATE: this script broadcasts a real mainnet transaction
+  // (setGovernanceValues). It MUST NOT run unless explicitly enabled, matching
+  // the ALLOW_LIVE_* convention used throughout the agent runtime.
+  if (process.env.ALLOW_LIVE_GOVERNANCE_WRITE !== 'true') {
+    console.error(
+      'Refusing to broadcast: ALLOW_LIVE_GOVERNANCE_WRITE is not "true".\n' +
+      'This script would send a real setGovernanceValues transaction on mainnet.\n' +
+      'To intentionally run it, re-invoke with ALLOW_LIVE_GOVERNANCE_WRITE=true.'
+    );
+    process.exit(1);
+  }
+
   const hash = await walletClient.writeContract({
     address: '0x9428B93993F06d3c5d647141d39e5ba54fb97a7b',
     abi: ParentTreasuryABI,

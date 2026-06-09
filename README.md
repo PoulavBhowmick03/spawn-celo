@@ -478,6 +478,33 @@ Total: 134 passing, 0 failed, 2 expected skips
 
 ---
 
+## Security
+
+Key-hygiene, fund-safety findings, and operational safety controls are documented
+in **[SECURITY.md](SECURITY.md)**. In short:
+
+- All live, fund-touching paths are gated behind `ALLOW_LIVE_*` flags; the default
+  is dry-run. Do not flip these without following the spend-gate discipline in
+  `AUDIT.md`.
+- The deployer and treasury are currently the same key, and child wallet keys are
+  derived from the treasury key using public inputs — see SECURITY.md for the
+  required separate-keys / rotation remediation before any production use.
+
+### Known issues / pending decisions (need human sign-off)
+
+These are recorded but **not** implemented; a human must decide:
+
+- **USDC → USDe swap for USDC seeding (P4 Option B):** seeding children in USDC
+  would require a swap (Merchant Moe) with slippage risk; currently seeding is
+  USDe-only. Decide whether to support it. See SECURITY.md.
+- **ERC-8004 identity/reputation registries have zero bytecode on Mantle (5a):**
+  the configured registry addresses have no contract code on Mantle, so any
+  feature claiming to read live identity/reputation from them is not reading live
+  data. Either deploy the registries to Mantle or remove those claims. See
+  SECURITY.md.
+
+---
+
 ## Team
 
 **Poulav Bhowmick** — Protocol engineering, smart contracts, agent runtime

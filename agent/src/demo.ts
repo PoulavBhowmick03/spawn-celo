@@ -1,4 +1,24 @@
 /**
+ * ⚠️ LEGACY / NON-FUNCTIONAL — DO NOT RUN ⚠️
+ *
+ * This is a historical Base Sepolia lifecycle demo for an EARLIER architecture
+ * (ENS + Lit + Venice + ERC-7715 DeleGator + MockGovernor/ChildGovernor). It is
+ * NOT the current Mantle production path and will not run against the live
+ * deployment:
+ *   - It calls `SpawnFactory.spawnChildWithOperator(...)` (lines ~174, ~446),
+ *     which does not exist on the deployed Mantle SpawnFactory — only
+ *     `spawnChild(string, uint256, address)` exists (see
+ *     contracts/src/SpawnFactory.sol and parent.ts).
+ *   - It uses `MockGovernorABI` / `ParentTreasuryABI` / `ChildGovernorABI`,
+ *     which are now empty stubs (`[] as const`) in abis.ts, and reads
+ *     `getActiveChildren` / `recallChild` / `setOperator`, none of which are on
+ *     the current SpawnFactory ABI.
+ *
+ * Retained for reference only. The `main()` guard below hard-exits before any
+ * transaction is sent. The live swarm lifecycle is driven by parent.ts /
+ * child.ts / swarm.ts on Mantle.
+ *
+ * ── Original (legacy) description ──
  * Spawn Protocol — Full Lifecycle Demo
  *
  * Runs the complete autonomous governance swarm lifecycle on Base Sepolia:
@@ -92,6 +112,18 @@ async function waitForProposalEnd(governor: `0x${string}`, proposalId: bigint): 
 }
 
 async function main() {
+  // LEGACY GUARD: non-functional against the live Mantle deployment (calls the
+  // non-existent spawnChildWithOperator and uses empty stub ABIs). Refuse to run
+  // unless explicitly forced, so it cannot broadcast reverting transactions.
+  if (process.env.ALLOW_LEGACY_DEMO !== "true") {
+    console.error(
+      "demo.ts is LEGACY and non-functional (targets a deprecated Base Sepolia\n" +
+      "architecture + contract functions that no longer exist on Mantle).\n" +
+      "It will not run. See the live swarm in parent.ts / child.ts / swarm.ts."
+    );
+    process.exit(1);
+  }
+
   console.log("╔════════════════════════════════════════════════════╗");
   console.log("║          SPAWN PROTOCOL — LIVE DEMO                ║");
   console.log("║    Autonomous DAO Governance Agent Swarm            ║");

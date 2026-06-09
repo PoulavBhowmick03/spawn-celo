@@ -1,8 +1,22 @@
 /**
- * Cross-chain demo — runs the swarm on Base Sepolia AND Celo Sepolia simultaneously.
- * Shows genuine multi-chain governance with diverse proposals that force real reasoning.
+ * ⚠️ LEGACY / NON-FUNCTIONAL — DO NOT RUN ⚠️
  *
- * Usage: npm run demo:crosschain
+ * Historical cross-chain demo (Base Sepolia + Celo Sepolia) for an EARLIER
+ * architecture. It is NOT the current Mantle production path and cannot run:
+ *   - It imports `celoPublicClient` / `sendTxAndWaitCelo` from chain.ts, which
+ *     no longer exist there.
+ *   - It uses `MockGovernorABI` / `ParentTreasuryABI` / `ChildGovernorABI`,
+ *     which are now empty stubs (`[] as const`) in abis.ts, and reads
+ *     `getActiveChildren`, which is not on the current SpawnFactory ABI.
+ *   (Note: unlike demo.ts/verify-live-vote.ts, this one already used the
+ *    correct `spawnChild` name — but the surrounding deployment + clients are
+ *    still deprecated, so it remains dead.)
+ *
+ * Retained for reference only. The `main()` guard below hard-exits before any
+ * transaction is sent. The live swarm runs on Mantle via parent.ts/child.ts.
+ *
+ * ── Original (legacy) usage ──
+ * npm run demo:crosschain
  */
 
 import { publicClient, account, sendTxAndWait, celoPublicClient, sendTxAndWaitCelo } from "./chain.js";
@@ -238,6 +252,18 @@ async function runChain(
 }
 
 async function main() {
+  // LEGACY GUARD: non-functional (imports clients/ABIs that no longer exist and
+  // targets deprecated Base/Celo Sepolia deployments). Refuse to run unless
+  // explicitly forced.
+  if (process.env.ALLOW_LEGACY_DEMO !== "true") {
+    console.error(
+      "demo-crosschain.ts is LEGACY and non-functional (deprecated Base/Celo\n" +
+      "Sepolia deployment; missing celo clients/ABIs). It will not run.\n" +
+      "See the live Mantle swarm in parent.ts / child.ts / swarm.ts."
+    );
+    process.exit(1);
+  }
+
   console.log("╔══════════════════════════════════════════════════╗");
   console.log("║  SPAWN PROTOCOL — CROSS-CHAIN GOVERNANCE SWARM  ║");
   console.log("║  Base Sepolia + Celo Sepolia · Venice AI · Live  ║");

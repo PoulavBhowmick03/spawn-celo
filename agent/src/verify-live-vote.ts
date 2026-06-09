@@ -1,3 +1,22 @@
+/**
+ * ⚠️ LEGACY / NON-FUNCTIONAL — DO NOT RUN ⚠️
+ *
+ * This script targets a DEPRECATED Base Sepolia deployment and a contract API
+ * that no longer exists:
+ *   - It calls `SpawnFactory.spawnChildWithOperator(...)`, which is NOT a
+ *     function on the deployed Mantle SpawnFactory (only `spawnChild(string
+ *     lineageKey, uint256 generation, address childWallet)` exists — see
+ *     contracts/src/SpawnFactory.sol and the correct call in parent.ts).
+ *   - It relies on `MockGovernorABI` / `ChildGovernorABI`, which are now empty
+ *     stubs (`[] as const`) in abis.ts, and a `ChildSpawned` event shape
+ *     (childId/childAddr) that does not match the real event
+ *     (child/agentId/lineageKey).
+ *
+ * Running it against the live Mantle deployment would revert. It is retained
+ * only for historical reference. The `main()` guard below hard-exits before any
+ * transaction can be broadcast. The current vote-forwarding path lives in the
+ * production runtime (parent.ts / child.ts), not here.
+ */
 import { createPublicClient, createWalletClient, http, parseEventLogs } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { mantle, publicClient, account, walletClient, sendTxAndWait } from "./chain.js";
@@ -67,6 +86,19 @@ async function fundChildIfNeeded(childAddress: `0x${string}`, minimumWei = 5_000
 }
 
 async function main() {
+  // LEGACY GUARD: this script is non-functional against the live Mantle
+  // deployment (calls the non-existent spawnChildWithOperator and uses empty
+  // stub ABIs). Refuse to run unless explicitly forced, so it can never
+  // accidentally broadcast a reverting transaction.
+  if (process.env.ALLOW_LEGACY_VERIFY !== "true") {
+    console.error(
+      "verify-live-vote.ts is LEGACY and non-functional (targets a deprecated\n" +
+      "Base Sepolia deployment + a contract function that no longer exists).\n" +
+      "It will not run. See the production vote path in parent.ts / child.ts."
+    );
+    process.exit(1);
+  }
+
   const verificationClient = createPublicClient({
     chain: mantle,
     transport: http(process.env.MANTLE_RPC || "https://rpc.mantle.xyz"),
