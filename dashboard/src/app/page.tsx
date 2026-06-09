@@ -2,13 +2,17 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import { API_BASE } from "@/lib/mantle";
+import { API_BASE, mantlePublicClient } from "@/lib/mantle";
 
 type LandingStats = {
   totalGenerations: number;
   totalRecalled: number;
   latestYield: number;
   improvement: number;
+  // Per-generation yields (real, in generation order) used to drive the chart bars.
+  genYields: number[];
+  // Real Aave benchmark yield (latest gen) — drives the benchmark marker position.
+  benchmarkYield: number | null;
 };
 
 async function fetchLandingStats(): Promise<LandingStats | null> {
@@ -18,16 +22,20 @@ async function fetchLandingStats(): Promise<LandingStats | null> {
     });
     if (!res.ok) return null;
     const body = await res.json();
-    const gens: { avgYieldPct: number; agentsTerminated: number }[] = body.generations ?? [];
+    const gens: { avgYieldPct: number; agentsTerminated: number; benchmarkYieldPct?: number }[] =
+      body.generations ?? [];
     if (gens.length === 0) return null;
     const first = gens[0];
     const last = gens[gens.length - 1];
     const totalRecalled = gens.reduce((a, g) => a + g.agentsTerminated, 0);
+    const bench = last.benchmarkYieldPct;
     return {
       totalGenerations: gens.length,
       totalRecalled,
       latestYield: last.avgYieldPct,
       improvement: last.avgYieldPct - first.avgYieldPct,
+      genYields: gens.map((g) => g.avgYieldPct),
+      benchmarkYield: typeof bench === "number" ? bench : null,
     };
   } catch {
     return null;
@@ -66,7 +74,7 @@ function CopyBtn({ address }: { address: string }) {
 }
 
 export default function LandingPage() {
-  const [block, setBlock] = useState(76_418_902);
+  const [block, setBlock] = useState<bigint | null>(null);
   const [stats, setStats] = useState<LandingStats | null>(null);
   const animatedRef = useRef(false);
 
@@ -86,10 +94,23 @@ export default function LandingPage() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  // live block counter
+  // live block height — real Mantle chain head via viem, polled (no fake increment)
   useEffect(() => {
-    const id = setInterval(() => setBlock((b) => b + 1), 2400);
-    return () => clearInterval(id);
+    let cancelled = false;
+    const poll = async () => {
+      try {
+        const n = await mantlePublicClient.getBlockNumber();
+        if (!cancelled) setBlock(n);
+      } catch {
+        if (!cancelled) setBlock(null);
+      }
+    };
+    void poll();
+    const id = setInterval(poll, 5000);
+    return () => {
+      cancelled = true;
+      clearInterval(id);
+    };
   }, []);
 
   // hero counter animation — runs only when stats resolve
@@ -120,27 +141,37 @@ export default function LandingPage() {
     requestAnimationFrame(step);
   }, [stats]);
 
-  // scroll-driven reveals: benchmark, chart, titles, loop, novel grid
+  // benchmark marker + chart bar widths — recomputed from REAL data whenever stats resolve.
   useEffect(() => {
-    // benchmark line — position driven by CSS `data-bench-pct` on nearest `.track`, falling back to mid-range
+    // Benchmark line position: derived from the real Aave benchmark yield on the same
+    // ÷11 scale as the bars. If there is no real benchmark, hide the marker entirely
+    // rather than render a decorative hardcoded position.
     document.querySelectorAll<HTMLElement>(".bench").forEach((b) => {
-      const track = b.closest(".track") as HTMLElement | null;
-      const pct = track?.dataset.benchPct ?? "68";
-      b.style.left = pct + "%";
+      if (stats && stats.benchmarkYield !== null) {
+        const pct = (Math.min(stats.benchmarkYield, 11) / 11) * 100;
+        b.style.left = pct + "%";
+        b.style.display = "";
+      } else {
+        b.style.display = "none";
+      }
     });
 
-    // chart bars reveal
+    // chart bars reveal — widths from real per-gen yields
     const chart = document.getElementById("gen-chart");
     if (chart) {
+      const reveal = () => {
+        chart.querySelectorAll<HTMLElement>(".bar").forEach((bar, i) => {
+          const y = parseFloat(bar.dataset.yield ?? "0");
+          const w = (y / 11) * 100;
+          setTimeout(() => { bar.style.width = w + "%"; }, i * 150);
+        });
+        setTimeout(() => chart.classList.add("bars-revealed"), 1000);
+      };
       const obs = new IntersectionObserver(
         (entries) => {
           entries.forEach((en) => {
             if (en.isIntersecting) {
-              chart.querySelectorAll<HTMLElement>(".bar").forEach((bar, i) => {
-                const w = (parseFloat(bar.dataset.yield!) / 11) * 100;
-                setTimeout(() => { bar.style.width = w + "%"; }, i * 150);
-              });
-              setTimeout(() => chart.classList.add("bars-revealed"), 1000);
+              reveal();
               obs.unobserve(chart);
             }
           });
@@ -149,7 +180,10 @@ export default function LandingPage() {
       );
       obs.observe(chart);
     }
+  }, [stats]);
 
+  // scroll-driven reveals: titles, loop, novel grid
+  useEffect(() => {
     // section title reveal
     const titleObs = new IntersectionObserver(
       (entries) => {
@@ -208,7 +242,7 @@ export default function LandingPage() {
           <div className="nav-right">
             <span className="block-counter">
               <span className="lab">Block</span>
-              <span className="v">{block.toLocaleString()}</span>
+              <span className="v">{block !== null ? block.toLocaleString() : "—"}</span>
             </span>
             <span className="chain-pill">
               <span className="dot" />
@@ -348,38 +382,52 @@ export default function LandingPage() {
           <div className="evidence-grid">
             <div>
               <div className="gen-chart" id="gen-chart">
-                <div className="gen-row">
-                  <div className="gen-label">GEN 0<span className="sub">spawned</span></div>
-                  <div className="track" data-bench-pct="57">
-                    <div className="bench"><span className="lbl">BENCHMARK (Aave APY)</span></div>
-                    <div className="bar" data-tone="red" data-yield="6.31"><span className="bar-end">Gen 0</span></div>
-                  </div>
-                  <div className="gen-tail"><span className="pill" data-tone="terminated"><span className="dot" />Terminated</span></div>
-                </div>
-                <div className="gen-row">
-                  <div className="gen-label">GEN 1<span className="sub">spawned</span></div>
-                  <div className="track" data-bench-pct="57">
-                    <div className="bench" />
-                    <div className="bar" data-tone="amber" data-yield="7.12"><span className="bar-end">Gen 1</span></div>
-                  </div>
-                  <div className="gen-tail"><span className="pill" data-tone="terminated"><span className="dot" />Terminated</span></div>
-                </div>
-                <div className="gen-row">
-                  <div className="gen-label">GEN {stats ? stats.totalGenerations : "N"}<span className="sub">latest</span></div>
-                  <div className="track" data-bench-pct="57">
-                    <div className="bench" />
-                    <div
-                      className="bar"
-                      data-tone="green"
-                      data-yield={stats ? String(Math.min(stats.latestYield, 11)) : "7.5"}
-                    >
-                      <span className="bar-end">
-                        {stats ? stats.latestYield.toFixed(2) + "%" : "Live →"}
-                      </span>
+                {stats ? (
+                  stats.genYields.map((y, i) => {
+                    const isLatest = i === stats.genYields.length - 1;
+                    const tone = isLatest ? "green" : i === 0 ? "red" : "amber";
+                    return (
+                      <div className="gen-row" key={i}>
+                        <div className="gen-label">
+                          GEN {i}
+                          <span className="sub">{isLatest ? "latest" : "spawned"}</span>
+                        </div>
+                        <div className="track">
+                          {i === 0 ? (
+                            <div className="bench"><span className="lbl">BENCHMARK (Aave APY)</span></div>
+                          ) : (
+                            <div className="bench" />
+                          )}
+                          <div
+                            className="bar"
+                            data-tone={tone}
+                            data-yield={String(Math.min(y, 11))}
+                          >
+                            <span className="bar-end">
+                              {isLatest ? y.toFixed(2) + "%" : `Gen ${i}`}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="gen-tail">
+                          <span className="pill" data-tone={isLatest ? "active" : "terminated"}>
+                            <span className="dot" />
+                            {isLatest ? "Active" : "Terminated"}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })
+                ) : (
+                  <div className="gen-row">
+                    <div className="gen-label">GEN —<span className="sub">awaiting data</span></div>
+                    <div className="track">
+                      <div className="bench"><span className="lbl">BENCHMARK (Aave APY)</span></div>
+                    </div>
+                    <div className="gen-tail">
+                      <span className="pill" data-tone="terminated"><span className="dot" />No live data</span>
                     </div>
                   </div>
-                  <div className="gen-tail"><span className="pill" data-tone="active"><span className="dot" />Active</span></div>
-                </div>
+                )}
                 <div className="callout">
                   <p className="h">
                     {stats

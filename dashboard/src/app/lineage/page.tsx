@@ -6,7 +6,7 @@ import { useGenerationStats } from "@/hooks/useSwarmData";
 import { formatPct } from "@/lib/mantle";
 
 export default function LineagePage() {
-  const { generations, loading, error, isMockData } = useGenerationStats();
+  const { generations, loading, error, unavailable } = useGenerationStats();
   const first = generations[0];
   const latest = generations[generations.length - 1];
 
@@ -25,14 +25,17 @@ export default function LineagePage() {
         </p>
       </section>
 
-      {isMockData && (
-        <div className="bg-amber-900/30 border border-amber-600/50 text-amber-300 px-4 py-2 text-xs rounded font-mono flex items-center gap-2">
-          <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse inline-block" />
-          Demo data — live swarm not connected. Deploy agent backend and set NEXT_PUBLIC_API_URL to connect.
+      {unavailable ? (
+        <div className="rounded-[20px] border border-rose-400/40 bg-rose-500/15 px-4 py-4 text-sm text-rose-100 flex items-start gap-2 font-mono">
+          <span className="mt-1 w-1.5 h-1.5 rounded-full bg-rose-400 inline-block" />
+          <span>
+            <strong className="uppercase tracking-[0.18em] text-rose-300">Control server unavailable</strong>
+            <br />
+            No live generation data. Showing no metrics rather than fabricated numbers
+            {error ? ` (${error})` : ""}.
+          </span>
         </div>
-      )}
-
-      {error && !isMockData ? (
+      ) : error ? (
         <div className="rounded-[28px] border border-rose-200/15 bg-rose-500/10 p-6 text-sm text-rose-100">
           Failed to load generation data: {error}
         </div>

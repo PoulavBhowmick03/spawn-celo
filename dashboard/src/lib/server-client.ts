@@ -1,14 +1,24 @@
-import { createPublicClient, http, fallback } from "viem";
-import { baseSepolia } from "viem/chains";
+import { createPublicClient, defineChain, http, fallback } from "viem";
 
-// Server-side viem client — shared across all API routes
+// Mantle mainnet (chain 5000) — the live chain the whole UI targets.
+const MANTLE_RPC_URLS = [
+  process.env.MANTLE_RPC_URL || process.env.NEXT_PUBLIC_MANTLE_RPC_URL || "https://rpc.mantle.xyz",
+  "https://mantle-rpc.publicnode.com",
+  "https://mantle.drpc.org",
+];
+
+const mantle = defineChain({
+  id: 5000,
+  name: "Mantle",
+  nativeCurrency: { name: "MNT", symbol: "MNT", decimals: 18 },
+  rpcUrls: { default: { http: MANTLE_RPC_URLS } },
+  blockExplorers: { default: { name: "Mantlescan", url: "https://mantlescan.xyz" } },
+});
+
+// Server-side viem client — shared across API routes. Mantle (chain 5000), NOT Base Sepolia.
 export const serverClient = createPublicClient({
-  chain: baseSepolia,
-  transport: fallback([
-    http("https://base-sepolia-rpc.publicnode.com"),
-    http("https://sepolia.base.org"),
-    http("https://base-sepolia.drpc.org"),
-  ]),
+  chain: mantle,
+  transport: fallback(MANTLE_RPC_URLS.map((url) => http(url))),
   ccipRead: false,
   batch: { multicall: true },
 });

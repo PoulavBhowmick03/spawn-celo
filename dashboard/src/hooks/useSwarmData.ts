@@ -3,7 +3,6 @@
 import { useEffect, useRef, useState } from "react";
 import type { ChildState, GenerationStat, SwarmEvent } from "@/types";
 import { API_BASE } from "@/lib/mantle";
-import { MOCK_AGENTS, MOCK_EVENTS, MOCK_GENERATIONS } from "@/lib/mockData";
 
 // ─── API response shapes (control-server wire format) ───────────────────────
 
@@ -109,13 +108,17 @@ type QueryState<T> = {
   data: T;
   loading: boolean;
   error: string | null;
-  isMockData: boolean;
+  // True once the control-server has failed repeatedly and we have NO live data.
+  // The dashboard renders an explicit "control server unavailable" state — it never
+  // substitutes fabricated data. (See AUDIT.md Phase 3.)
+  unavailable: boolean;
 };
+
+const FAIL_THRESHOLD = 2;
 
 function usePolledResource<TRaw, TOut>(
   path: string,
   initial: TOut,
-  mockFallback: TOut,
   intervalMs: number,
   transform: (raw: TRaw) => TOut
 ): QueryState<TOut> {
@@ -123,7 +126,7 @@ function usePolledResource<TRaw, TOut>(
     data: initial,
     loading: true,
     error: null,
-    isMockData: false,
+    unavailable: false,
   });
 
   const failCount = useRef(0);
@@ -137,25 +140,17 @@ function usePolledResource<TRaw, TOut>(
         const raw = await fetchJSON<TRaw>(path);
         if (!cancelled) {
           failCount.current = 0;
-          setState({ data: transform(raw), loading: false, error: null, isMockData: false });
+          setState({ data: transform(raw), loading: false, error: null, unavailable: false });
         }
       } catch (error: any) {
         if (!cancelled) {
           failCount.current++;
-          if (failCount.current >= 2) {
-            setState({
-              data: mockFallback,
-              loading: false,
-              error: error?.message ?? "Request failed",
-              isMockData: true,
-            });
-          } else {
-            setState((prev) => ({
-              ...prev,
-              loading: false,
-              error: error?.message ?? "Request failed",
-            }));
-          }
+          setState({
+            data: initial,
+            loading: false,
+            error: error?.message ?? "Request failed",
+            unavailable: failCount.current >= FAIL_THRESHOLD,
+          });
         }
       }
     };
@@ -186,20 +181,10 @@ type SwarmState = {
   lastEvaluation: number;
 };
 
-const MOCK_SWARM_STATE: SwarmState = {
-  agents: MOCK_AGENTS,
-  swarmStartTime: 0,
-  cycleCount: 0,
-  uptime: 0,
-  isLive: false,
-  lastEvaluation: 0,
-};
-
 export function useSwarmData() {
   const state = usePolledResource<ApiStateResponse, SwarmState>(
     "/api/state",
     { agents: [], swarmStartTime: 0, cycleCount: 0, uptime: 0, isLive: false, lastEvaluation: 0 },
-    MOCK_SWARM_STATE,
     15_000,
     (raw) => ({
       agents: raw.agents ?? [],
@@ -219,8 +204,7 @@ export function useSwarmData() {
     lastEvaluation: state.data.lastEvaluation,
     loading: state.loading,
     error: state.error,
-    isMockData: state.isMockData,
-    usingMockData: state.isMockData,
+    unavailable: state.unavailable,
   };
 }
 
@@ -228,7 +212,6 @@ export function useSwarmEvents() {
   const state = usePolledResource<ApiEventsResponse, SwarmEvent[]>(
     "/api/events",
     [],
-    MOCK_EVENTS,
     15_000,
     (raw) => (raw.events ?? []).map(normalizeEvent)
   );
@@ -236,8 +219,7 @@ export function useSwarmEvents() {
     events: state.data,
     loading: state.loading,
     error: state.error,
-    isMockData: state.isMockData,
-    usingMockData: state.isMockData,
+    unavailable: state.unavailable,
   };
 }
 
@@ -245,7 +227,6 @@ export function useGenerationStats() {
   const state = usePolledResource<ApiGenerationsResponse, GenerationStat[]>(
     "/api/generations",
     [],
-    MOCK_GENERATIONS,
     30_000,
     (raw) => (raw.generations ?? []).map(normalizeGeneration)
   );
@@ -253,8 +234,7 @@ export function useGenerationStats() {
     generations: state.data,
     loading: state.loading,
     error: state.error,
-    isMockData: state.isMockData,
-    usingMockData: state.isMockData,
+    unavailable: state.unavailable,
   };
 }
 

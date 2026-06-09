@@ -88,7 +88,7 @@ export default function SpawnDashboard() {
   const [eventFilter, setEventFilter] = useState<FilterId>("ALL");
   const [chartKey, setChartKey]       = useState(0);
 
-  const { children, isMockData, swarmStartTime, cycleCount } = useSwarmData();
+  const { children, unavailable, swarmStartTime, cycleCount } = useSwarmData();
   const { events }                  = useSwarmEvents();
   const { generations }             = useGenerationStats();
 
@@ -170,10 +170,10 @@ export default function SpawnDashboard() {
       {/* ──────────────────────────────── TAB 1: OVERVIEW */}
       {activeTab === "overview" && (
         <div key="overview" className="tab-view">
-          {isMockData && (
-            <div className="bg-amber-900/30 border border-amber-600/50 text-amber-300 px-4 py-2 text-xs rounded mb-4 font-mono flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse inline-block" />
-              Demo data — live swarm not connected. Deploy agent backend and set NEXT_PUBLIC_API_URL to connect.
+          {unavailable && (
+            <div className="bg-rose-900/40 border border-rose-500/60 text-rose-200 px-4 py-3 text-xs rounded mb-4 font-mono flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-rose-400 animate-pulse inline-block" />
+              CONTROL SERVER UNAVAILABLE — no live swarm data. Showing empty state (no fabricated agents). Deploy the agent backend and set NEXT_PUBLIC_API_URL to connect.
             </div>
           )}
 

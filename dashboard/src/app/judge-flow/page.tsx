@@ -9,7 +9,7 @@ import { useMemo, useState } from "react";
 const EVENT_TYPES = ["ALL", "SPAWN", "YIELD_REPORT", "TERMINATION", "RESPAWN"] as const;
 
 export default function JudgeFlowPage() {
-  const { events, loading, error, usingMockData } = useSwarmEvents();
+  const { events, loading, error, unavailable } = useSwarmEvents();
 
   const [typeFilter, setTypeFilter] = useState<string>("ALL");
   const [lineageFilter, setLineageFilter] = useState<string>("ALL");
@@ -41,13 +41,17 @@ export default function JudgeFlowPage() {
         </p>
       </section>
 
-      {usingMockData ? (
-        <div className="rounded-2xl border border-amber-300/25 bg-amber-400/10 px-5 py-3 text-sm text-amber-100">
-          Showing demo data — live swarm not connected.
+      {unavailable ? (
+        <div className="rounded-2xl border border-rose-400/40 bg-rose-500/15 px-5 py-4 text-sm text-rose-100">
+          <span className="font-mono uppercase tracking-[0.18em] text-rose-300">
+            Control server unavailable
+          </span>
+          <p className="mt-1 text-rose-100/80">
+            No live event stream. This view shows no data rather than fabricated events
+            {error ? ` (${error})` : ""}.
+          </p>
         </div>
-      ) : null}
-
-      {error && !usingMockData ? (
+      ) : error ? (
         <div className="rounded-[28px] border border-rose-200/15 bg-rose-500/10 p-6 text-sm text-rose-100">
           Failed to load swarm events: {error}
         </div>

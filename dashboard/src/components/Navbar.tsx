@@ -1,10 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { mantlePublicClient } from "@/lib/mantle";
 
 export function Navbar() {
   const [clock, setClock] = useState("--:--:-- UTC");
-  const [block, setBlock] = useState(76_418_902);
+  // Real Mantle chain head (null until first successful read / on RPC failure).
+  const [block, setBlock] = useState<bigint | null>(null);
 
   useEffect(() => {
     const tickClock = () => {
@@ -16,8 +18,21 @@ export function Navbar() {
     };
     tickClock();
     const clockId = setInterval(tickClock, 1000);
-    const blockId = setInterval(() => setBlock((b) => b + 1), 2400);
+
+    let cancelled = false;
+    const pollBlock = async () => {
+      try {
+        const n = await mantlePublicClient.getBlockNumber();
+        if (!cancelled) setBlock(n);
+      } catch {
+        if (!cancelled) setBlock(null);
+      }
+    };
+    void pollBlock();
+    const blockId = setInterval(pollBlock, 5000);
+
     return () => {
+      cancelled = true;
       clearInterval(clockId);
       clearInterval(blockId);
     };
@@ -39,7 +54,7 @@ export function Navbar() {
             LIVE
           </span>
           <span>
-            BLOCK <span className="v">{block.toLocaleString()}</span>
+            BLOCK <span className="v">{block !== null ? block.toLocaleString() : "—"}</span>
           </span>
           <span className="v">{clock}</span>
         </div>
