@@ -19,6 +19,12 @@
 - **Verified by**: full-lifecycle anvil fork test (`npm run test:fork:celo`): fund → Aave supply → Mento FX swap → cull-unwind; assertions confirm Aave emptied, USDT swept, cUSD swept, treasury recovered the full seed minus spread. Typecheck clean. Mento adapter additionally proven by 10 live mainnet swaps (Phase 1 treasury conversion).
 - **Next**: awaiting developer go for the $2 Aave mainnet supply/withdraw smoke (last Phase 1-2 gated tx), then Phase 3.
 
+### Phase 2 mainnet smoke — PASSED (2026-06-10, developer-approved)
+
+- **Done**: $2 cUSD supplied to Aave v3 Celo (tx `0xe62b969a…942c`), aToken position verified (2.0000000+ aUSDm, interest accruing), withdrawn in full (tx `0xbb378215…8add`), gas in cUSD throughout. Treasury ended at 48.9517 cUSD — up on the day after gas, thanks to interest.
+- **Gotcha hit and fixed**: forno's load balancer served stale reads right after writes (§8 warning confirmed in practice). Smoke script now retries position reads with backoff + jitter and is idempotent (skips the supply leg if the position already exists). Swarm code must never trust an immediate post-write read from forno.
+- **Phase 2 complete.** Next: Phase 3 — agent cards + ERC-8004 registration (orchestrator + 9 agents) against the canonical Celo registries.
+
 ## Phase 0 — Inventory of the existing Spawn codebase (2026-06-10)
 
 Status: **map complete, awaiting developer confirmation before any code is written.**
