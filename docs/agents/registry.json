@@ -1,0 +1,52 @@
+{
+  "orchestrator": {
+    "agentId": "9240",
+    "address": "0xC0296012Cfbb0e6DF5dA7158B65Dbc46DD9650e0",
+    "txHash": "0x9486ee0136f13d0005558744a3af8ef3318dceb142fe5e05afc496ca08533621"
+  },
+  "mfx-cautious": {
+    "agentId": "9241",
+    "address": "0xe689D26Da43B7a8f15e2Dd59656e34652E42c945",
+    "txHash": "0x50c03c181d63060b9de9ca69e8a383cc60da683a3d061a6c5bf8c6294521debd"
+  },
+  "mfx-balanced": {
+    "agentId": "9242",
+    "address": "0xf115955AD3D56c66d75B421594C90c7d05fa7190",
+    "txHash": "0x03f4b3d933e8b754f4057fdb636e6a93aea308f4282f14a49f5742d06d8797c5"
+  },
+  "mfx-aggressive": {
+    "agentId": "9243",
+    "address": "0xE2dFAB41500E06A3b21d73e6084476921206e932",
+    "txHash": "0x522dfc7ab9f266da08b5abc77e57b9459537867e3695168fc9f05b3543a879d8"
+  },
+  "ay-anchor": {
+    "agentId": "9244",
+    "address": "0xdecF835537234aDcCc42B0FDC5f8063381F574f2",
+    "txHash": "0xfae292fbb69c46f473af91fcc5390113f56dcb696a488224d52aa635155f1157"
+  },
+  "ay-balanced": {
+    "agentId": "9245",
+    "address": "0x94f27831d9d3Cdd39AAB530496955896398403d4",
+    "txHash": "0xbceb2857ec99c3793ad876de1f8dbacd95f2c93b5cf5224b7671cc6700f28c10"
+  },
+  "ay-chaser": {
+    "agentId": "9246",
+    "address": "0xde9e6081fD967F2F78eD4534270Ff39Ec7E9727b",
+    "txHash": "0xdb0c92d2b98b94dba9599989a98d21aad754c658ed5848756957e6a8819bc771"
+  },
+  "hc-light": {
+    "agentId": "9247",
+    "address": "0xd5961F5f34cbe126154c911dBDdC10cbfe860191",
+    "txHash": "0x62af04438a7217647979010d7a89f21d40a34b1abc47aae30a7104d41ef37cb5"
+  },
+  "hc-mid": {
+    "agentId": "9248",
+    "address": "0x048924962ff139026F3C22Cc3c3F93c619858eFB",
+    "txHash": "0x6a94e346c288fc9bbfec2bbda639d0286f6e0fc27070cac40f12dfaa8f5b7658"
+  },
+  "hc-heavy": {
+    "agentId": "9249",
+    "address": "0x7522092e8bA35eE317B26990bFa8b2632A8e3fD0",
+    "txHash": "0x27dc7054bcc684423d59ea53c2c643983d4d8500e9ac68bea158d6ff73888644"
+  }
+}

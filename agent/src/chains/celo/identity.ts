@@ -107,21 +107,34 @@ export async function registerIdentity(
   return { agentId, txHash };
 }
 
-/** Read back owner + URI to verify a registration onchain (8004scan may lag). */
+/** Read back owner + URI to verify a registration onchain. Retries with
+ *  backoff+jitter: forno's load balancer can serve a node that hasn't seen
+ *  the mint yet (ownerOf reverts on a "nonexistent" token). */
 export async function verifyIdentity(agentId: bigint): Promise<{ owner: Address; uri: string }> {
-  const [owner, uri] = await Promise.all([
-    celoPublicClient.readContract({
-      address: ERC8004.IDENTITY_REGISTRY,
-      abi: IDENTITY_REGISTRY_ABI,
-      functionName: "ownerOf",
-      args: [agentId],
-    }),
-    celoPublicClient.readContract({
-      address: ERC8004.IDENTITY_REGISTRY,
-      abi: IDENTITY_REGISTRY_ABI,
-      functionName: "tokenURI",
-      args: [agentId],
-    }),
-  ]);
-  return { owner, uri };
+  let lastErr: unknown;
+  for (let attempt = 1; attempt <= 6; attempt++) {
+    try {
+      const [owner, uri] = await Promise.all([
+        celoPublicClient.readContract({
+          address: ERC8004.IDENTITY_REGISTRY,
+          abi: IDENTITY_REGISTRY_ABI,
+          functionName: "ownerOf",
+          args: [agentId],
+        }),
+        celoPublicClient.readContract({
+          address: ERC8004.IDENTITY_REGISTRY,
+          abi: IDENTITY_REGISTRY_ABI,
+          functionName: "tokenURI",
+          args: [agentId],
+        }),
+      ]);
+      return { owner, uri };
+    } catch (e) {
+      lastErr = e;
+      const delay = 2000 * attempt + Math.floor(Math.random() * 500);
+      console.log(`  verify #${agentId} attempt ${attempt} failed (lagging RPC node?), retrying in ${delay}ms`);
+      await new Promise((r) => setTimeout(r, delay));
+    }
+  }
+  throw lastErr;
 }
