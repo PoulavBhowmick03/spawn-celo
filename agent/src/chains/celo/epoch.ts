@@ -165,6 +165,42 @@ async function usdmBalance(addr: Address): Promise<bigint> {
   });
 }
 
+/** Retired wallets can retain residuals when a sweep leg failed (e.g. fee
+ *  balance too small at cull time). Re-run their unwind each cycle until the
+ *  treasury has everything back. */
+export async function sweepRetiredResiduals(state: SwarmState): Promise<void> {
+  const orch = orchestratorAccount();
+  for (const agent of state.agents) {
+    if (agent.status !== "RETIRED") continue;
+    try {
+      const totals: bigint[] = await Promise.all([
+        usdmBalance(agent.address),
+        celoPublicClient.readContract({ address: TOKENS.USDC, abi: erc20Abi, functionName: "balanceOf", args: [agent.address] }),
+        celoPublicClient.readContract({ address: TOKENS.USDT, abi: erc20Abi, functionName: "balanceOf", args: [agent.address] }),
+        celoPublicClient.readContract({ address: TOKENS.EURm, abi: erc20Abi, functionName: "balanceOf", args: [agent.address] }),
+        celoPublicClient.readContract({ address: TOKENS.BRLm, abi: erc20Abi, functionName: "balanceOf", args: [agent.address] }),
+      ]);
+      const roughUsd =
+        Number(formatUnits(totals[0], 18)) +
+        Number(formatUnits(totals[1], 6)) +
+        Number(formatUnits(totals[2], 6)) +
+        Number(formatUnits(totals[3], 18)) * 1.2 +
+        Number(formatUnits(totals[4], 18)) * 0.2;
+      if (roughUsd < 0.1) continue;
+      console.log(`  residual sweep: ${agent.slug} retains ~$${roughUsd.toFixed(2)} — re-running unwind`);
+      await unwindAgentToTreasury(
+        deriveAccount(agent.hdIndex),
+        agent.slug,
+        orch.address,
+        `residual sweep after retirement (prior sweep leg deferred)`,
+        !process.env.CELO_NATIVE_GAS,
+      );
+    } catch (e) {
+      console.warn(`  residual sweep ${agent.slug} failed (${(e as Error).message?.slice(0, 100)}) — will retry next cycle`);
+    }
+  }
+}
+
 /** Enqueue a replacement spawn (persisted; completed/retried by processPendingSpawns). */
 function enqueueSpawn(state: SwarmState, parent: SwarmAgentState, fundUsd: number): void {
   const hdIndex = state.nextHdIndex++;
@@ -196,8 +232,12 @@ async function completeSpawn(
   const account = deriveAccount(pending.hdIndex);
   const spec = pending as unknown as AgentSpec;
 
-  // 1. funding before registration — registration gas comes out of this
+  // 1. funding before registration — registration gas comes out of this.
+  // Funding comes from the LIVE treasury balance (residual sweeps may have
+  // replenished it since the spawn was enqueued), capped per agent.
   if ((await usdmBalance(account.address)) < parseUnits("0.05", 18)) {
+    const treasuryBal = Number(formatUnits(await usdmBalance(orchestratorAccount().address), 18));
+    pending.fundUsd = Math.min(MAX_AGENT_BALANCE_USD, Math.max(pending.fundUsd, treasuryBal - 0.3));
     if (pending.fundUsd < 0.5) throw new Error(`spawn pool too small ($${pending.fundUsd.toFixed(2)}) for ${pending.slug}`);
     assertTxAllowed(pending.fundUsd, `fund spawned agent ${pending.slug}`);
     const orchWallet = celoWalletClient(orchestratorAccount());
@@ -494,6 +534,7 @@ export async function runEpochCycle(): Promise<void> {
   const state = loadState();
   if (!state) throw new Error("no swarm state — run swarm-start first");
 
+  await sweepRetiredResiduals(state);
   const ctx = await snapshotMarket(state.prevFxUsdPrice ? { fxUsdPrice: state.prevFxUsdPrice } : undefined);
   const report = await settleEpoch(state, ctx);
   if (report) {

@@ -21,7 +21,7 @@ import { deriveAccount, orchestratorAccount } from "./wallets.js";
 import { SWARM_AGENTS } from "./agents-config.js";
 import { loadRegistry } from "./generate-cards.js";
 import { loadState, saveState, statePath, type SwarmState } from "./swarm-state.js";
-import { runEpochCycle, publishDocs, spawnChildOnchain, processPendingSpawns } from "./epoch.js";
+import { runEpochCycle, publishDocs, spawnChildOnchain, processPendingSpawns, sweepRetiredResiduals } from "./epoch.js";
 import { unwindAgentToTreasury } from "./unwind.js";
 import { MAX_AGENT_BALANCE_USD, assertTxAllowed, killSwitchEngaged } from "./budget.js";
 import { logActivity } from "./activity-log.js";
@@ -179,6 +179,8 @@ async function main() {
   await fundAgents(state);
   console.log("ensuring onchain ChildAgent provenance…");
   await ensureChildContracts(state);
+  console.log("sweeping retired-wallet residuals…");
+  await sweepRetiredResiduals(state);
   if ((state.pendingSpawns?.length ?? 0) > 0) {
     console.log(`retrying ${state.pendingSpawns!.length} pending spawn(s)…`);
     await processPendingSpawns(state);

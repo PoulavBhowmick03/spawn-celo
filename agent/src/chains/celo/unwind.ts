@@ -16,7 +16,7 @@
  * logged with rationales.
  */
 
-import { erc20Abi, formatUnits, type Address, type Hex } from "viem";
+import { erc20Abi, formatUnits, parseUnits, type Address, type Hex } from "viem";
 import type { HDAccount } from "viem/accounts";
 import { FEE_CURRENCIES, TOKENS, TOKEN_DECIMALS, explorerTx } from "./addresses.js";
 import { celoPublicClient, celoWalletClient } from "./chain.js";
@@ -101,6 +101,27 @@ export async function unwindAgentToTreasury(
     let bal = await balanceOf(address, account.address);
     if (bal <= DUST[decimals]) continue;
 
+    // fee currency: cUSD when the wallet holds enough to pay gas; otherwise
+    // the swept token itself (its adapter for USDC/USDT), with a headroom
+    // deduction so the CIP-64 fee debit doesn't break the full-balance swap
+    let sweepFee: Address | undefined;
+    if (liveFeeCurrency) {
+      const usdmGasBal = await balanceOf(TOKENS.USDm, account.address);
+      if (usdmGasBal >= parseUnits("0.1", 18)) {
+        sweepFee = FEE_CURRENCIES.USDm;
+      } else {
+        sweepFee =
+          symbol === "USDC"
+            ? FEE_CURRENCIES.USDC_ADAPTER
+            : symbol === "USDT"
+              ? FEE_CURRENCIES.USDT_ADAPTER
+              : address;
+        const headroom = decimals === 6 ? 60_000n : 60_000_000_000_000_000n; // ~$0.06
+        if (bal <= headroom) continue;
+        bal -= headroom;
+      }
+    }
+
     const fullQuote = await quoteSwap(address, TOKENS.USDm, bal);
     const fullUsd = Number(formatUnits(fullQuote, 18));
     const chunks = Math.max(1, Math.ceil(fullUsd / MAX_TX_USD));
@@ -118,9 +139,7 @@ export async function unwindAgentToTreasury(
         tokenInDecimals: decimals,
         tokenOutDecimals: 18,
         usdValue: fullUsd / chunks,
-        // gas in cUSD, NEVER the token being swept: CIP-64 debits the fee
-        // from the fee-currency balance, which breaks full-balance transfers
-        feeCurrency: liveFeeCurrency ? FEE_CURRENCIES.USDm : undefined,
+        feeCurrency: sweepFee,
         rationale: `Unwind (${reason}): convert ${formatUnits(amountIn, decimals)} ${symbol} to cUSD before returning funds to the treasury${chunks > 1 ? ` (chunk ${i + 1}/${chunks} under the $${MAX_TX_USD} per-tx cap)` : ""}.`,
       });
       txHashes.push(res.swapTxHash);
