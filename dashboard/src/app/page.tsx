@@ -14,6 +14,7 @@ import {
   type SwarmAgent,
 } from "@/lib/celo-data";
 import { CeloAutoRefresh } from "@/components/CeloAutoRefresh";
+import { LocalTime } from "@/components/LocalTime";
 
 export const revalidate = 60;
 
@@ -76,12 +77,15 @@ export default async function Home() {
             ["retired", String(retired.length)],
             ["deployed", `$${deployed.toFixed(2)}`],
             ["max generation", `g${maxGen}`],
-            ["last settle", lastReport ? new Date(lastReport.settledAt).toUTCString().slice(5, 22) : "epoch 1 open"],
           ].map(([k, v]) => (
             <span key={k} className="rounded border border-zinc-500/30 px-2 py-1">
               <span className="opacity-60">{k}</span> <strong>{v}</strong>
             </span>
           ))}
+          <span className="rounded border border-zinc-500/30 px-2 py-1">
+            <span className="opacity-60">last settle</span>{" "}
+            <strong>{lastReport ? <LocalTime iso={lastReport.settledAt} /> : "epoch 1 open"}</strong>
+          </span>
         </div>
         <div className="flex flex-wrap gap-3 text-sm">
           <a href={`${SCAN_8004}/agents?search=spawn`} target="_blank" rel="noreferrer">
@@ -175,7 +179,7 @@ export default async function Home() {
               <div className="flex flex-wrap gap-3 items-baseline">
                 <strong>epoch {r.epoch}</strong>
                 <span className="opacity-60">
-                  settled {new Date(r.settledAt).toUTCString().slice(5, 25)} · median fitness{" "}
+                  settled <LocalTime iso={r.settledAt} /> · median fitness{" "}
                   {r.swarmMedianFitness.toFixed(3)}
                 </span>
                 {r.culled.map((s) => (
@@ -230,7 +234,7 @@ export default async function Home() {
         <div className="space-y-2 max-h-[32rem] overflow-y-auto rounded border border-zinc-500/25 p-3">
           {activity.map((e, i) => (
             <div key={`${e.timestamp}-${i}`} className="text-xs leading-relaxed border-b border-zinc-500/10 pb-2">
-              <span className="opacity-50">{e.timestamp.replace("T", " ").slice(0, 19)}Z</span>{" "}
+              <span className="opacity-50"><LocalTime iso={e.timestamp} /></span>{" "}
               <strong>{e.agentId}</strong>{" "}
               <span className="rounded bg-blue-500/10 text-blue-400 px-1">{e.action}</span>{" "}
               {e.txHash && (

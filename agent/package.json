@@ -21,7 +21,8 @@
     "swarm:start": "tsx src/chains/celo/swarm-start.ts",
     "swarm:status": "tsx src/chains/celo/swarm-status.ts",
     "swarm:unwind": "tsx src/chains/celo/swarm-unwind.ts",
-    "test:fork:epoch": "bash src/chains/celo/run-fork-epoch.sh"
+    "test:fork:epoch": "bash src/chains/celo/run-fork-epoch.sh",
+    "report:epoch": "tsx src/chains/celo/report-epoch.ts"
   },
   "dependencies": {
     "@adraffy/ens-normalize": "^1.11.1",
