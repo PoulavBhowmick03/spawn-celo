@@ -50,7 +50,7 @@ function buildCard(
       { name: "activity-log", endpoint: `${REPO_URL}/blob/main/celo_activity.jsonl` },
       { name: "source", endpoint: REPO_URL },
     ],
-    x402Support: false,
+    x402Support: (spec as { x402Support?: boolean }).x402Support ?? false,
     active: true,
     registrations: reg
       ? [

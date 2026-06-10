@@ -21,7 +21,7 @@ import { deriveAccount, orchestratorAccount } from "./wallets.js";
 import { SWARM_AGENTS } from "./agents-config.js";
 import { loadRegistry } from "./generate-cards.js";
 import { loadState, saveState, statePath, type SwarmState } from "./swarm-state.js";
-import { runEpochCycle, publishDocs, spawnChildOnchain, processPendingSpawns, sweepRetiredResiduals } from "./epoch.js";
+import { runEpochCycle, runMidEpochTick, publishDocs, spawnChildOnchain, processPendingSpawns, sweepRetiredResiduals } from "./epoch.js";
 import { unwindAgentToTreasury } from "./unwind.js";
 import { MAX_AGENT_BALANCE_USD, assertTxAllowed, killSwitchEngaged } from "./budget.js";
 import { logActivity } from "./activity-log.js";
@@ -192,10 +192,22 @@ async function main() {
     // restart safety: never settle an epoch early — wait out its remainder
     const st = loadState();
     if (!ONCE && st?.epochStartedAt) {
-      const dueIn = Date.parse(st.epochStartedAt) + EPOCH_HOURS * 3600_000 - Date.now();
+      const tickMs = Number(process.env.TICK_MINUTES ?? 60) * 60_000;
+      let dueIn = Date.parse(st.epochStartedAt) + EPOCH_HOURS * 3600_000 - Date.now();
       if (dueIn > 0) {
-        console.log(`epoch ${st.epochNumber} has ${(dueIn / 60000).toFixed(1)}min left — waiting before settle`);
-        await new Promise((r) => setTimeout(r, dueIn));
+        console.log(`epoch ${st.epochNumber} has ${(dueIn / 60000).toFixed(1)}min left — ticking every ${tickMs / 60000}min until settle`);
+      }
+      while (dueIn > 0) {
+        await new Promise((r) => setTimeout(r, Math.min(dueIn, tickMs)));
+        dueIn = Date.parse(st.epochStartedAt) + EPOCH_HOURS * 3600_000 - Date.now();
+        if (dueIn > 60_000) {
+          if (killSwitchEngaged()) return void (await stop("KILL_SWITCH env flag"));
+          try {
+            await runMidEpochTick();
+          } catch (e) {
+            console.warn(`mid-epoch tick failed (${(e as Error).message?.slice(0, 100)}) — continuing`);
+          }
+        }
       }
     }
     await runEpochCycle();

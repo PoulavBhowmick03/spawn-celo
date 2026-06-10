@@ -514,7 +514,25 @@ export async function startEpoch(state: SwarmState): Promise<MarketContext> {
     agent.vStartUsd = pf.totalUsd;
     (agent as SwarmAgentState & { epochGasUsd?: number }).epochGasUsd = 0;
 
-    const actions = strategyFor(agent as unknown as AgentSpec).evaluate(ctx, pf, agent.params);
+    // Phase 6: useSignal agents pay the x402 oracle for high-resolution FX
+    // momentum; it replaces the epoch-boundary momentum for this agent only.
+    let agentCtx = ctx;
+    if (agent.useSignal && !process.env.CELO_NATIVE_GAS) {
+      const { buySignal } = await import("./signal-client.js");
+      const bought = await buySignal(account, agent.slug);
+      const m = bought?.signal?.fxMomentumBps;
+      if (m) {
+        agentCtx = {
+          ...ctx,
+          fxMomentumBps: {
+            EURm: m.EURm.h2 ?? m.EURm.h6 ?? ctx.fxMomentumBps.EURm,
+            BRLm: m.BRLm.h2 ?? m.BRLm.h6 ?? ctx.fxMomentumBps.BRLm,
+          },
+        };
+      }
+    }
+
+    const actions = strategyFor(agent as unknown as AgentSpec).evaluate(agentCtx, pf, agent.params);
     const result = await executeActions(agent, account, orch, actions, state.epochNumber);
     (agent as SwarmAgentState & { epochGasUsd?: number }).epochGasUsd = result.gasUsd;
     console.log(
@@ -527,6 +545,40 @@ export async function startEpoch(state: SwarmState): Promise<MarketContext> {
   state.epochStartedAt = new Date().toISOString();
   saveState(state);
   return ctx;
+}
+
+/** Mid-epoch tick: re-evaluate ACTIVE agents against fresh market data
+ *  WITHOUT settling. Strategies are threshold-gated, so most ticks hold;
+ *  when a real edge appears intra-epoch, the agent acts on it instead of
+ *  waiting up to 4h. Gas accrues to the open epoch's fitness penalty. */
+export async function runMidEpochTick(): Promise<void> {
+  const state = loadState();
+  if (!state) return;
+  const ctx = await snapshotMarket(state.prevFxUsdPrice ? { fxUsdPrice: state.prevFxUsdPrice } : undefined);
+  const orch = orchestratorAccount();
+  for (const agent of state.agents) {
+    if (agent.status !== "ACTIVE" || agent.vStartUsd === undefined) continue;
+    if (killSwitchEngaged()) throw new Error("kill switch engaged mid-tick");
+    const account = deriveAccount(agent.hdIndex);
+    const pf = await readPortfolio(agent.address, ctx);
+    const actions = strategyFor(agent as unknown as AgentSpec)
+      .evaluate(ctx, pf, agent.params)
+      .filter((a) => a.kind !== "hold"); // ticks only act, never narrate holds
+    if (actions.length === 0) continue;
+    const result = await executeActions(
+      agent,
+      account,
+      orch,
+      actions.map((a) => ({ ...a, reason: `[mid-epoch tick] ${a.reason}` })),
+      state.epochNumber,
+    );
+    const g = agent as SwarmAgentState & { epochGasUsd?: number };
+    g.epochGasUsd = (g.epochGasUsd ?? 0) + result.gasUsd;
+    if (result.executed > 0) {
+      console.log(`  tick: ${agent.slug} executed ${result.executed} action(s), gas $${result.gasUsd.toFixed(4)}`);
+    }
+    saveState(state);
+  }
 }
 
 /** One full cycle: settle the open epoch (if any), then start the next. */
