@@ -21,7 +21,7 @@ import { deriveAccount, orchestratorAccount } from "./wallets.js";
 import { SWARM_AGENTS } from "./agents-config.js";
 import { loadRegistry } from "./generate-cards.js";
 import { loadState, saveState, statePath, type SwarmState } from "./swarm-state.js";
-import { runEpochCycle, publishDocs, spawnChildOnchain } from "./epoch.js";
+import { runEpochCycle, publishDocs, spawnChildOnchain, processPendingSpawns } from "./epoch.js";
 import { unwindAgentToTreasury } from "./unwind.js";
 import { MAX_AGENT_BALANCE_USD, assertTxAllowed, killSwitchEngaged } from "./budget.js";
 import { logActivity } from "./activity-log.js";
@@ -97,6 +97,8 @@ async function fundAgents(state: SwarmState): Promise<void> {
       functionName: "transfer",
       args: [agent.address, parseUnits(topUp.toFixed(6), 18)],
       feeCurrency: maybeFee(FEE_CURRENCIES.USDm),
+      // explicit gas skips eth_estimateGas's oversized CIP-64 fee pre-debit
+      ...(maybeFee(FEE_CURRENCIES.USDm) ? { gas: 120_000n } : {}),
     });
     await celoPublicClient.waitForTransactionReceipt({ hash });
     logActivity({
@@ -177,9 +179,23 @@ async function main() {
   await fundAgents(state);
   console.log("ensuring onchain ChildAgent provenance…");
   await ensureChildContracts(state);
+  if ((state.pendingSpawns?.length ?? 0) > 0) {
+    console.log(`retrying ${state.pendingSpawns!.length} pending spawn(s)…`);
+    await processPendingSpawns(state);
+    publishDocs("chore(swarm): pending spawn retry");
+  }
 
   for (;;) {
     if (killSwitchEngaged()) return void (await stop("KILL_SWITCH env flag"));
+    // restart safety: never settle an epoch early — wait out its remainder
+    const st = loadState();
+    if (!ONCE && st?.epochStartedAt) {
+      const dueIn = Date.parse(st.epochStartedAt) + EPOCH_HOURS * 3600_000 - Date.now();
+      if (dueIn > 0) {
+        console.log(`epoch ${st.epochNumber} has ${(dueIn / 60000).toFixed(1)}min left — waiting before settle`);
+        await new Promise((r) => setTimeout(r, dueIn));
+      }
+    }
     await runEpochCycle();
     if (ONCE) {
       console.log("--once: epoch cycle complete, exiting (swarm stays deployed)");

@@ -207,6 +207,8 @@ async function completeSpawn(
       functionName: "transfer",
       args: [account.address, parseUnits(pending.fundUsd.toFixed(6), 18)],
       feeCurrency: maybeFee(FEE_CURRENCIES.USDm),
+      // explicit gas skips eth_estimateGas's oversized CIP-64 fee pre-debit
+      ...(maybeFee(FEE_CURRENCIES.USDm) ? { gas: 120_000n } : {}),
     });
     await celoPublicClient.waitForTransactionReceipt({ hash });
     logActivity({
