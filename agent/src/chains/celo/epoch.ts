@@ -393,7 +393,10 @@ export async function settleEpoch(state: SwarmState, ctx: MarketContext): Promis
     culled: culledSlugs,
     spawned: spawnedSlugs,
   };
-  const epochsDir = resolve(REPO_ROOT, "docs", "epochs");
+  // fork tests must not leave synthetic reports in the public docs/ tree
+  const epochsDir = /^(1|true|yes)$/i.test(process.env.CELO_NO_PUBLISH ?? "")
+    ? "/tmp/celo_fork_epochs"
+    : resolve(REPO_ROOT, "docs", "epochs");
   mkdirSync(epochsDir, { recursive: true });
   writeFileSync(resolve(epochsDir, `epoch-${state.epochNumber}.json`), JSON.stringify(report, null, 2) + "\n");
   return report;
