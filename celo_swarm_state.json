@@ -1,6 +1,6 @@
 {
-  "epochNumber": 2,
-  "nextHdIndex": 11,
+  "epochNumber": 3,
+  "nextHdIndex": 12,
   "agents": [
     {
       "slug": "mfx-cautious",
@@ -21,6 +21,13 @@
       "history": [
         {
           "epoch": 1,
+          "fitness": 0,
+          "score": 100,
+          "vEndUsd": 4.9999995173473115,
+          "gasUsd": 0
+        },
+        {
+          "epoch": 2,
           "fitness": 0,
           "score": 100,
           "vEndUsd": 4.9999995173473115,
@@ -55,6 +62,13 @@
           "score": 100,
           "vEndUsd": 4.999999675639267,
           "gasUsd": 0
+        },
+        {
+          "epoch": 2,
+          "fitness": 0,
+          "score": 100,
+          "vEndUsd": 4.999999675639267,
+          "gasUsd": 0
         }
       ],
       "childContract": "0xdEB174d15AAda924B3B024e9E4F3F4ca0045aF69",
@@ -81,6 +95,13 @@
       "history": [
         {
           "epoch": 1,
+          "fitness": 0,
+          "score": 100,
+          "vEndUsd": 5.000000388603828,
+          "gasUsd": 0
+        },
+        {
+          "epoch": 2,
           "fitness": 0,
           "score": 100,
           "vEndUsd": 5.000000388603828,
@@ -146,12 +167,19 @@
           "score": 50,
           "vEndUsd": 4.998847270126936,
           "gasUsd": 0
+        },
+        {
+          "epoch": 2,
+          "fitness": -27.66259906811291,
+          "score": 39,
+          "vEndUsd": 4.9951329381683465,
+          "gasUsd": 0.004178425338
         }
       ],
       "childContract": "0x8e5CBAdF9A98eDbD80aA2000b227BBc139aB4236",
       "spawnTxHash": "0x5df38b0183b6378117222cd186f99e4f925b88222a3c0a573a9cd0d8c3054871",
-      "vStartUsd": 4.998847270126936,
-      "epochGasUsd": 0.004178425338
+      "vStartUsd": 4.9951329381683465,
+      "epochGasUsd": 0.0030379088568555
     },
     {
       "slug": "ay-chaser",
@@ -176,6 +204,13 @@
           "score": 50,
           "vEndUsd": 4.998847557162375,
           "gasUsd": 0
+        },
+        {
+          "epoch": 2,
+          "fitness": -27.61752184890353,
+          "score": 61,
+          "vEndUsd": 4.995145424939859,
+          "gasUsd": 0.0041777639892
         }
       ],
       "childContract": "0xa89Ae17C537728a1c07d878a16Ea2C2879393789",
@@ -198,7 +233,7 @@
       "useSignal": false,
       "generation": 1,
       "lineageKey": "hc-light",
-      "status": "ACTIVE",
+      "status": "RETIRED",
       "history": [
         {
           "epoch": 1,
@@ -206,12 +241,20 @@
           "score": 50,
           "vEndUsd": 4.998847700680095,
           "gasUsd": 0
+        },
+        {
+          "epoch": 2,
+          "fitness": -52.82977953697835,
+          "score": 0,
+          "vEndUsd": 4.990931441875801,
+          "gasUsd": 0.0071572584312
         }
       ],
       "childContract": "0x13DB0BC4A1d6B1085dD81842DA759FA5064F2BDf",
       "spawnTxHash": "0x5205e70dfbb58606a4af57ad8be7bd009fde6df1c5556fa7a4cca67c34df774e",
       "vStartUsd": 4.998847700680095,
-      "epochGasUsd": 0.0071572584312
+      "epochGasUsd": 0.0071572584312,
+      "recallTxHash": "0x7fa4bff81b57d711955f2fb92fa778263fbfe205439e03ff1deab9e119b89491"
     },
     {
       "slug": "hc-mid",
@@ -236,6 +279,13 @@
           "score": 50,
           "vEndUsd": 4.998847506657359,
           "gasUsd": 0
+        },
+        {
+          "epoch": 2,
+          "fitness": -52.82910157507848,
+          "score": 0,
+          "vEndUsd": 4.990931441875801,
+          "gasUsd": 0.0071572584312
         }
       ],
       "childContract": "0x7df6126b0D856a5aCCb8c315b30FB775fed09FF2",
@@ -266,6 +316,13 @@
           "score": 50,
           "vEndUsd": 4.998847700680095,
           "gasUsd": 0
+        },
+        {
+          "epoch": 2,
+          "fitness": -52.82977953697835,
+          "score": 0,
+          "vEndUsd": 4.990931441875801,
+          "gasUsd": 0.0071572584312
         }
       ],
       "childContract": "0xBa537f2E1dE4088A7cBE259F6702F197984C73B0",
@@ -299,6 +356,23 @@
     "BRLm": 0.192322297
   },
   "epochStartedAt": "2026-06-10T18:40:10.227Z",
-  "lastCulledEpoch": 1,
-  "pendingSpawns": []
+  "lastCulledEpoch": 2,
+  "pendingSpawns": [
+    {
+      "slug": "mfx-cautious-g2-i11",
+      "name": "Spawn FX Rotator (cautious) g2",
+      "hdIndex": 11,
+      "strategy": "MentoFXRotator",
+      "params": {
+        "minEdgeBps": 34,
+        "maxPositionUsd": 4,
+        "lookbackHours": 12
+      },
+      "useSignal": false,
+      "generation": 2,
+      "lineageKey": "mfx-cautious",
+      "fundUsd": 0.0445721372148237,
+      "description": "Generation 2 of the \"mfx-cautious\" lineage, spawned from epoch-2 top performer mfx-cautious with ±20% mutated parameters. Rotate cUSD/cEUR/cREAL via Mento when FX momentum beats round-trip cost + 34bps"
+    }
+  ]
 }
