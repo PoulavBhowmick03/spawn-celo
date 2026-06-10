@@ -274,9 +274,17 @@ export async function settleEpoch(state: SwarmState, ctx: MarketContext): Promis
   if (active.length === 0) return undefined;
   const orch = orchestratorAccount();
 
-  // 1. mark every portfolio and compute fitness
-  const rows: Array<{ agent: SwarmAgentState; vEndUsd: number; gasUsd: number; fitness: number }> = [];
+  // 1. mark every portfolio and compute fitness. Idempotent on re-runs after
+  // a crash: an agent whose history already covers this epoch was settled and
+  // had its feedback posted — reuse the stored numbers, don't recompute or
+  // re-post.
+  const rows: Array<{ agent: SwarmAgentState; vEndUsd: number; gasUsd: number; fitness: number; alreadySettled: boolean }> = [];
   for (const agent of active) {
+    const prior = agent.history.find((h) => h.epoch === state.epochNumber);
+    if (prior) {
+      rows.push({ agent, vEndUsd: prior.vEndUsd, gasUsd: prior.gasUsd, fitness: prior.fitness, alreadySettled: true });
+      continue;
+    }
     const pf = await readPortfolio(agent.address, ctx);
     const gasUsd = (agent as SwarmAgentState & { epochGasUsd?: number }).epochGasUsd ?? 0;
     const f = fitness({
@@ -285,7 +293,7 @@ export async function settleEpoch(state: SwarmState, ctx: MarketContext): Promis
       gasUsd,
       epochHours: EPOCH_HOURS,
     });
-    rows.push({ agent, vEndUsd: pf.totalUsd, gasUsd, fitness: f });
+    rows.push({ agent, vEndUsd: pf.totalUsd, gasUsd, fitness: f, alreadySettled: false });
   }
   const swarmMedian = median(rows.map((r) => r.fitness));
 
@@ -294,6 +302,22 @@ export async function settleEpoch(state: SwarmState, ctx: MarketContext): Promis
   const reportUrl = `${PAGES_BASE}/epochs/epoch-${state.epochNumber}.json`;
   for (const r of rows) {
     const score = reputationScore(r.fitness, swarmMedian);
+    if (r.alreadySettled) {
+      const prior = r.agent.history.find((h) => h.epoch === state.epochNumber)!;
+      reportRows.push({
+        slug: r.agent.slug,
+        erc8004AgentId: r.agent.erc8004AgentId,
+        strategy: r.agent.strategy,
+        generation: r.agent.generation,
+        vStartUsd: r.agent.vStartUsd!,
+        vEndUsd: prior.vEndUsd,
+        gasUsd: prior.gasUsd,
+        fitness: prior.fitness,
+        score: prior.score,
+        culled: false,
+      });
+      continue;
+    }
     const reputationTx = await postEpochFeedback(orch, {
       agentId: BigInt(r.agent.erc8004AgentId),
       agentSlug: r.agent.slug,

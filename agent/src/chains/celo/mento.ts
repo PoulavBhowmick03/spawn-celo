@@ -87,12 +87,20 @@ export async function executeSwap(req: SwapRequest): Promise<SwapResult> {
     { slippageTolerance: slippagePct, deadline: deadlineFromMinutes(5) },
   );
 
+  // With CIP-64 the node debits maxFeePerGas*gasLimit from the fee-currency
+  // balance during eth_estimateGas simulation; for near-full-balance swaps
+  // that makes transferFrom revert at estimation. Explicit gas limits skip
+  // estimation entirely.
+  const gasOpts = req.feeCurrency ? { gas: 250_000n } : {};
+  const swapGasOpts = req.feeCurrency ? { gas: 900_000n } : {};
+
   let approvalTxHash: Hex | undefined;
   if (approval) {
     approvalTxHash = await wallet.sendTransaction({
       to: approval.to as Address,
       data: approval.data as Hex,
       feeCurrency: req.feeCurrency,
+      ...gasOpts,
     });
     const rcpt = await celoPublicClient.waitForTransactionReceipt({
       hash: approvalTxHash,
@@ -106,6 +114,7 @@ export async function executeSwap(req: SwapRequest): Promise<SwapResult> {
     to: swap.params.to as Address,
     data: swap.params.data as Hex,
     feeCurrency: req.feeCurrency,
+    ...swapGasOpts,
   });
   const receipt = await celoPublicClient.waitForTransactionReceipt({
     hash: swapTxHash,

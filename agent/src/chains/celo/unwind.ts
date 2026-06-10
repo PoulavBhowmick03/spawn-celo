@@ -118,13 +118,9 @@ export async function unwindAgentToTreasury(
         tokenInDecimals: decimals,
         tokenOutDecimals: 18,
         usdValue: fullUsd / chunks,
-        feeCurrency: liveFeeCurrency
-          ? symbol === "USDC"
-            ? FEE_CURRENCIES.USDC_ADAPTER
-            : symbol === "USDT"
-              ? FEE_CURRENCIES.USDT_ADAPTER
-              : address // EURm/BRLm are direct fee currencies — gas in the token being swept
-          : undefined,
+        // gas in cUSD, NEVER the token being swept: CIP-64 debits the fee
+        // from the fee-currency balance, which breaks full-balance transfers
+        feeCurrency: liveFeeCurrency ? FEE_CURRENCIES.USDm : undefined,
         rationale: `Unwind (${reason}): convert ${formatUnits(amountIn, decimals)} ${symbol} to cUSD before returning funds to the treasury${chunks > 1 ? ` (chunk ${i + 1}/${chunks} under the $${MAX_TX_USD} per-tx cap)` : ""}.`,
       });
       txHashes.push(res.swapTxHash);
@@ -144,7 +140,7 @@ export async function unwindAgentToTreasury(
   const usdmBal = await balanceOf(TOKENS.USDm, account.address);
   let swept = 0n;
   if (usdmBal > DUST[18]) {
-    const headroom = liveFeeCurrency ? await gasHeadroom(FEE_CURRENCIES.USDm, 100_000n) : 0n;
+    const headroom = liveFeeCurrency ? await gasHeadroom(FEE_CURRENCIES.USDm, 120_000n) : 0n;
     swept = usdmBal - headroom;
     if (swept > 0n) {
       const usdValue = Number(formatUnits(swept, 18));
@@ -156,6 +152,9 @@ export async function unwindAgentToTreasury(
         functionName: "transfer",
         args: [treasury, swept],
         feeCurrency: feeUsdm,
+        // explicit gas skips eth_estimateGas, whose CIP-64 fee pre-debit
+        // makes near-full-balance transfers revert in simulation
+        ...(feeUsdm ? { gas: 120_000n } : {}),
       });
       const rcpt = await celoPublicClient.waitForTransactionReceipt({ hash });
       if (rcpt.status !== "success") throw new Error(`unwind sweep reverted: ${explorerTx(hash)}`);

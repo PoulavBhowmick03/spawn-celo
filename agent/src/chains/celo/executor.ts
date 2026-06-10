@@ -84,8 +84,15 @@ export async function executeActions(
         functionName: "balanceOf",
         args: [account.address],
       });
-      const amountIn = action.amountIn === -1n || action.amountIn > balance ? balance : action.amountIn;
-      if (amountIn === 0n) continue;
+      let amountIn = action.amountIn === -1n || action.amountIn > balance ? balance : action.amountIn;
+      // Gas for this swap is debited from the SAME token (CIP-64): keep a
+      // fee headroom in the wallet or transferFrom(amountIn) can't cover.
+      const feeToken = feeCurrencyFor(action.tokenIn);
+      if (feeToken && (feeToken === TOKENS[action.tokenIn] || action.tokenIn === "USDC" || action.tokenIn === "USDT")) {
+        const headroom = TOKEN_DECIMALS[action.tokenIn] === 6 ? 60_000n : 60_000_000_000_000_000n; // ~$0.06
+        amountIn = amountIn + headroom > balance ? balance - headroom : amountIn;
+      }
+      if (amountIn <= 0n) continue;
       const res = await executeSwap({
         account,
         agentId: agent.slug,
