@@ -11,6 +11,7 @@
  *   ALLOW_LIVE_SMOKE=true pnpm -C agent exec tsx src/chains/celo/smoke-feecurrency.ts
  */
 
+import "./env.js"; // must be first — loads repo-root .env before env-reading modules
 import { erc20Abi, formatUnits, parseUnits } from "viem";
 import { TOKENS, FEE_CURRENCIES, explorerTx } from "./addresses.js";
 import { assertCeloMainnet, celoPublicClient, celoWalletClient } from "./chain.js";
