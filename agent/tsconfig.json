@@ -18,6 +18,7 @@
     "src/chain.ts",
     "src/child.ts",
     "src/control-server.ts",
+    "src/elfa.ts",
     "src/ipfs.ts",
     "src/judge-flow.ts",
     "src/lineage.ts",

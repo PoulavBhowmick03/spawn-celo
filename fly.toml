@@ -1,0 +1,79 @@
+# Fly.io config — Spawn Protocol Mantle agent swarm (dry-run default).
+#
+# Single always-on machine. Do NOT scale this app beyond one instance: every
+# parent derives the same child wallets from TREASURY_PRIVATE_KEY and would
+# double-spawn/double-fund. Keep `fly scale count 1`.
+#
+# Secrets (NOT here — set with `fly secrets set`):
+#   TREASURY_PRIVATE_KEY   (required even in dry-run: child wallets are derived
+#                           from it; no funds are spent while live flags are off)
+#   DEPLOYER_PRIVATE_KEY   (only needed once you enable live spawn/recall)
+#   VENICE_API_KEY
+#   ELFA_API_KEY
+#   FILEBASE_API_KEY
+#   FILEBASE_SECRET
+#   MANTLE_EXPLORER_API_KEY
+
+app = "spawn-protocol-agent"        # change to your Fly app name
+primary_region = "sin"              # Singapore — closest low-latency Fly region
+
+[build]
+
+[env]
+  PORT = "8080"
+  NODE_ENV = "production"
+
+  # Swarm tuning
+  SWARM_CHILD_COUNT = "3"
+  CHILD_CYCLE_INTERVAL_MS = "75000"
+  PARENT_EVALUATION_INTERVAL_MS = "75000"
+  RISK_THRESHOLD = "0.5"
+
+  # Mantle network
+  MANTLE_RPC = "https://rpc.mantle.xyz"
+
+  # Mantle mainnet DeFi (public, verified addresses)
+  AAVE_POOL_ADDRESS = "0x458F293454fE0d67EC0655f3672301301DD51422"
+  USDE_ADDRESS = "0x5d3a1Ff2b6BAb83b63cd9AD0787074081a52ef34"
+  USDE_ATOKEN = "0xb9aCA933C9c0aa854a6DBb7b12f0CC3FdaC15ee7"
+  USDE_DECIMALS = "18"
+  USDC_ADDRESS = "0x09Bc4E0D864854c6aFB6eB9A9cdF58aC190D0dF9"
+  MOE_ROUTER_ADDRESS = "0xafb85a12babfafabfe1a518594492d5a830e782a"
+  AAVE_USDE_BENCHMARK = "4.50"
+
+  # Spawn Protocol contracts
+  SPAWN_FACTORY_ADDRESS = "0x94171e5D54792149E14fFa19197e3c17E263C740"
+  LINEAGE_REGISTRY_ADDRESS = "0x0466c58d7955cFdfa9E2070077D2f5E26561b59E"
+  CHILD_AGENT_IMPLEMENTATION = "0xD2d79F4A19E0D77267aBe80d85c33630d0923F72"
+  ERC8004_REGISTRY_ADDRESS = "0x8004A818BFB912233c491871b3d84c89A494BD9e"
+  REPUTATION_REGISTRY_ADDRESS = "0x8004B663056A597Dffe9eCcC1965A193B7388713"
+
+  # IPFS / storage
+  FILEBASE_BUCKET = "spawn-yield"
+  IPFS_GATEWAY_BASE = "https://ipfs.filebase.io/ipfs"
+
+  # Live flags are intentionally OMITTED here (dry-run). To go live, set them
+  # as secrets/env after funding the treasury and confirming the dry-run:
+  #   ALLOW_LIVE_SPAWN, ALLOW_LIVE_RECALL,
+  #   ALLOW_LIVE_CHILD_WRITES, ALLOW_LIVE_GENERATION_POSTS
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  # Keep the swarm running 24/7 — never suspend or scale to zero.
+  auto_stop_machines = false
+  auto_start_machines = false
+  min_machines_running = 1
+
+  [[http_service.checks]]
+    grace_period = "60s"
+    interval = "30s"
+    method = "GET"
+    timeout = "5s"
+    path = "/health"
+
+[[vm]]
+  # 3–5 forked Node processes; 512MB is tight, 1GB is comfortable.
+  memory = "1gb"
+  cpu_kind = "shared"
+  cpus = 1

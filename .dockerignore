@@ -1,0 +1,26 @@
+# Never ship secrets or host-built artifacts into the image.
+.env
+.env.*
+!.env.example
+
+# Dependencies are reinstalled inside the image.
+**/node_modules
+
+# Not needed by the agent runtime (ABIs are inlined in agent/src/abis.ts).
+dashboard
+contracts
+backtest_artifacts
+
+# Local runtime state — regenerated at boot, must not be baked in.
+runtime_ipfs
+swarm_state.json
+swarm_events.json
+agent_log.json
+runtime_budget_state.json
+judge_flow_state.json
+
+# VCS / misc
+.git
+.gitignore
+*.log
+.DS_Store
