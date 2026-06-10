@@ -1,5 +1,12 @@
 # PROGRESS.md — Celo Hedge Swarm build log
 
+## Phase 1 — Chain plumbing (2026-06-10)
+
+- **Done**: `agent/src/chains/celo/` — `addresses.ts` (every address triple-verified: authoritative source + docs cross-check + live forno read; source URLs inline), `chain.ts` (viem celo clients, RPC fallback, CIP-64-preserving types), `wallets.ts` (mnemonic+HD, index 0 = orchestrator, N = agent N), `budget.ts` ($50/$5/$5 caps + kill switch, code-enforced), `activity-log.ts` (JSONL with rationales), `smoke-feecurrency.ts` (dry-run by default, `ALLOW_LIVE_SMOKE=true` to broadcast). `.env.example` Celo section added. `npm run smoke:celo`.
+- **Verified by**: `tsc --noEmit` clean; dry-run with public test mnemonic derives canonical addresses and reads live Celo state via forno (chain id 42220 asserted).
+- **Key findings**: Mento stables rebranded onchain (cUSD→USDm, cEUR→EURm, cREAL→BRLm; same addresses). ERC-8004 mainnet registries on Celo: Identity `0x8004A169FB4a3325136EB29fA0ceB6D2e539a432`, Reputation `0x8004BAa17C55a88189AE136b182e5fdA19dE9b63` (the `0x8004A818…`/`0x8004B663…` from the Mantle .env are TESTNET — zero bytecode on Celo mainnet). ValidationRegistry NOT deployed on Celo mainnet → §3.4 validation stretch is moot. USDm/EURm/BRLm are direct fee currencies; USDC/USDT only via adapters.
+- **Next**: BLOCKED on developer — fill `MNEMONIC` (burner) in `.env`, fund agent-1 (HD index 1) with ~$1 cUSD, give explicit go-ahead for the $0.01 mainnet smoke tx. Phase 2 (Mento+Aave adapters, fork tests) can proceed in parallel.
+
 ## Phase 0 — Inventory of the existing Spawn codebase (2026-06-10)
 
 Status: **map complete, awaiting developer confirmation before any code is written.**

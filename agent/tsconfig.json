@@ -27,6 +27,7 @@
     "src/spawn-child.ts",
     "src/swarm.ts",
     "src/types.ts",
-    "src/venice.ts"
+    "src/venice.ts",
+    "src/chains/celo/**/*.ts"
   ]
 }

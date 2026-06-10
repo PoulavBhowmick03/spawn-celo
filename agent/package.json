@@ -9,17 +9,20 @@
     "demo": "tsx src/demo.ts",
     "spawn-child": "tsx src/spawn-child.ts",
     "swarm": "tsx src/swarm.ts",
-    "backtest": "tsx src/backtest.ts"
+    "backtest": "tsx src/backtest.ts",
+    "smoke:celo": "tsx src/chains/celo/smoke-feecurrency.ts"
   },
   "dependencies": {
     "@adraffy/ens-normalize": "^1.11.1",
     "@aws-sdk/client-s3": "^3.1014.0",
+    "@bgd-labs/aave-address-book": "^4.44.22",
     "@filoz/synapse-sdk": "^0.40.2",
     "@lighthouse-web3/sdk": "^0.4.5",
     "@lit-protocol/auth-helpers": "^7.4.0",
     "@lit-protocol/constants": "^7.4.0",
     "@lit-protocol/lit-node-client": "^7.4.0",
     "@lit-protocol/types": "^7.4.0",
+    "@mento-protocol/mento-sdk": "^3.2.8",
     "@metamask/delegation-toolkit": "^0.13.0",
     "dotenv": "^16.4.7",
     "ethers": "^5.7.2",
