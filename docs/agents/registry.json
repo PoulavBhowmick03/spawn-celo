@@ -63,5 +63,10 @@
     "agentId": "9258",
     "address": "0x26dbA8A064f6195538D31AF45d3037F021f739fA",
     "txHash": "0x62db0d3dd36b9c3e39ecb7a1b3c2d3d3dd7edefeaf8c27653251214495174bbf"
+  },
+  "mfx-aggressive-g2-i12": {
+    "agentId": "9259",
+    "address": "0xf47e683cF441c2a45B7E095ce8764515CEe8FF23",
+    "txHash": "0x480be08aeff91c6820d0ccbfcf675117c7e3c5fa7f868f59956ab3d11a7f4176"
   }
 }
