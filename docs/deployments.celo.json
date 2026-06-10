@@ -1,0 +1,14 @@
+{
+  "LineageRegistry": {
+    "address": "0x620c51de11e5b3d0f8b5e4439595b70495b18e85",
+    "txHash": "0xc885102fd4c178238289e7231ca87b5b589cc01541521b565eefafdff90e7bd2"
+  },
+  "ChildAgent": {
+    "address": "0xd6ac7fee72a4fc9a96ae2b44e17d318666cb23d3",
+    "txHash": "0x674b0e11cf25a488b8a798562799e3d508fdf7e5fb032431ac016d276e0fb95f"
+  },
+  "SpawnFactory": {
+    "address": "0x670c3ad2bc91fbd07720bfbfb7f0f2af3e3ad85d",
+    "txHash": "0xa7355b6d074248920506c25f1556726fd03e8077870b3c74fbb7ade4b4df8c5f"
+  }
+}

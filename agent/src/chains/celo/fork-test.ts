@@ -126,7 +126,43 @@ async function main() {
     `treasury recovered ${formatUnits(recovered, 18)} of the 5 cUSD seed (loss = swap spread + dust only)`,
   );
 
-  console.log("\nFORK TEST PASSED — full fund→deploy→cull→refund lifecycle verified.");
+  // 5. termination consequence: fitness → reputation score → onchain feedback
+  const { fitness, median, reputationScore } = await import("./fitness.js");
+  const { postEpochFeedback, readReputationSummary } = await import("./reputation.js");
+
+  const vStart = Number(formatUnits(agentStart, 18));
+  const vEnd = Number(formatUnits(result.sweptUsdm, 18));
+  const culledFitness = fitness({ vStartUsd: vStart, vEndUsd: vEnd, gasUsd: 0.002, epochHours: 4 });
+  const swarmMedian = median([culledFitness, 0.5, 1.0]); // synthetic peers for the test
+  const score = reputationScore(culledFitness, swarmMedian);
+  console.log(`  culled agent fitness=${culledFitness.toFixed(3)}, median=${swarmMedian.toFixed(3)}, score=${score}`);
+  assert(score >= 0 && score <= 100, `score bounded (${score})`);
+  assert(culledFitness < swarmMedian, "culled agent scored below synthetic median");
+
+  // mfx-cautious (#9241) exists on the fork — registered on mainnet in Phase 3
+  const AGENT_ID = 9241n;
+  const fbTx = await postEpochFeedback(
+    treasury,
+    {
+      agentId: AGENT_ID,
+      agentSlug: "mfx-cautious",
+      score,
+      strategy: "MentoFXRotator",
+      epochNumber: 0,
+      fitnessInputs: { vStartUsd: vStart, vEndUsd: vEnd, gasUsd: 0.002, epochHours: 4 },
+      feedbackURI: "https://poulavbhowmick03.github.io/spawn-celo/agents/mfx-cautious.json",
+    },
+    false,
+  );
+  console.log(`  giveFeedback tx: ${fbTx}`);
+  const summary = await readReputationSummary(AGENT_ID, treasury.address);
+  assert(summary.count === 1n, `reputation registry recorded 1 feedback (count=${summary.count})`);
+  assert(
+    Number(summary.value) === score,
+    `summary value ${summary.value} (decimals ${summary.decimals}) matches posted score ${score}`,
+  );
+
+  console.log("\nFORK TEST PASSED — fund→deploy→cull→refund→fitness→reputation verified.");
 }
 
 main().catch((e) => {

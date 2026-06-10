@@ -68,6 +68,31 @@ pnpm report:epoch            # judge-facing epoch report
 
 Safety rails baked in: $5 per-agent balance cap, 1% slippage cap, $50 total budget cap, kill switch that unwinds every position to cUSD. All enforced in code, not convention.
 
+## Deployed contracts (Celo mainnet, chain 42220)
+
+Spawn Protocol contracts, deployed 2026-06-10 by the orchestrator with **gas paid in cUSD via CIP-64** (the deployer holds zero CELO). Bytecode is identical to the audited-by-use Mantle deployment; deploy transactions are recorded in [`docs/deployments.celo.json`](docs/deployments.celo.json) and the activity log.
+
+| Contract | Address | Role |
+|---|---|---|
+| SpawnFactory | [`0x670C3Ad2Bc91fBd07720BFbFB7F0F2AF3e3ad85d`](https://celoscan.io/address/0x670C3Ad2Bc91fBd07720BFbFB7F0F2AF3e3ad85d) | onchain spawn events; clones a ChildAgent per swarm agent |
+| ChildAgent (implementation) | [`0xd6ac7fee72a4fC9a96aE2B44E17d318666cb23d3`](https://celoscan.io/address/0xd6ac7fee72a4fC9a96aE2B44E17d318666cb23d3) | per-agent decision-hash proofs + recall events |
+| LineageRegistry | [`0x620C51De11E5B3d0F8B5E4439595B70495B18e85`](https://celoscan.io/address/0x620C51De11E5B3d0F8B5E4439595B70495B18e85) | post-mortem records + generation results per lineage |
+
+Canonical third-party contracts the swarm uses (verified against their authoritative sources, see `agent/src/chains/celo/addresses.ts` for source URLs per address):
+
+| Contract | Address |
+|---|---|
+| ERC-8004 Identity Registry (canonical, indexed by 8004scan) | [`0x8004A169FB4a3325136EB29fA0ceB6D2e539a432`](https://celoscan.io/address/0x8004A169FB4a3325136EB29fA0ceB6D2e539a432) |
+| ERC-8004 Reputation Registry (canonical) | [`0x8004BAa17C55a88189AE136b182e5fdA19dE9b63`](https://celoscan.io/address/0x8004BAa17C55a88189AE136b182e5fdA19dE9b63) |
+| Mento Broker | `0x777A8255cA72412f0d706dc03C9D1987306B4CaD` |
+| Aave v3 Celo Pool | `0x3E59A31363E2ad014dcbc521c4a0d5757d9f3402` |
+
+Design note: SpawnFactory's built-in ERC-8004 registration is intentionally inert on Celo (its registry constant has no bytecode here, taking the factory's documented graceful path). Identities are minted by the runtime **from each agent's own wallet** instead — the Reputation Registry forbids owner self-feedback, so agent-owned identities are what make the orchestrator's performance attestations legal.
+
+### ERC-8004 identities (live)
+
+Orchestrator **#9240**; swarm agents **#9241–#9249** ([cards](https://poulavbhowmick03.github.io/spawn-celo/), [registry mapping](docs/agents/registry.json)). Each agent self-registered, paying gas in cUSD.
+
 ## Live links (fill before submission)
 
 - Dashboard: TODO

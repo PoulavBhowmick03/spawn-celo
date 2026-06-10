@@ -126,6 +126,21 @@ export const ERC8004 = {
 } as const;
 
 // ---------------------------------------------------------------------------
+// Spawn Protocol contracts — OUR deployment on Celo mainnet (2026-06-10),
+// bytecode identical to the audited-by-use Mantle deployment, deployed by the
+// orchestrator (0xC0296012…50e0) with CIP-64 cUSD gas via deploy-contracts.ts.
+// Deploy txs recorded in docs/deployments.celo.json. SpawnFactory's in-factory
+// ERC-8004 registration is intentionally inert on Celo (its constant points at
+// the testnet registry, no bytecode here → graceful agentId=0): identities are
+// minted by the runtime from each agent's own wallet instead (see identity.ts).
+// ---------------------------------------------------------------------------
+export const SPAWN = {
+  LINEAGE_REGISTRY: "0x620C51De11E5B3d0F8B5E4439595B70495B18e85" as Address,
+  CHILD_AGENT_IMPL: "0xd6ac7fee72a4fC9a96aE2B44E17d318666cb23d3" as Address,
+  SPAWN_FACTORY: "0x670C3Ad2Bc91fBd07720BFbFB7F0F2AF3e3ad85d" as Address,
+} as const;
+
+// ---------------------------------------------------------------------------
 // Explorer
 // ---------------------------------------------------------------------------
 export const EXPLORER = "https://celoscan.io";
