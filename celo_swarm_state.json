@@ -1,6 +1,6 @@
 {
   "epochNumber": 3,
-  "nextHdIndex": 12,
+  "nextHdIndex": 13,
   "agents": [
     {
       "slug": "mfx-cautious",
@@ -30,6 +30,13 @@
           "epoch": 2,
           "fitness": 0,
           "score": 100,
+          "vEndUsd": 4.9999995173473115,
+          "gasUsd": 0
+        },
+        {
+          "epoch": 3,
+          "fitness": 0,
+          "score": 50,
           "vEndUsd": 4.9999995173473115,
           "gasUsd": 0
         }
@@ -69,6 +76,13 @@
           "score": 100,
           "vEndUsd": 4.999999675639267,
           "gasUsd": 0
+        },
+        {
+          "epoch": 3,
+          "fitness": 0,
+          "score": 50,
+          "vEndUsd": 4.999999675639267,
+          "gasUsd": 0
         }
       ],
       "childContract": "0xdEB174d15AAda924B3B024e9E4F3F4ca0045aF69",
@@ -105,6 +119,13 @@
           "fitness": 0,
           "score": 100,
           "vEndUsd": 5.000000388603828,
+          "gasUsd": 0
+        },
+        {
+          "epoch": 3,
+          "fitness": 152.42398815349097,
+          "score": 100,
+          "vEndUsd": 5.348000388603828,
           "gasUsd": 0
         }
       ],
@@ -174,6 +195,13 @@
           "score": 39,
           "vEndUsd": 4.9951329381683465,
           "gasUsd": 0.004178425338
+        },
+        {
+          "epoch": 3,
+          "fitness": -3.189479417533575,
+          "score": 0,
+          "vEndUsd": 4.990896018854365,
+          "gasUsd": 0.0030379088568555
         }
       ],
       "childContract": "0x8e5CBAdF9A98eDbD80aA2000b227BBc139aB4236",
@@ -210,6 +238,13 @@
           "fitness": -27.61752184890353,
           "score": 61,
           "vEndUsd": 4.995145424939859,
+          "gasUsd": 0.0041777639892
+        },
+        {
+          "epoch": 3,
+          "fitness": -3.9998210339730536,
+          "score": 0,
+          "vEndUsd": 4.993895414482734,
           "gasUsd": 0.0041777639892
         }
       ],
@@ -286,6 +321,13 @@
           "score": 0,
           "vEndUsd": 4.990931441875801,
           "gasUsd": 0.0071572584312
+        },
+        {
+          "epoch": 3,
+          "fitness": 146.75667765160796,
+          "score": 100,
+          "vEndUsd": 5.3409884418758,
+          "gasUsd": 0.0071572584312
         }
       ],
       "childContract": "0x7df6126b0D856a5aCCb8c315b30FB775fed09FF2",
@@ -308,7 +350,7 @@
       "useSignal": false,
       "generation": 1,
       "lineageKey": "hc-heavy",
-      "status": "ACTIVE",
+      "status": "RETIRED",
       "history": [
         {
           "epoch": 1,
@@ -323,12 +365,20 @@
           "score": 0,
           "vEndUsd": 4.990931441875801,
           "gasUsd": 0.0071572584312
+        },
+        {
+          "epoch": 3,
+          "fitness": -6.578750687135075,
+          "score": 0,
+          "vEndUsd": 4.990988441875801,
+          "gasUsd": 0.0071572584312
         }
       ],
       "childContract": "0xBa537f2E1dE4088A7cBE259F6702F197984C73B0",
       "spawnTxHash": "0xea3dff0a232acbffe2992ebd26554b61b74b2a9308cae5a84b0ba12f8be82b9a",
       "vStartUsd": 4.998847700680095,
-      "epochGasUsd": 0.0071572584312
+      "epochGasUsd": 0.0071572584312,
+      "recallTxHash": "0x7c3c08b9735baf97ae9948a82c00c329585f47c79b49351d005db268e7cf3524"
     },
     {
       "slug": "mfx-cautious-g2-i10",
@@ -376,6 +426,23 @@
     "BRLm": 0.192322297
   },
   "epochStartedAt": "2026-06-10T18:40:10.227Z",
-  "lastCulledEpoch": 2,
-  "pendingSpawns": []
+  "lastCulledEpoch": 3,
+  "pendingSpawns": [
+    {
+      "slug": "mfx-aggressive-g2-i12",
+      "name": "Spawn FX Rotator (aggressive) g2",
+      "hdIndex": 12,
+      "strategy": "MentoFXRotator",
+      "params": {
+        "minEdgeBps": 14,
+        "maxPositionUsd": 5,
+        "lookbackHours": 4
+      },
+      "useSignal": true,
+      "generation": 2,
+      "lineageKey": "mfx-aggressive",
+      "fundUsd": 0.04467162975636165,
+      "description": "Generation 2 of the \"mfx-aggressive\" lineage, spawned from epoch-3 top performer mfx-aggressive with ±20% mutated parameters. Rotate cUSD/cEUR/cREAL via Mento when FX momentum beats round-trip cost + 14bps"
+    }
+  ]
 }
