@@ -10,7 +10,8 @@
     "spawn-child": "tsx src/spawn-child.ts",
     "swarm": "tsx src/swarm.ts",
     "backtest": "tsx src/backtest.ts",
-    "smoke:celo": "tsx src/chains/celo/smoke-feecurrency.ts"
+    "smoke:celo": "tsx src/chains/celo/smoke-feecurrency.ts",
+    "treasury:celo": "tsx src/chains/celo/treasury-setup.ts"
   },
   "dependencies": {
     "@adraffy/ens-normalize": "^1.11.1",

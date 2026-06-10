@@ -5,7 +5,13 @@
 - **Done**: `agent/src/chains/celo/` — `addresses.ts` (every address triple-verified: authoritative source + docs cross-check + live forno read; source URLs inline), `chain.ts` (viem celo clients, RPC fallback, CIP-64-preserving types), `wallets.ts` (mnemonic+HD, index 0 = orchestrator, N = agent N), `budget.ts` ($50/$5/$5 caps + kill switch, code-enforced), `activity-log.ts` (JSONL with rationales), `smoke-feecurrency.ts` (dry-run by default, `ALLOW_LIVE_SMOKE=true` to broadcast). `.env.example` Celo section added. `npm run smoke:celo`.
 - **Verified by**: `tsc --noEmit` clean; dry-run with public test mnemonic derives canonical addresses and reads live Celo state via forno (chain id 42220 asserted).
 - **Key findings**: Mento stables rebranded onchain (cUSD→USDm, cEUR→EURm, cREAL→BRLm; same addresses). ERC-8004 mainnet registries on Celo: Identity `0x8004A169FB4a3325136EB29fA0ceB6D2e539a432`, Reputation `0x8004BAa17C55a88189AE136b182e5fdA19dE9b63` (the `0x8004A818…`/`0x8004B663…` from the Mantle .env are TESTNET — zero bytecode on Celo mainnet). ValidationRegistry NOT deployed on Celo mainnet → §3.4 validation stretch is moot. USDm/EURm/BRLm are direct fee currencies; USDC/USDT only via adapters.
-- **Next**: BLOCKED on developer — fill `MNEMONIC` (burner) in `.env`, fund agent-1 (HD index 1) with ~$1 cUSD, give explicit go-ahead for the $0.01 mainnet smoke tx. Phase 2 (Mento+Aave adapters, fork tests) can proceed in parallel.
+- **Next**: ~~blocked on funding~~ → completed below.
+
+## Phase 1 complete + treasury live (2026-06-10, Day 1 milestone HIT)
+
+- **Done**: Developer funded orchestrator (HD index 0 = `0xC0296012…50e0`) with 52.89 USDT. Treasury conversion executed live via the new Mento adapter (`mento.ts`, SDK-routed, slippage-capped, budget-railed): one exact-amount approval + 10 × $5 USDT→cUSD tranches (per-tx cap respected) + $1 seed to agent-1 — gas for every tx paid in stablecoins (swaps in USDT via fee adapter, transfers in cUSD; ~$0.05 total gas). Smoke test passed: agent-1 (`0xe689D26D…c945`) sent $0.01 cUSD → orchestrator with CIP-64 `feeCurrency=USDm`, tx `0x3e4ef154…4963`, gasUsed 80475, CELO balance 0 before and after.
+- **Verified by**: Celoscan receipts (all status success), onchain balance reads (treasury 48.95 cUSD + 2.84 USDT buffer, agent-1 1 cUSD, 0 CELO everywhere), `celo_activity.jsonl` rationale per tx.
+- **Next**: Phase 2 remainder — Aave v3 Celo adapter + fork tests + $2 supply/withdraw smoke (Mento adapter already proven live); then Phase 3 ERC-8004 registration.
 
 ## Phase 0 — Inventory of the existing Spawn codebase (2026-06-10)
 
