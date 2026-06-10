@@ -1,0 +1,32 @@
+{
+  "type": "https://eips.ethereum.org/EIPS/eip-8004#registration-v1",
+  "name": "Spawn Signal Oracle",
+  "description": "x402 service agent of the Spawn Hedge Swarm: sells a market-signal endpoint (5-minute-resolution Mento FX momentum + live Aave v3 APYs) for $0.002 USDC per call, settled onchain via EIP-3009 transferWithAuthorization (x402 exact scheme). Buyers are the swarm's own useSignal agents — real agent-to-agent commerce, every sale a USDC transfer on Celoscan.",
+  "image": "https://poulavbhowmick03.github.io/spawn-celo/spawn-logo.svg",
+  "services": [
+    {
+      "name": "activity-log",
+      "endpoint": "https://github.com/PoulavBhowmick03/spawn-celo/blob/main/celo_activity.jsonl"
+    },
+    {
+      "name": "source",
+      "endpoint": "https://github.com/PoulavBhowmick03/spawn-celo"
+    }
+  ],
+  "x402Support": true,
+  "active": true,
+  "registrations": [],
+  "supportedTrust": [
+    "reputation"
+  ],
+  "spawn": {
+    "role": "swarm-agent",
+    "wallet": "0x26dbA8A064f6195538D31AF45d3037F021f739fA",
+    "strategy": null,
+    "params": null,
+    "buysX402Signals": false,
+    "fitnessFormula": "fitness = annualize(V_end/V_start) - gas_penalty; reputation = clamp(round(50 + 500*(fitness - swarm_median)), 0, 100); inputs recomputable from Celoscan",
+    "explorer": "https://celoscan.io/address/0x26dbA8A064f6195538D31AF45d3037F021f739fA",
+    "scan8004": "https://www.8004scan.io/agents/celo"
+  }
+}
