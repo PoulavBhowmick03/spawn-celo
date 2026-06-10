@@ -33,10 +33,27 @@ export type SwarmAgentState = {
   history: Array<{ epoch: number; fitness: number; score: number; vEndUsd: number; gasUsd: number }>;
 };
 
+export type PendingSpawn = {
+  slug: string;
+  name: string;
+  hdIndex: number;
+  strategy: StrategyId;
+  params: Record<string, number | boolean>;
+  useSignal: boolean;
+  generation: number;
+  lineageKey: string;
+  fundUsd: number;
+  description: string;
+};
+
 export type SwarmState = {
   epochNumber: number;
   epochStartedAt?: string;
   nextHdIndex: number;
+  /** epoch whose cull already ran (resume safety — never cull twice) */
+  lastCulledEpoch?: number;
+  /** spawns enqueued by a cull but not yet completed (retried each cycle) */
+  pendingSpawns?: PendingSpawn[];
   /** last epoch's market snapshot inputs for momentum computation */
   prevFxUsdPrice?: Record<FxLeg, number>;
   agents: SwarmAgentState[];

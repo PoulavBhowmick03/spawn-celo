@@ -165,84 +165,112 @@ async function usdmBalance(addr: Address): Promise<bigint> {
   });
 }
 
-/** Spawn one replacement agent inheriting (mutated) genome from `parent`. */
-async function spawnReplacement(
-  state: SwarmState,
-  parent: SwarmAgentState,
-  spawnPoolUsd: number,
-): Promise<SwarmAgentState | undefined> {
+/** Enqueue a replacement spawn (persisted; completed/retried by processPendingSpawns). */
+function enqueueSpawn(state: SwarmState, parent: SwarmAgentState, fundUsd: number): void {
   const hdIndex = state.nextHdIndex++;
   const generation = parent.generation + 1;
   const slug = `${parent.lineageKey}-g${generation}-i${hdIndex}`;
-  const account = deriveAccount(hdIndex);
   const params = mutateParams(parent.params);
-
-  const spec = {
-    hdIndex,
+  state.pendingSpawns = state.pendingSpawns ?? [];
+  state.pendingSpawns.push({
     slug,
     name: `${parent.name} g${generation}`,
+    hdIndex,
     strategy: parent.strategy,
     params,
-    description: `Generation ${generation} of the "${parent.lineageKey}" lineage, spawned from epoch-${state.epochNumber} top performer ${parent.slug} with ±20% mutated parameters. ${strategyFor(parent as unknown as AgentSpec).describe(params)}`,
     useSignal: parent.useSignal,
-  } as AgentSpec;
+    generation,
+    lineageKey: parent.lineageKey,
+    fundUsd: Math.min(MAX_AGENT_BALANCE_USD, fundUsd),
+    description: `Generation ${generation} of the "${parent.lineageKey}" lineage, spawned from epoch-${state.epochNumber} top performer ${parent.slug} with ±20% mutated parameters. ${strategyFor(parent as unknown as AgentSpec).describe(params)}`,
+  });
+  saveState(state);
+}
 
-  // card must resolve before registration (CLAUDE.md §8)
-  writeAgentCard(spec);
-  publishDocs(`feat(swarm): agent card for spawned ${slug} (epoch ${state.epochNumber})`);
-  await waitForCard(cardUrl(slug));
+/** Complete one pending spawn: FUND FIRST (the new wallet must be able to pay
+ *  its own registration gas in cUSD), then card -> register -> spawnChild. */
+async function completeSpawn(
+  state: SwarmState,
+  pending: import("./swarm-state.js").PendingSpawn,
+): Promise<SwarmAgentState> {
+  const account = deriveAccount(pending.hdIndex);
+  const spec = pending as unknown as AgentSpec;
 
-  const { agentId, txHash: regTx } = await registerIdentity(account, slug, cardUrl(slug));
-  saveRegistryEntry(slug, { agentId: agentId.toString(), address: account.address, txHash: regTx });
-  writeAgentCard(spec); // re-write with registrations[] embedded
-
-  // fund from the spawn pool (culled agents' returned balances), capped per agent
-  const fundUsd = Math.min(MAX_AGENT_BALANCE_USD, spawnPoolUsd);
-  if (fundUsd < 1) {
-    console.warn(`spawn pool too small ($${fundUsd.toFixed(2)}) — ${slug} registered but unfunded this epoch`);
-  } else {
-    assertTxAllowed(fundUsd, `fund spawned agent ${slug}`);
+  // 1. funding before registration — registration gas comes out of this
+  if ((await usdmBalance(account.address)) < parseUnits("0.05", 18)) {
+    if (pending.fundUsd < 0.5) throw new Error(`spawn pool too small ($${pending.fundUsd.toFixed(2)}) for ${pending.slug}`);
+    assertTxAllowed(pending.fundUsd, `fund spawned agent ${pending.slug}`);
     const orchWallet = celoWalletClient(orchestratorAccount());
     const hash = await orchWallet.writeContract({
       address: TOKENS.USDm,
       abi: erc20Abi,
       functionName: "transfer",
-      args: [account.address, parseUnits(fundUsd.toFixed(6), 18)],
+      args: [account.address, parseUnits(pending.fundUsd.toFixed(6), 18)],
       feeCurrency: maybeFee(FEE_CURRENCIES.USDm),
     });
     await celoPublicClient.waitForTransactionReceipt({ hash });
     logActivity({
       agentId: "orchestrator",
       action: "spawn-funding",
-      rationale: `Fund spawned agent ${slug} with $${fundUsd.toFixed(2)} cUSD from the spawn pool (recycled from culled agents' returned balances; per-agent cap $${MAX_AGENT_BALANCE_USD}).`,
+      rationale: `Fund spawned agent ${pending.slug} with $${pending.fundUsd.toFixed(2)} cUSD from the spawn pool (recycled from culled agents' returned balances; per-agent cap $${MAX_AGENT_BALANCE_USD}). Funded before registration so the new wallet pays its own registration gas in cUSD.`,
       txHash: hash,
       recipient: account.address,
     });
   }
 
+  // 2. card must resolve before registration (CLAUDE.md §8)
+  writeAgentCard(spec);
+  publishDocs(`feat(swarm): agent card for spawned ${pending.slug} (epoch ${state.epochNumber})`);
+  await waitForCard(cardUrl(pending.slug));
+
+  // 3. self-registration in the canonical Identity Registry
+  const { agentId, txHash: regTx } = await registerIdentity(account, pending.slug, cardUrl(pending.slug));
+  saveRegistryEntry(pending.slug, { agentId: agentId.toString(), address: account.address, txHash: regTx });
+  writeAgentCard(spec); // re-write with registrations[] embedded
+
+  // 4. onchain spawn provenance
   const { childContract, txHash: spawnTx } = await spawnChildOnchain(
-    parent.lineageKey,
-    generation,
+    pending.lineageKey,
+    pending.generation,
     account.address,
-    slug,
+    pending.slug,
   );
 
   return {
-    slug,
-    name: spec.name,
-    hdIndex,
+    slug: pending.slug,
+    name: pending.name,
+    hdIndex: pending.hdIndex,
     address: account.address,
     erc8004AgentId: agentId.toString(),
-    strategy: parent.strategy,
-    params,
-    useSignal: parent.useSignal,
-    generation,
-    lineageKey: parent.lineageKey,
+    strategy: pending.strategy,
+    params: pending.params,
+    useSignal: pending.useSignal,
+    generation: pending.generation,
+    lineageKey: pending.lineageKey,
     status: "ACTIVE",
     childContract,
     spawnTxHash: spawnTx,
     history: [],
   };
+}
+
+/** Try to complete every pending spawn; failures stay queued for next cycle. */
+export async function processPendingSpawns(state: SwarmState): Promise<string[]> {
+  const done: string[] = [];
+  for (const pending of [...(state.pendingSpawns ?? [])]) {
+    try {
+      const agent = await completeSpawn(state, pending);
+      state.agents.push(agent);
+      state.pendingSpawns = (state.pendingSpawns ?? []).filter((p) => p.slug !== pending.slug);
+      done.push(pending.slug);
+      saveState(state);
+      console.log(`  spawned ${pending.slug} (ERC-8004 #${agent.erc8004AgentId}, clone ${agent.childContract})`);
+    } catch (e) {
+      console.warn(`  spawn ${pending.slug} incomplete (${(e as Error).message?.slice(0, 120)}) — will retry next cycle`);
+      saveState(state);
+    }
+  }
+  return done;
 }
 
 export type EpochReport = {
@@ -355,8 +383,13 @@ export async function settleEpoch(state: SwarmState, ctx: MarketContext): Promis
     saveState(state);
   }
 
-  // 3. cull bottom 20% (min swarm 5): unwind to treasury + recallChild
-  const culls = selectCulls(rows.map((r) => ({ ...r, fitness: r.fitness })));
+  // 3. cull bottom 20% (min swarm 5): unwind to treasury + recallChild.
+  // Resume safety: if this epoch's cull already ran before a crash, never
+  // select a second victim for the same epoch.
+  const culls =
+    state.lastCulledEpoch === state.epochNumber
+      ? []
+      : selectCulls(rows.map((r) => ({ ...r, fitness: r.fitness })));
   const culledSlugs: string[] = [];
   let spawnPoolUsd = 0;
   for (const c of culls) {
@@ -385,26 +418,26 @@ export async function settleEpoch(state: SwarmState, ctx: MarketContext): Promis
       });
     }
     agent.status = "RETIRED";
+    state.lastCulledEpoch = state.epochNumber;
     culledSlugs.push(agent.slug);
     const row = reportRows.find((x) => x.slug === agent.slug);
     if (row) row.culled = true;
     saveState(state);
   }
 
-  // 4. spawn replacements from the top performer's mutated genome
-  const spawnedSlugs: string[] = [];
-  if (culls.length > 0 && /^(1|true|yes)$/i.test(process.env.CELO_SKIP_SPAWN ?? "")) {
-    console.log(`  CELO_SKIP_SPAWN set — skipping ${culls.length} replacement spawn(s) (fork test)`);
-  } else if (culls.length > 0) {
-    const top = rows.reduce((a, b) => (a.fitness >= b.fitness ? a : b)).agent;
-    for (let i = 0; i < culls.length; i++) {
-      const child = await spawnReplacement(state, top, spawnPoolUsd / culls.length);
-      if (child) {
-        state.agents.push(child);
-        spawnedSlugs.push(child.slug);
-        saveState(state);
+  // 4. spawn replacements from the top performer's mutated genome —
+  // enqueued persistently, then completed (failures retry next cycle)
+  let spawnedSlugs: string[] = [];
+  if ((culls.length > 0 || (state.pendingSpawns?.length ?? 0) > 0) && /^(1|true|yes)$/i.test(process.env.CELO_SKIP_SPAWN ?? "")) {
+    console.log(`  CELO_SKIP_SPAWN set — skipping replacement spawn(s) (fork test)`);
+  } else {
+    if (culls.length > 0) {
+      const top = rows.reduce((a, b) => (a.fitness >= b.fitness ? a : b)).agent;
+      for (let i = 0; i < culls.length; i++) {
+        enqueueSpawn(state, top, spawnPoolUsd / culls.length);
       }
     }
+    spawnedSlugs = await processPendingSpawns(state);
   }
 
   const report: EpochReport = {
