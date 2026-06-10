@@ -48,5 +48,10 @@
     "agentId": "9249",
     "address": "0x7522092e8bA35eE317B26990bFa8b2632A8e3fD0",
     "txHash": "0x27dc7054bcc684423d59ea53c2c643983d4d8500e9ac68bea158d6ff73888644"
+  },
+  "mfx-cautious-g2-i10": {
+    "agentId": "9256",
+    "address": "0x16a6432854fB067bE2353B15507043C39258EffB",
+    "txHash": "0x0738713629764504682b8216e51fed8dab298d02652eb0157acfdd2bcc98b0f0"
   }
 }
