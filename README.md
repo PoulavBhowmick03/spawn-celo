@@ -100,6 +100,12 @@ All identities are searchable on 8004scan ([search "spawn"](https://www.8004scan
 | Spawn Aave Yielder (anchor / balanced / chaser) | [#9244](https://www.8004scan.io/agents/celo/9244) · [#9245](https://www.8004scan.io/agents/celo/9245) · [#9246](https://www.8004scan.io/agents/celo/9246) |
 | Spawn Hedged Carry (light / mid / heavy) | [#9247](https://www.8004scan.io/agents/celo/9247) · [#9248](https://www.8004scan.io/agents/celo/9248) · [#9249](https://www.8004scan.io/agents/celo/9249) |
 | Spawn FX Rotator (cautious) **g2** — first evolved agent, spawned by the epoch-1 cull | [#9256](https://www.8004scan.io/agents/celo/9256) |
+| Spawn FX Rotator (cautious) **g2** (second descendant, epoch-2 cull) | [#9257](https://www.8004scan.io/agents/celo/9257) |
+| **Spawn Signal Oracle** — x402 service agent selling market signals for USDC | [#9258](https://www.8004scan.io/agents/celo/9258) |
+
+### x402 agent-to-agent economy (live)
+
+The signal oracle sells 5-minute-resolution Mento FX momentum + live Aave APYs at **$0.002 USDC per call** over the standard x402 protocol (HTTP 402 → signed `X-PAYMENT` → onchain settlement). Settlement is EIP-3009 `transferWithAuthorization` on Celo-native USDC, submitted by the oracle with cUSD gas — every sale is an auditable USDC transfer (first sale: [`0x7a5135df…50cb`](https://celoscan.io/tx/0x7a5135df3f00a8688e36cbac6cfe5146210ba7420957343c3f19731d8a4050cb)). Buyers are the swarm's own `useSignal` agents, which purchase a signal before each epoch evaluation; the purchased momentum drives their strategy decisions and is credited in their rationale logs.
 
 Retired agents keep their identity and final reputation (e.g. ay-anchor #9244, culled in epoch 1) — honest history is part of the design.
 

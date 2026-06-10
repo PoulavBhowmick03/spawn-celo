@@ -38,6 +38,12 @@
 - **Hardening shipped alongside**: residual sweeper recovers value stranded in retired wallets (sweep gas falls back to the swept token when cUSD is dust); spawn funding draws on the live treasury. Result observed in production: ay-anchor's $4.49 + hc-light's $4.94 recovered, queued spawn completed — **mfx-cautious-g2-i11, ERC-8004 #9257** (second evolved agent). Swarm steady-state: 10 active / 2 retired, 4h epochs.
 - **Next**: Phase 6 — x402 signal agent + paying swarm agents.
 
+## Phase 6 — x402 agent-to-agent economy LIVE (2026-06-11)
+
+- **Done**: Self-hosted x402 (standard wire protocol — HTTP 402, base64 X-PAYMENT, exact scheme; settlement = EIP-3009 transferWithAuthorization on Celo-native USDC, no external facilitator since THIRDWEB_SECRET_KEY absent; swappable later). Signal oracle (HD 30, **ERC-8004 #9258**, x402Support card) sells 5-min-resolution Mento FX momentum + live Aave APYs at $0.002/call; samples quotes every 5 min. useSignal agents (mfx-aggressive, ay-chaser, hc-mid + descendants) buy a signal before each epoch evaluation — purchased momentum replaces their epoch-boundary estimate. Phase 6 funded from the undeployed USDT buffer (~$1.8), agent trading capital untouched. **First mainnet sale verified end-to-end**: settlement tx `0x7a5135df…50cb`.
+- **Also shipped (pre-audit items)**: `report:epoch` judge report (§9), viewer-local dashboard timestamps, mid-epoch hourly ticks (act only when thresholds fire — honest intra-epoch activity), `caffeinate` host-sleep guard.
+- **Next**: supervised kill-switch test at the next epoch boundary (§9), demo video, submission checklist (user items: Self ID, quote-tweet, Telegram).
+
 ## Phase 3 — ERC-8004 identities live (2026-06-10, Day 2 milestone hit on Day 1)
 
 - **Done**: repo pushed to github.com/PoulavBhowmick03/spawn-celo (Pages enabled, main:/docs). 10 agent cards (eip-8004 registration-v1) at poulavbhowmick03.github.io/spawn-celo/agents/. All 10 identities minted in the canonical Celo Identity Registry, self-owned by each agent wallet (required so the orchestrator can post reputation feedback — registry forbids owner self-feedback): orchestrator #9240, mfx-cautious #9241, mfx-balanced #9242, mfx-aggressive #9243, ay-anchor #9244, ay-balanced #9245, ay-chaser #9246, hc-light #9247, hc-mid #9248, hc-heavy #9249. Cards regenerated with registrations[] and republished; registry mapping in docs/agents/registry.json.
