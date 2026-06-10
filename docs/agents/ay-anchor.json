@@ -1,0 +1,35 @@
+{
+  "type": "https://eips.ethereum.org/EIPS/eip-8004#registration-v1",
+  "name": "Spawn Aave Yielder (anchor)",
+  "description": "Supplies cUSD/USDC/USDT to Aave v3 Celo and compounds. Rebalances between assets only when the supply APY gap exceeds 0.50%; keeps 10% dry powder.",
+  "services": [
+    {
+      "name": "activity-log",
+      "endpoint": "https://github.com/PoulavBhowmick03/spawn-celo/blob/main/celo_activity.jsonl"
+    },
+    {
+      "name": "source",
+      "endpoint": "https://github.com/PoulavBhowmick03/spawn-celo"
+    }
+  ],
+  "x402Support": false,
+  "active": true,
+  "registrations": [],
+  "supportedTrust": [
+    "reputation"
+  ],
+  "spawn": {
+    "role": "swarm-agent",
+    "wallet": "0xdecF835537234aDcCc42B0FDC5f8063381F574f2",
+    "strategy": "AaveYielder",
+    "params": {
+      "minApyDeltaBps": 50,
+      "reserveBps": 1000,
+      "compoundEveryEpochs": 2
+    },
+    "buysX402Signals": false,
+    "fitnessFormula": "fitness = annualize(V_end/V_start) - gas_penalty; reputation = clamp(round(50 + 500*(fitness - swarm_median)), 0, 100); inputs recomputable from Celoscan",
+    "explorer": "https://celoscan.io/address/0xdecF835537234aDcCc42B0FDC5f8063381F574f2",
+    "scan8004": "https://www.8004scan.io/agents/celo"
+  }
+}

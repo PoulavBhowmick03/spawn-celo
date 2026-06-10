@@ -1,0 +1,35 @@
+{
+  "type": "https://eips.ethereum.org/EIPS/eip-8004#registration-v1",
+  "name": "Spawn Hedged Carry (heavy hedge)",
+  "description": "Holds 40% in Aave v3 yield, 60% in the strongest Mento FX leg. The FX-forward end of the crossover.",
+  "services": [
+    {
+      "name": "activity-log",
+      "endpoint": "https://github.com/PoulavBhowmick03/spawn-celo/blob/main/celo_activity.jsonl"
+    },
+    {
+      "name": "source",
+      "endpoint": "https://github.com/PoulavBhowmick03/spawn-celo"
+    }
+  ],
+  "x402Support": false,
+  "active": true,
+  "registrations": [],
+  "supportedTrust": [
+    "reputation"
+  ],
+  "spawn": {
+    "role": "swarm-agent",
+    "wallet": "0x7522092e8bA35eE317B26990bFa8b2632A8e3fD0",
+    "strategy": "HedgedCarry",
+    "params": {
+      "fxLegBps": 6000,
+      "minEdgeBps": 15,
+      "minApyDeltaBps": 25
+    },
+    "buysX402Signals": false,
+    "fitnessFormula": "fitness = annualize(V_end/V_start) - gas_penalty; reputation = clamp(round(50 + 500*(fitness - swarm_median)), 0, 100); inputs recomputable from Celoscan",
+    "explorer": "https://celoscan.io/address/0x7522092e8bA35eE317B26990bFa8b2632A8e3fD0",
+    "scan8004": "https://www.8004scan.io/agents/celo"
+  }
+}

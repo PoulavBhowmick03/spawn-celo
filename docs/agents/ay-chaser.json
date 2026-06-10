@@ -1,0 +1,35 @@
+{
+  "type": "https://eips.ethereum.org/EIPS/eip-8004#registration-v1",
+  "name": "Spawn Aave Yielder (chaser)",
+  "description": "Chases the best Aave v3 Celo stable supply rate, rebalancing on APY gaps above 0.15%; 2.5% dry powder; buys x402 market signals.",
+  "services": [
+    {
+      "name": "activity-log",
+      "endpoint": "https://github.com/PoulavBhowmick03/spawn-celo/blob/main/celo_activity.jsonl"
+    },
+    {
+      "name": "source",
+      "endpoint": "https://github.com/PoulavBhowmick03/spawn-celo"
+    }
+  ],
+  "x402Support": false,
+  "active": true,
+  "registrations": [],
+  "supportedTrust": [
+    "reputation"
+  ],
+  "spawn": {
+    "role": "swarm-agent",
+    "wallet": "0xde9e6081fD967F2F78eD4534270Ff39Ec7E9727b",
+    "strategy": "AaveYielder",
+    "params": {
+      "minApyDeltaBps": 15,
+      "reserveBps": 250,
+      "compoundEveryEpochs": 1
+    },
+    "buysX402Signals": true,
+    "fitnessFormula": "fitness = annualize(V_end/V_start) - gas_penalty; reputation = clamp(round(50 + 500*(fitness - swarm_median)), 0, 100); inputs recomputable from Celoscan",
+    "explorer": "https://celoscan.io/address/0xde9e6081fD967F2F78eD4534270Ff39Ec7E9727b",
+    "scan8004": "https://www.8004scan.io/agents/celo"
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "type": "https://eips.ethereum.org/EIPS/eip-8004#registration-v1",
+  "name": "Spawn FX Rotator (balanced)",
+  "description": "Rotates between cUSD, cEUR and cREAL via the Mento broker when the expected FX edge exceeds swap cost + 0.20%.",
+  "services": [
+    {
+      "name": "activity-log",
+      "endpoint": "https://github.com/PoulavBhowmick03/spawn-celo/blob/main/celo_activity.jsonl"
+    },
+    {
+      "name": "source",
+      "endpoint": "https://github.com/PoulavBhowmick03/spawn-celo"
+    }
+  ],
+  "x402Support": false,
+  "active": true,
+  "registrations": [],
+  "supportedTrust": [
+    "reputation"
+  ],
+  "spawn": {
+    "role": "swarm-agent",
+    "wallet": "0xf115955AD3D56c66d75B421594C90c7d05fa7190",
+    "strategy": "MentoFXRotator",
+    "params": {
+      "minEdgeBps": 20,
+      "maxPositionUsd": 5,
+      "lookbackHours": 6
+    },
+    "buysX402Signals": false,
+    "fitnessFormula": "fitness = annualize(V_end/V_start) - gas_penalty; reputation = clamp(round(50 + 500*(fitness - swarm_median)), 0, 100); inputs recomputable from Celoscan",
+    "explorer": "https://celoscan.io/address/0xf115955AD3D56c66d75B421594C90c7d05fa7190",
+    "scan8004": "https://www.8004scan.io/agents/celo"
+  }
+}
