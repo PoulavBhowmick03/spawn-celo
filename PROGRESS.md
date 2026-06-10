@@ -32,6 +32,12 @@
 - **Production lessons burned in**: CIP-64's estimation-time fee pre-debit breaks near-full-balance transfers (explicit gas limits everywhere); never pay swap gas in the token being swept; Mento FX pools close outside forex hours (FXMarketClosed) — quotes/actions/unwinds all degrade gracefully; fund spawned wallets BEFORE self-registration; persistent pending-spawn queue + cull-once-per-epoch marker make every settle step crash-resumable.
 - **Next**: Phase 5 dashboard re-skin + transparency layer; Phase 6 x402 signal agent.
 
+## Phase 5 — Dashboard + transparency layer LIVE (2026-06-11, Day 4 milestone hit on Day 2)
+
+- **Done**: https://spawn-celo-swarm.vercel.app — reads the same public artifacts the orchestrator pushes to GitHub each epoch (state, activity log, epoch reports); no private API, survives swarm-host downtime. Swarm table with per-agent 8004scan/Celoscan links, epoch-by-epoch evolution view (culls/spawns/scores + reputation tx links), full activity-log viewer with rationales, recompute-it-yourself section with the fitness formula and all contract links. README live-links + 8004scan identity table filled. Agent cards got a logo (8004scan listing polish).
+- **Hardening shipped alongside**: residual sweeper recovers value stranded in retired wallets (sweep gas falls back to the swept token when cUSD is dust); spawn funding draws on the live treasury. Result observed in production: ay-anchor's $4.49 + hc-light's $4.94 recovered, queued spawn completed — **mfx-cautious-g2-i11, ERC-8004 #9257** (second evolved agent). Swarm steady-state: 10 active / 2 retired, 4h epochs.
+- **Next**: Phase 6 — x402 signal agent + paying swarm agents.
+
 ## Phase 3 — ERC-8004 identities live (2026-06-10, Day 2 milestone hit on Day 1)
 
 - **Done**: repo pushed to github.com/PoulavBhowmick03/spawn-celo (Pages enabled, main:/docs). 10 agent cards (eip-8004 registration-v1) at poulavbhowmick03.github.io/spawn-celo/agents/. All 10 identities minted in the canonical Celo Identity Registry, self-owned by each agent wallet (required so the orchestrator can post reputation feedback — registry forbids owner self-feedback): orchestrator #9240, mfx-cautious #9241, mfx-balanced #9242, mfx-aggressive #9243, ay-anchor #9244, ay-balanced #9245, ay-chaser #9246, hc-light #9247, hc-mid #9248, hc-heavy #9249. Cards regenerated with registrations[] and republished; registry mapping in docs/agents/registry.json.
