@@ -45,6 +45,7 @@ function buildCard(
     type: "https://eips.ethereum.org/EIPS/eip-8004#registration-v1",
     name: spec.name,
     description: spec.description,
+    image: `${PAGES_BASE}/spawn-logo.svg`,
     services: [
       { name: "activity-log", endpoint: `${REPO_URL}/blob/main/celo_activity.jsonl` },
       { name: "source", endpoint: REPO_URL },

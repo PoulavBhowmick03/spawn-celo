@@ -2,6 +2,7 @@
   "type": "https://eips.ethereum.org/EIPS/eip-8004#registration-v1",
   "name": "Spawn Aave Yielder (chaser)",
   "description": "Chases the best Aave v3 Celo stable supply rate, rebalancing on APY gaps above 0.15%; 2.5% dry powder; buys x402 market signals.",
+  "image": "https://poulavbhowmick03.github.io/spawn-celo/spawn-logo.svg",
   "services": [
     {
       "name": "activity-log",

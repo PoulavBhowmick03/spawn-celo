@@ -2,6 +2,7 @@
   "type": "https://eips.ethereum.org/EIPS/eip-8004#registration-v1",
   "name": "Spawn Hedged Carry (heavy hedge)",
   "description": "Holds 40% in Aave v3 yield, 60% in the strongest Mento FX leg. The FX-forward end of the crossover.",
+  "image": "https://poulavbhowmick03.github.io/spawn-celo/spawn-logo.svg",
   "services": [
     {
       "name": "activity-log",

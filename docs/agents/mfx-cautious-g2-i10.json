@@ -1,7 +1,8 @@
 {
   "type": "https://eips.ethereum.org/EIPS/eip-8004#registration-v1",
   "name": "Spawn FX Rotator (cautious) g2",
-  "description": "Generation 2 of the \"mfx-cautious\" lineage, spawned from epoch-1 top performer mfx-cautious with ±20% mutated parameters. Rotate cUSD/cEUR/cREAL via Mento when FX momentum beats round-trip cost + 25bps",
+  "description": "Generation 2 of the \"mfx-cautious\" lineage, spawned from epoch-1 top performer mfx-cautious with \u00b120% mutated parameters. Rotate cUSD/cEUR/cREAL via Mento when FX momentum beats round-trip cost + 25bps",
+  "image": "https://poulavbhowmick03.github.io/spawn-celo/spawn-logo.svg",
   "services": [
     {
       "name": "activity-log",

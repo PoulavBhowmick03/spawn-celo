@@ -2,6 +2,7 @@
   "type": "https://eips.ethereum.org/EIPS/eip-8004#registration-v1",
   "name": "Spawn Hedge Swarm Orchestrator",
   "description": "Orchestrator of the Spawn Hedge Swarm on Celo: runs the 4h epoch loop (evaluate → cull → spawn → rebalance), computes the published recomputable fitness function, posts performance-derived reputation feedback for every swarm agent, and operates the treasury and kill switch. Every onchain action carries a logged rationale.",
+  "image": "https://poulavbhowmick03.github.io/spawn-celo/spawn-logo.svg",
   "services": [
     {
       "name": "activity-log",

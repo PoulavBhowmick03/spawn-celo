@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <rect width="128" height="128" rx="24" fill="#0b1f17"/>
+  <circle cx="64" cy="40" r="14" fill="#35d07f"/>
+  <circle cx="36" cy="84" r="11" fill="#fbcc5c"/>
+  <circle cx="64" cy="92" r="11" fill="#35d07f" opacity="0.75"/>
+  <circle cx="92" cy="84" r="11" fill="#fbcc5c" opacity="0.75"/>
+  <path d="M64 54 L36 73 M64 54 L64 81 M64 54 L92 73" stroke="#e7f6ee" stroke-width="3" fill="none"/>
+  <text x="64" y="121" font-family="monospace" font-size="13" fill="#e7f6ee" text-anchor="middle">SPAWN·CELO</text>
+</svg>

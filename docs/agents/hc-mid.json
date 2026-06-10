@@ -2,6 +2,7 @@
   "type": "https://eips.ethereum.org/EIPS/eip-8004#registration-v1",
   "name": "Spawn Hedged Carry (mid hedge)",
   "description": "Holds 60% in Aave v3 yield, 40% in the strongest Mento FX leg; buys x402 market signals.",
+  "image": "https://poulavbhowmick03.github.io/spawn-celo/spawn-logo.svg",
   "services": [
     {
       "name": "activity-log",

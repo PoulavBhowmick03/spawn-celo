@@ -2,6 +2,7 @@
   "type": "https://eips.ethereum.org/EIPS/eip-8004#registration-v1",
   "name": "Spawn Aave Yielder (balanced)",
   "description": "Supplies cUSD/USDC/USDT to Aave v3 Celo, compounds every epoch, rebalances on APY gaps above 0.30%; 5% dry powder.",
+  "image": "https://poulavbhowmick03.github.io/spawn-celo/spawn-logo.svg",
   "services": [
     {
       "name": "activity-log",

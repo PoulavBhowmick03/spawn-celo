@@ -2,6 +2,7 @@
   "type": "https://eips.ethereum.org/EIPS/eip-8004#registration-v1",
   "name": "Spawn FX Rotator (aggressive)",
   "description": "Rotates between cUSD, cEUR and cREAL via the Mento broker on edges above swap cost + 0.12%. Fast hands, higher churn; buys x402 market signals.",
+  "image": "https://poulavbhowmick03.github.io/spawn-celo/spawn-logo.svg",
   "services": [
     {
       "name": "activity-log",
