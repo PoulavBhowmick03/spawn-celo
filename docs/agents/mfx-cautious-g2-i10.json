@@ -1,0 +1,35 @@
+{
+  "type": "https://eips.ethereum.org/EIPS/eip-8004#registration-v1",
+  "name": "Spawn FX Rotator (cautious) g2",
+  "description": "Generation 2 of the \"mfx-cautious\" lineage, spawned from epoch-1 top performer mfx-cautious with ±20% mutated parameters. Rotate cUSD/cEUR/cREAL via Mento when FX momentum beats round-trip cost + 25bps",
+  "services": [
+    {
+      "name": "activity-log",
+      "endpoint": "https://github.com/PoulavBhowmick03/spawn-celo/blob/main/celo_activity.jsonl"
+    },
+    {
+      "name": "source",
+      "endpoint": "https://github.com/PoulavBhowmick03/spawn-celo"
+    }
+  ],
+  "x402Support": false,
+  "active": true,
+  "registrations": [],
+  "supportedTrust": [
+    "reputation"
+  ],
+  "spawn": {
+    "role": "swarm-agent",
+    "wallet": "0x16a6432854fB067bE2353B15507043C39258EffB",
+    "strategy": "MentoFXRotator",
+    "params": {
+      "minEdgeBps": 25,
+      "maxPositionUsd": 4,
+      "lookbackHours": 11
+    },
+    "buysX402Signals": false,
+    "fitnessFormula": "fitness = annualize(V_end/V_start) - gas_penalty; reputation = clamp(round(50 + 500*(fitness - swarm_median)), 0, 100); inputs recomputable from Celoscan",
+    "explorer": "https://celoscan.io/address/0x16a6432854fB067bE2353B15507043C39258EffB",
+    "scan8004": "https://www.8004scan.io/agents/celo"
+  }
+}
