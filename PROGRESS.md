@@ -25,6 +25,12 @@
 - **Gotcha hit and fixed**: forno's load balancer served stale reads right after writes (§8 warning confirmed in practice). Smoke script now retries position reads with backoff + jitter and is idempotent (skips the supply leg if the position already exists). Swarm code must never trust an immediate post-write read from forno.
 - **Phase 2 complete.** Next: Phase 3 — agent cards + ERC-8004 registration (orchestrator + 9 agents) against the canonical Celo registries.
 
+## Phase 3 — ERC-8004 identities live (2026-06-10, Day 2 milestone hit on Day 1)
+
+- **Done**: repo pushed to github.com/PoulavBhowmick03/spawn-celo (Pages enabled, main:/docs). 10 agent cards (eip-8004 registration-v1) at poulavbhowmick03.github.io/spawn-celo/agents/. All 10 identities minted in the canonical Celo Identity Registry, self-owned by each agent wallet (required so the orchestrator can post reputation feedback — registry forbids owner self-feedback): orchestrator #9240, mfx-cautious #9241, mfx-balanced #9242, mfx-aggressive #9243, ay-anchor #9244, ay-balanced #9245, ay-chaser #9246, hc-light #9247, hc-mid #9248, hc-heavy #9249. Cards regenerated with registrations[] and republished; registry mapping in docs/agents/registry.json.
+- **Verified by**: onchain ownerOf+tokenURI per identity (with lag-resistant retries); 8004scan.io/agents/celo/9240 renders "Spawn Hedge Swarm Orchestrator" (indexer resolved our card); every registration + gas seed logged with rationale in celo_activity.jsonl.
+- **Next**: Phase 4 — deterministic strategies, recomputable fitness engine, 4h epoch loop with bottom-20% cull → unwind-to-treasury, reputation writer (giveFeedback from the orchestrator identity), kill switch, fund 9 agents $5 each, run first supervised epoch.
+
 ## Phase 0 — Inventory of the existing Spawn codebase (2026-06-10)
 
 Status: **map complete, awaiting developer confirmation before any code is written.**
