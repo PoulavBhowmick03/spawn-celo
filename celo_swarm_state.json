@@ -349,19 +349,13 @@
       "childContract": "0xF7fA391B77Ac0F070e4E504f86E7851f415a1EdE",
       "spawnTxHash": "0x39c1fe08c152b7715797248fcd342770ab87d7bfd4f335f54291f8cabfdfea9a",
       "history": []
-    }
-  ],
-  "prevFxUsdPrice": {
-    "EURm": 1.1521873125,
-    "BRLm": 0.192322297
-  },
-  "epochStartedAt": "2026-06-10T18:40:10.227Z",
-  "lastCulledEpoch": 2,
-  "pendingSpawns": [
+    },
     {
       "slug": "mfx-cautious-g2-i11",
       "name": "Spawn FX Rotator (cautious) g2",
       "hdIndex": 11,
+      "address": "0x320b0337E4B1D2E14085e8e351e3F3d59d9c3cb6",
+      "erc8004AgentId": "9257",
       "strategy": "MentoFXRotator",
       "params": {
         "minEdgeBps": 34,
@@ -371,8 +365,17 @@
       "useSignal": false,
       "generation": 2,
       "lineageKey": "mfx-cautious",
-      "fundUsd": 0.0445721372148237,
-      "description": "Generation 2 of the \"mfx-cautious\" lineage, spawned from epoch-2 top performer mfx-cautious with ±20% mutated parameters. Rotate cUSD/cEUR/cREAL via Mento when FX momentum beats round-trip cost + 34bps"
+      "status": "ACTIVE",
+      "childContract": "0x87cDa5843Cf32EEfFE71076483c30cd6250211E8",
+      "spawnTxHash": "0x74cd3565389b9969f2b5b32aceec15db46d428e68fbb4b3d0f01417d4d52a388",
+      "history": []
     }
-  ]
+  ],
+  "prevFxUsdPrice": {
+    "EURm": 1.1521873125,
+    "BRLm": 0.192322297
+  },
+  "epochStartedAt": "2026-06-10T18:40:10.227Z",
+  "lastCulledEpoch": 2,
+  "pendingSpawns": []
 }
