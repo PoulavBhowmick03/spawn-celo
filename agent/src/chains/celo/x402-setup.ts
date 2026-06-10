@@ -21,12 +21,12 @@ import { executeSwap } from "./mento.js";
 import { assertTxAllowed } from "./budget.js";
 import { logActivity } from "./activity-log.js";
 import { publishDocs } from "./epoch.js";
-import { SIGNAL_AGENT_HD_INDEX } from "./signal-service.js";
+import { SIGNAL_AGENT_HD_INDEX } from "./x402.js";
 import { loadState } from "./swarm-state.js";
 
 const LIVE = /^(1|true|yes)$/i.test(process.env.ALLOW_LIVE_X402_SETUP ?? "");
-const USDC_PER_BUYER = parseUnits("0.6", 6); // ~300 signal calls each
-const ORACLE_GAS_CUSD = parseUnits("0.3", 18);
+const USDC_PER_BUYER = parseUnits("0.35", 6); // ~175 signal calls each
+const ORACLE_GAS_CUSD = parseUnits("0.25", 18);
 
 const ORACLE_SPEC = {
   hdIndex: SIGNAL_AGENT_HD_INDEX,
@@ -59,6 +59,28 @@ async function main() {
   if (!LIVE) {
     console.log("DRY-RUN. Set ALLOW_LIVE_X402_SETUP=true to execute.");
     return;
+  }
+
+  // 0. the cUSD budget is fully deployed in agents; Phase 6's footprint is
+  // funded from the treasury's undeployed USDT buffer (~$2.8 left over from
+  // the original conversion). Swap some to cUSD for ops float first.
+  const treasuryUsdm = await celoPublicClient.readContract({
+    address: TOKENS.USDm, abi: erc20Abi, functionName: "balanceOf", args: [treasury.address],
+  });
+  if (treasuryUsdm < parseUnits("1", 18)) {
+    await executeSwap({
+      account: treasury,
+      agentId: "orchestrator",
+      tokenIn: TOKENS.USDT,
+      tokenOut: TOKENS.USDm,
+      amountIn: parseUnits("1.4", 6),
+      tokenInDecimals: 6,
+      tokenOutDecimals: 18,
+      usdValue: 1.4,
+      feeCurrency: maybeFee(FEE_CURRENCIES.USDT_ADAPTER),
+      rationale:
+        "Replenish the treasury's cUSD operations float (orchestrator gas for reputation writes, recalls, spawns and the signal oracle) from the undeployed USDT buffer — trading capital in agents stays untouched.",
+    });
   }
 
   // 1. gas for the oracle (it submits settlement txs, gas in cUSD)
@@ -112,14 +134,14 @@ async function main() {
     await executeSwap({
       account: treasury,
       agentId: "orchestrator",
-      tokenIn: TOKENS.USDm,
+      tokenIn: TOKENS.USDT,
       tokenOut: TOKENS.USDC,
-      amountIn: parseUnits(buyUsd.toFixed(6), 18),
-      tokenInDecimals: 18,
+      amountIn: parseUnits(buyUsd.toFixed(6), 6),
+      tokenInDecimals: 6,
       tokenOutDecimals: 6,
       usdValue: buyUsd,
-      feeCurrency: maybeFee(FEE_CURRENCIES.USDm),
-      rationale: `Convert $${buyUsd.toFixed(2)} cUSD to USDC so useSignal agents can pay the x402 signal oracle (EIP-3009 requires USDC).`,
+      feeCurrency: maybeFee(FEE_CURRENCIES.USDT_ADAPTER),
+      rationale: `Convert $${buyUsd.toFixed(2)} of the undeployed USDT buffer to USDC so useSignal agents can pay the x402 signal oracle (EIP-3009 requires USDC).`,
     });
   }
   for (const b of buyers) {

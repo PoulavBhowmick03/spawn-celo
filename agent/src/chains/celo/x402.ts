@@ -24,6 +24,7 @@ import { celoPublicClient, celoWalletClient, maybeFee } from "./chain.js";
 import { logActivity } from "./activity-log.js";
 
 export const X402_VERSION = 1;
+export const SIGNAL_AGENT_HD_INDEX = 30;
 export const SIGNAL_PRICE_USDC = "0.002"; // $0.002 per call
 export const SIGNAL_PRICE_UNITS = parseUnits(SIGNAL_PRICE_USDC, 6);
 

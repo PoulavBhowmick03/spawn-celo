@@ -22,10 +22,9 @@ import {
   buildRequirements,
   verifyPayment,
   settlePayment,
+  SIGNAL_AGENT_HD_INDEX,
   X402_VERSION,
 } from "./x402.js";
-
-export const SIGNAL_AGENT_HD_INDEX = 30;
 const PORT = Number(process.env.SIGNAL_PORT ?? 8402);
 const SAMPLE_MS = 5 * 60 * 1000;
 const RING_MAX = 288; // 24h of 5-min samples
@@ -135,7 +134,10 @@ async function main() {
   server.listen(PORT, "127.0.0.1", () => console.log(`signal oracle listening on :${PORT}`));
 }
 
-main().catch((e) => {
-  console.error(e);
-  process.exit(1);
-});
+// start only when run directly — importers must not boot a server
+if (process.argv[1]?.endsWith("signal-service.ts")) {
+  main().catch((e) => {
+    console.error(e);
+    process.exit(1);
+  });
+}
