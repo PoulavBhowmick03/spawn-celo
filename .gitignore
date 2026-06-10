@@ -7,3 +7,4 @@ cache/
 .DS_Store
 agent/.next/
 judge_flow_state.json
+.vercel/

@@ -118,9 +118,26 @@
       "fitness": -4.038531599607129,
       "score": 50,
       "culled": false
+    },
+    {
+      "slug": "ay-anchor",
+      "erc8004AgentId": "9244",
+      "strategy": "AaveYielder",
+      "generation": 1,
+      "vStartUsd": 5.000000106192426,
+      "vEndUsd": 4.994916758064263,
+      "gasUsd": 0.00528825255498,
+      "fitness": -36.34208802188488,
+      "score": 0,
+      "culled": true
     }
   ],
   "swarmMedianFitness": -4.038531599607129,
-  "culled": [],
-  "spawned": []
+  "culled": [
+    "ay-anchor"
+  ],
+  "spawned": [
+    "mfx-cautious-g2-i10"
+  ],
+  "note": "Report file reconstructed after a mid-settle process restart; cull/spawn values recovered from recorded agent history. Onchain events (recallChild, spawnChild, giveFeedback) are the primary record."
 }

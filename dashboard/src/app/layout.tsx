@@ -17,9 +17,9 @@ const mono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Spawn Protocol | Forensic Terminal",
+  title: "Spawn Protocol | Hedge Swarm on Celo",
   description:
-    "Darwinian AI yield-agent swarm on Mantle mainnet. Every termination produces verifiable generational memory.",
+    "Darwinian swarm of ERC-8004 agents protecting stablecoin purchasing power on Celo mainnet — Mento FX + Aave v3 yield, recomputable onchain reputation, every transaction with a published rationale.",
 };
 
 export default function RootLayout({

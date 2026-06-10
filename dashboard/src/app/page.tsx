@@ -1,593 +1,277 @@
-"use client";
+import {
+  CONTRACTS,
+  PAGES_BASE,
+  REPO_URL,
+  SCAN_8004,
+  explorerAddress,
+  explorerTx,
+  scanAgent,
+} from "@/lib/celo";
+import {
+  fetchActivity,
+  fetchEpochReports,
+  fetchSwarmState,
+  type SwarmAgent,
+} from "@/lib/celo-data";
+import { CeloAutoRefresh } from "@/components/CeloAutoRefresh";
 
-import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
-import { API_BASE, mantlePublicClient } from "@/lib/mantle";
+export const revalidate = 60;
 
-type LandingStats = {
-  totalGenerations: number;
-  totalRecalled: number;
-  latestYield: number;
-  improvement: number;
-  // Per-generation yields (real, in generation order) used to drive the chart bars.
-  genYields: number[];
-  // Real Aave benchmark yield (latest gen) — drives the benchmark marker position.
-  benchmarkYield: number | null;
-};
-
-async function fetchLandingStats(): Promise<LandingStats | null> {
-  try {
-    const res = await fetch(`${API_BASE}/api/generations`, {
-      signal: AbortSignal.timeout(3000),
-    });
-    if (!res.ok) return null;
-    const body = await res.json();
-    const gens: { avgYieldPct: number; agentsTerminated: number; benchmarkYieldPct?: number }[] =
-      body.generations ?? [];
-    if (gens.length === 0) return null;
-    const first = gens[0];
-    const last = gens[gens.length - 1];
-    const totalRecalled = gens.reduce((a, g) => a + g.agentsTerminated, 0);
-    const bench = last.benchmarkYieldPct;
-    return {
-      totalGenerations: gens.length,
-      totalRecalled,
-      latestYield: last.avgYieldPct,
-      improvement: last.avgYieldPct - first.avgYieldPct,
-      genYields: gens.map((g) => g.avgYieldPct),
-      benchmarkYield: typeof bench === "number" ? bench : null,
-    };
-  } catch {
-    return null;
-  }
+function fmtUsd(n?: number) {
+  return n === undefined ? "—" : `$${n.toFixed(3)}`;
 }
 
-async function copyText(text: string) {
-  try {
-    await navigator.clipboard.writeText(text);
-  } catch {
-    const ta = document.createElement("textarea");
-    ta.value = text;
-    document.body.appendChild(ta);
-    ta.select();
-    document.execCommand("copy");
-    ta.remove();
-  }
+function lastOf(agent: SwarmAgent) {
+  return agent.history[agent.history.length - 1];
 }
 
-function CopyBtn({ address }: { address: string }) {
-  const [copied, setCopied] = useState(false);
+function StatusPill({ status }: { status: SwarmAgent["status"] }) {
   return (
-    <button
-      className={`copy-btn${copied ? " copied" : ""}`}
-      onClick={async (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        await copyText(address);
-        setCopied(true);
-        setTimeout(() => setCopied(false), 1200);
-      }}
+    <span
+      className={
+        status === "ACTIVE"
+          ? "rounded px-1.5 py-0.5 text-xs font-semibold bg-emerald-500/15 text-emerald-500"
+          : "rounded px-1.5 py-0.5 text-xs font-semibold bg-zinc-500/15 text-zinc-400"
+      }
     >
-      {copied ? "Copied" : "Copy"}
-    </button>
+      {status}
+    </span>
   );
 }
 
-export default function LandingPage() {
-  const [block, setBlock] = useState<bigint | null>(null);
-  const [stats, setStats] = useState<LandingStats | null>(null);
-  const animatedRef = useRef(false);
+export default async function Home() {
+  const [state, activity] = await Promise.all([fetchSwarmState(), fetchActivity(120)]);
+  const reports = state ? await fetchEpochReports(state.epochNumber) : [];
 
-  // fetch live stats once
-  useEffect(() => {
-    fetchLandingStats().then(setStats);
-  }, []);
-
-  // nav scroll state
-  useEffect(() => {
-    const nav = document.getElementById("landing-nav");
-    const onScroll = () => {
-      if (window.scrollY > 100) nav?.classList.add("scrolled");
-      else nav?.classList.remove("scrolled");
-    };
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
-
-  // live block height — real Mantle chain head via viem, polled (no fake increment)
-  useEffect(() => {
-    let cancelled = false;
-    const poll = async () => {
-      try {
-        const n = await mantlePublicClient.getBlockNumber();
-        if (!cancelled) setBlock(n);
-      } catch {
-        if (!cancelled) setBlock(null);
-      }
-    };
-    void poll();
-    const id = setInterval(poll, 5000);
-    return () => {
-      cancelled = true;
-      clearInterval(id);
-    };
-  }, []);
-
-  // hero counter animation — runs only when stats resolve
-  useEffect(() => {
-    if (stats === null) return;
-    if (animatedRef.current) return;
-    animatedRef.current = true;
-
-    function easeOut(t: number) { return 1 - Math.pow(1 - t, 3); }
-    const els = document.querySelectorAll<HTMLElement>("[data-counter]");
-    if (els.length === 0) return;
-    const start = performance.now();
-    const dur = 1200;
-    function step(now: number) {
-      const t = Math.min(1, (now - start) / dur);
-      const e = easeOut(t);
-      els.forEach((el) => {
-        const target = parseFloat(el.dataset.counter!);
-        const fmt = el.dataset.format;
-        const v = target * e;
-        if (fmt === "int") el.textContent = Math.round(v).toLocaleString();
-        else if (fmt === "pct") el.textContent = v.toFixed(2) + "%";
-        else if (fmt === "signed") el.textContent = (v >= 0 ? "+" : "") + v.toFixed(2) + "%";
-        else el.textContent = v.toFixed(2);
-      });
-      if (t < 1) requestAnimationFrame(step);
-    }
-    requestAnimationFrame(step);
-  }, [stats]);
-
-  // benchmark marker + chart bar widths — recomputed from REAL data whenever stats resolve.
-  useEffect(() => {
-    // Benchmark line position: derived from the real Aave benchmark yield on the same
-    // ÷11 scale as the bars. If there is no real benchmark, hide the marker entirely
-    // rather than render a decorative hardcoded position.
-    document.querySelectorAll<HTMLElement>(".bench").forEach((b) => {
-      if (stats && stats.benchmarkYield !== null) {
-        const pct = (Math.min(stats.benchmarkYield, 11) / 11) * 100;
-        b.style.left = pct + "%";
-        b.style.display = "";
-      } else {
-        b.style.display = "none";
-      }
-    });
-
-    // chart bars reveal — widths from real per-gen yields
-    const chart = document.getElementById("gen-chart");
-    if (chart) {
-      const reveal = () => {
-        chart.querySelectorAll<HTMLElement>(".bar").forEach((bar, i) => {
-          const y = parseFloat(bar.dataset.yield ?? "0");
-          const w = (y / 11) * 100;
-          setTimeout(() => { bar.style.width = w + "%"; }, i * 150);
-        });
-        setTimeout(() => chart.classList.add("bars-revealed"), 1000);
-      };
-      const obs = new IntersectionObserver(
-        (entries) => {
-          entries.forEach((en) => {
-            if (en.isIntersecting) {
-              reveal();
-              obs.unobserve(chart);
-            }
-          });
-        },
-        { threshold: 0.3 }
-      );
-      obs.observe(chart);
-    }
-  }, [stats]);
-
-  // scroll-driven reveals: titles, loop, novel grid
-  useEffect(() => {
-    // section title reveal
-    const titleObs = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((en) => {
-          if (en.isIntersecting) { en.target.classList.add("revealed"); titleObs.unobserve(en.target); }
-        });
-      },
-      { threshold: 0.1 }
-    );
-    document.querySelectorAll(".landing-page .sec-title").forEach((t) => titleObs.observe(t));
-
-    // loop stagger + progress bar
-    const loop = document.getElementById("loop-el");
-    if (loop) {
-      const loopObs = new IntersectionObserver(
-        (entries) => {
-          entries.forEach((en) => {
-            if (en.isIntersecting) { en.target.classList.add("revealed"); loopObs.unobserve(en.target); }
-          });
-        },
-        { threshold: 0.25 }
-      );
-      loopObs.observe(loop);
-    }
-
-    // novel grid stagger
-    const novel = document.getElementById("novel-grid-el");
-    if (novel) {
-      novel.querySelectorAll<HTMLElement>(".novel-item").forEach((it, i) => {
-        it.style.setProperty("--reveal-delay", `${i * 60}ms`);
-      });
-      const novelObs = new IntersectionObserver(
-        (entries) => {
-          entries.forEach((en) => {
-            if (en.isIntersecting) { en.target.classList.add("revealed"); novelObs.unobserve(en.target); }
-          });
-        },
-        { threshold: 0.15 }
-      );
-      novelObs.observe(novel);
-    }
-  }, []);
+  const agents = state?.agents ?? [];
+  const active = agents.filter((a) => a.status === "ACTIVE");
+  const retired = agents.filter((a) => a.status === "RETIRED");
+  const deployed = active.reduce((s, a) => s + (lastOf(a)?.vEndUsd ?? a.vStartUsd ?? 0), 0);
+  const maxGen = Math.max(1, ...agents.map((a) => a.generation));
+  const lastReport = reports[0];
 
   return (
-    <div className="landing-page">
-      {/* NAV */}
-      <header className="nav" id="landing-nav">
-        <div className="nav-inner">
-          <Link className="brand" href="/" aria-label="Spawn Protocol home">
-            <div className="glyph">S</div>
-            <div>
-              <div className="brand-name">Spawn Protocol</div>
-              <div className="brand-sub">Forensic Terminal · Mantle Mainnet</div>
-            </div>
-          </Link>
-          <div className="nav-right">
-            <span className="block-counter">
-              <span className="lab">Block</span>
-              <span className="v">{block !== null ? block.toLocaleString() : "—"}</span>
+    <main className="mx-auto max-w-6xl px-4 py-8 space-y-10">
+      <CeloAutoRefresh />
+
+      {/* hero */}
+      <header className="space-y-3">
+        <p className="text-xs uppercase tracking-widest opacity-60">
+          Celo Mainnet · live swarm · every tx has a published rationale
+        </p>
+        <h1 className="text-3xl font-bold" style={{ fontFamily: "var(--display)" }}>
+          Spawn Protocol — Hedge Swarm on Celo
+        </h1>
+        <p className="max-w-3xl opacity-80">
+          A Darwinian swarm of ERC-8004 agents protecting stablecoin purchasing power: FX
+          rotation across Mento stables (cUSD/cEUR/cREAL) and yield on Aave v3. Every epoch the
+          fittest replicate with mutated parameters, the weakest are culled and their funds
+          return to the treasury. Agents pay gas in the stablecoins they hold — none of these
+          wallets has ever held CELO.
+        </p>
+        <div className="flex flex-wrap gap-2 text-sm">
+          {[
+            ["epoch", state ? `#${state.epochNumber}` : "—"],
+            ["active agents", String(active.length)],
+            ["retired", String(retired.length)],
+            ["deployed", `$${deployed.toFixed(2)}`],
+            ["max generation", `g${maxGen}`],
+            ["last settle", lastReport ? new Date(lastReport.settledAt).toUTCString().slice(5, 22) : "epoch 1 open"],
+          ].map(([k, v]) => (
+            <span key={k} className="rounded border border-zinc-500/30 px-2 py-1">
+              <span className="opacity-60">{k}</span> <strong>{v}</strong>
             </span>
-            <span className="chain-pill">
-              <span className="dot" />
-              Mantle Mainnet
-            </span>
-            <Link className="btn" href="/terminal">View Live Swarm →</Link>
-          </div>
+          ))}
+        </div>
+        <div className="flex flex-wrap gap-3 text-sm">
+          <a href={`${SCAN_8004}/agents?search=spawn`} target="_blank" rel="noreferrer">
+            8004scan ↗
+          </a>
+          <a href={explorerAddress(CONTRACTS.TREASURY)} target="_blank" rel="noreferrer">
+            treasury on Celoscan ↗
+          </a>
+          <a href={REPO_URL} target="_blank" rel="noreferrer">
+            source + raw data ↗
+          </a>
+          <a href={PAGES_BASE} target="_blank" rel="noreferrer">
+            agent cards ↗
+          </a>
         </div>
       </header>
 
-      {/* HERO */}
-      <section className="hero">
-        {/* atmospheric elements */}
-        <div className="hero-bloom hero-bloom-green" />
-        <div className="hero-bloom hero-bloom-crimson" />
-        <div className="hero-bloom hero-bloom-blue" />
-        <div className="hero-bloom hero-bloom-amber" />
-        <div className="hero-grid" />
-        <div className="hero-noise" />
-        <div className="hero-vignette" />
-        <div className="hero-scan" />
-
-        <div className="hero-inner">
-          <div className="eyebrow-dark">Mantle Mainnet · Alpha + Data · AI Yield Swarm</div>
-          <h1 className="headline">Every agent that dies makes the next one smarter.</h1>
-          <p className="lede">
-            Five autonomous yield agents on Mantle. Each manages a live USDe position on Aave V3.
-            Underperformers are terminated on-chain. Venice AI generates a structured failure post-mortem.
-            The IPFS CID is written permanently to <strong>LineageRegistry</strong>. The successor inherits
-            every ancestor&apos;s specific failure — as immutable prompt constraints.
-          </p>
-          <hr className="hero-rule" />
-          <div className="hero-stats">
-            <div className="hstat">
-              <div className="lab">Generations</div>
-              {stats ? (
-                <div className="val" data-counter={String(stats.totalGenerations)} data-format="int">0</div>
-              ) : (
-                <div className="val">—</div>
+      {/* swarm table */}
+      <section className="space-y-2">
+        <h2 className="text-xl font-semibold" style={{ fontFamily: "var(--display)" }}>
+          The swarm
+        </h2>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead className="text-left opacity-60">
+              <tr>
+                <th className="py-1 pr-3">agent</th>
+                <th className="py-1 pr-3">strategy</th>
+                <th className="py-1 pr-3">gen</th>
+                <th className="py-1 pr-3">status</th>
+                <th className="py-1 pr-3">value</th>
+                <th className="py-1 pr-3">fitness</th>
+                <th className="py-1 pr-3">score</th>
+                <th className="py-1 pr-3">links</th>
+              </tr>
+            </thead>
+            <tbody>
+              {agents.map((a) => {
+                const last = lastOf(a);
+                return (
+                  <tr key={a.slug} className="border-t border-zinc-500/20">
+                    <td className="py-1.5 pr-3 font-medium">{a.slug}</td>
+                    <td className="py-1.5 pr-3">{a.strategy}</td>
+                    <td className="py-1.5 pr-3">g{a.generation}</td>
+                    <td className="py-1.5 pr-3">
+                      <StatusPill status={a.status} />
+                    </td>
+                    <td className="py-1.5 pr-3">{fmtUsd(last?.vEndUsd ?? a.vStartUsd)}</td>
+                    <td className="py-1.5 pr-3">{last ? last.fitness.toFixed(3) : "—"}</td>
+                    <td className="py-1.5 pr-3">{last ? `${last.score}/100` : "—"}</td>
+                    <td className="py-1.5 pr-3 space-x-2 whitespace-nowrap">
+                      <a href={scanAgent(a.erc8004AgentId)} target="_blank" rel="noreferrer">
+                        8004 #{a.erc8004AgentId}
+                      </a>
+                      <a href={explorerAddress(a.address)} target="_blank" rel="noreferrer">
+                        wallet
+                      </a>
+                      {a.recallTxHash && (
+                        <a href={explorerTx(a.recallTxHash)} target="_blank" rel="noreferrer">
+                          recall
+                        </a>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
+              {agents.length === 0 && (
+                <tr>
+                  <td colSpan={8} className="py-4 opacity-60">
+                    swarm state not published yet — check {REPO_URL}
+                  </td>
+                </tr>
               )}
-              <div className="sub">seeded on Mantle Mainnet</div>
-            </div>
-            <div className="hstat" data-tone="red">
-              <div className="lab">Agents Recalled</div>
-              {stats ? (
-                <div className="val" data-counter={String(stats.totalRecalled)} data-format="int">0</div>
-              ) : (
-                <div className="val">—</div>
-              )}
-              <div className="sub">{stats ? `${stats.totalRecalled * 3} constraints inherited` : "live data loading"}</div>
-            </div>
-            <div className="hstat" data-tone="green">
-              <div className="lab">Avg Yield · Latest Gen</div>
-              {stats ? (
-                <div className="val" data-counter={stats.latestYield.toFixed(2)} data-format="pct">0.00%</div>
-              ) : (
-                <div className="val">—</div>
-              )}
-              <div className="sub">live Aave V3 positions</div>
-            </div>
-            <div className="hstat" data-tone="green">
-              <div className="lab">Improvement</div>
-              {stats ? (
-                <div className="val" data-counter={stats.improvement.toFixed(2)} data-format="signed">+0.00%</div>
-              ) : (
-                <div className="val">—</div>
-              )}
-              <div className="sub">latest gen over gen 0</div>
-            </div>
-          </div>
-          <div className="cta-row">
-            <Link className="btn btn-lg" href="/terminal">Launch Live Swarm →</Link>
-            <a
-              className="btn btn-lg btn-ghost"
-              href="https://github.com/PoulavBhowmick03/spawn-yield"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              View Source ↗
-            </a>
-          </div>
-        </div>
-        <div className="scroll-hint">↓ scroll for evidence</div>
-      </section>
-
-      {/* DARWINIAN LOOP */}
-      <section className="section">
-        <div className="section-inner">
-          <div className="eyebrow">How it works</div>
-          <h2 className="sec-title">The Darwinian Loop</h2>
-          <p className="sec-sub">
-            Each cycle either confirms performance or produces verifiable failure memory. There is no neutral outcome.
-          </p>
-          <div className="loop" id="loop-el">
-            <div className="loop-progress" />
-            <div className="loop-step" data-tone="blue" data-watermark="01">
-              <div className="n">01</div>
-              <div className="t">Spawn</div>
-              <div className="b">Parent calls SpawnFactory. Child wallet receives $15 USDe and 0.05 MNT gas stipend.</div>
-            </div>
-            <div className="loop-arrow">→</div>
-            <div className="loop-step" data-tone="green" data-watermark="02">
-              <div className="n">02</div>
-              <div className="t">Yield</div>
-              <div className="b">Child reads live Aave V3 USDe APY. Venice AI decides: supply, withdraw, or hold. Executes on-chain.</div>
-            </div>
-            <div className="loop-arrow">→</div>
-            <div className="loop-step" data-tone="ink" data-watermark="03">
-              <div className="n">03</div>
-              <div className="t">Evaluate</div>
-              <div className="b">Parent scores every 75 seconds: (yield − benchmark) ÷ |drawdown|. Two consecutive failures trigger recall.</div>
-            </div>
-            <div className="loop-arrow">→</div>
-            <div className="loop-step" data-tone="crimson" data-watermark="04">
-              <div className="n">04</div>
-              <div className="t">Terminate</div>
-              <div className="b">Venice generates post-mortem JSON. Pinata pins it. recallChild() and pushCID() broadcast to Mantle.</div>
-            </div>
-            <div className="loop-arrow">→</div>
-            <div className="loop-step" data-tone="amber" data-watermark="05">
-              <div className="n">05</div>
-              <div className="t">Inherit</div>
-              <div className="b">Successor fetches all ancestor CIDs. buildAncestorContext() formats them as Venice system prompt constraints.</div>
-            </div>
-          </div>
+            </tbody>
+          </table>
         </div>
       </section>
 
-      {/* EVIDENCE */}
-      <section className="section alt">
-        <div className="section-inner">
-          <div className="eyebrow">On-chain proof · Mantle Mainnet</div>
-          <h2 className="sec-title">Every event is a Mantle transaction.</h2>
-          <p className="sec-sub">
-            Generational performance is reconstructible from public chain data. Underperformance becomes inheritance.
-          </p>
-          <div className="evidence-grid">
-            <div>
-              <div className="gen-chart" id="gen-chart">
-                {stats ? (
-                  stats.genYields.map((y, i) => {
-                    const isLatest = i === stats.genYields.length - 1;
-                    const tone = isLatest ? "green" : i === 0 ? "red" : "amber";
-                    return (
-                      <div className="gen-row" key={i}>
-                        <div className="gen-label">
-                          GEN {i}
-                          <span className="sub">{isLatest ? "latest" : "spawned"}</span>
-                        </div>
-                        <div className="track">
-                          {i === 0 ? (
-                            <div className="bench"><span className="lbl">BENCHMARK (Aave APY)</span></div>
-                          ) : (
-                            <div className="bench" />
-                          )}
-                          <div
-                            className="bar"
-                            data-tone={tone}
-                            data-yield={String(Math.min(y, 11))}
-                          >
-                            <span className="bar-end">
-                              {isLatest ? y.toFixed(2) + "%" : `Gen ${i}`}
-                            </span>
-                          </div>
-                        </div>
-                        <div className="gen-tail">
-                          <span className="pill" data-tone={isLatest ? "active" : "terminated"}>
-                            <span className="dot" />
-                            {isLatest ? "Active" : "Terminated"}
-                          </span>
-                        </div>
-                      </div>
-                    );
-                  })
-                ) : (
-                  <div className="gen-row">
-                    <div className="gen-label">GEN —<span className="sub">awaiting data</span></div>
-                    <div className="track">
-                      <div className="bench"><span className="lbl">BENCHMARK (Aave APY)</span></div>
-                    </div>
-                    <div className="gen-tail">
-                      <span className="pill" data-tone="terminated"><span className="dot" />No live data</span>
-                    </div>
-                  </div>
-                )}
-                <div className="callout">
-                  <p className="h">
-                    {stats
-                      ? <>Latest gen outperforms gen 0 by <span className="pos">+{stats.improvement.toFixed(2)}%</span> avg yield.</>
-                      : "Generational performance improves through inherited failure constraints."}
-                  </p>
-                  <p className="s">
-                    {stats ? (
-                      <><span className="num">{stats.totalRecalled}</span> terminations produced <span className="num">{stats.totalRecalled * 3}</span> inherited constraints across the lineage.</>
-                    ) : (
-                      "Connect a live swarm to see real-time performance data."
-                    )}
-                  </p>
-                </div>
+      {/* evolution */}
+      <section className="space-y-2">
+        <h2 className="text-xl font-semibold" style={{ fontFamily: "var(--display)" }}>
+          Evolution, epoch by epoch
+        </h2>
+        <p className="text-sm opacity-70">
+          Each settle posts a reputation score per agent to the canonical ERC-8004 Reputation
+          Registry, culls the bottom 20%, and spawns mutated descendants of the top performer.
+        </p>
+        <div className="space-y-3">
+          {reports.map((r) => (
+            <div key={r.epoch} className="rounded border border-zinc-500/25 p-3 text-sm">
+              <div className="flex flex-wrap gap-3 items-baseline">
+                <strong>epoch {r.epoch}</strong>
+                <span className="opacity-60">
+                  settled {new Date(r.settledAt).toUTCString().slice(5, 25)} · median fitness{" "}
+                  {r.swarmMedianFitness.toFixed(3)}
+                </span>
+                {r.culled.map((s) => (
+                  <span key={s} className="rounded bg-red-500/15 text-red-400 px-1.5 py-0.5 text-xs">
+                    culled {s}
+                  </span>
+                ))}
+                {r.spawned.map((s) => (
+                  <span key={s} className="rounded bg-emerald-500/15 text-emerald-500 px-1.5 py-0.5 text-xs">
+                    spawned {s}
+                  </span>
+                ))}
               </div>
-            </div>
-            <div>
-              <h3 className="col-title">Deployed Contracts</h3>
-              <div className="contract-stack">
-                {[
-                  {
-                    name: "SpawnFactory",
-                    addr: "0x94171e5D54792149E14fFa19197e3c17E263C740",
-                    href: "https://mantlescan.xyz/address/0x94171e5d54792149e14ffa19197e3c17e263c740",
-                  },
-                  {
-                    name: "LineageRegistry",
-                    addr: "0x0466c58d7955cFdfa9E2070077D2f5E26561b59E",
-                    href: "https://mantlescan.xyz/address/0x0466c58d7955cfdfa9e2070077d2f5e26561b59e",
-                  },
-                  {
-                    name: "ChildAgent (impl)",
-                    addr: "0xD2d79F4A19E0D77267aBe80d85c33630d0923F72",
-                    href: "https://mantlescan.xyz/address/0xd2d79f4a19e0d77267abe80d85c33630d0923f72",
-                  },
-                ].map((c) => (
-                  <div className="contract-card" key={c.name}>
-                    <CopyBtn address={c.addr} />
-                    <div className="contract-top">
-                      <div className="contract-name">{c.name}</div>
-                      <span className="verified">Verified ✓</span>
-                    </div>
-                    <div className="contract-addr">{c.addr}</div>
-                    <a className="contract-link" href={c.href} target="_blank" rel="noopener noreferrer">mantlescan ↗</a>
-                  </div>
+              <div className="mt-2 flex flex-wrap gap-1.5">
+                {r.agents.map((a) => (
+                  <span
+                    key={a.slug}
+                    title={`V ${a.vStartUsd.toFixed(3)} → ${a.vEndUsd.toFixed(3)}, gas $${a.gasUsd.toFixed(4)}, fitness ${a.fitness.toFixed(3)}`}
+                    className="rounded border border-zinc-500/25 px-1.5 py-0.5 text-xs"
+                  >
+                    {a.slug}: {a.score}
+                    {a.reputationTx && (
+                      <>
+                        {" "}
+                        <a href={explorerTx(a.reputationTx)} target="_blank" rel="noreferrer">
+                          tx↗
+                        </a>
+                      </>
+                    )}
+                  </span>
                 ))}
               </div>
             </div>
-          </div>
+          ))}
+          {reports.length === 0 && (
+            <p className="text-sm opacity-60">first epoch not settled yet</p>
+          )}
         </div>
       </section>
 
-      {/* NOVEL */}
-      <section className="section">
-        <div className="section-inner">
-          <div className="eyebrow">The primitive</div>
-          <h2 className="sec-title">Verifiable generational memory, on-chain.</h2>
-          <p className="sec-sub">
-            Most AI trading agents are stateless. Each run starts from zero. Spawn Protocol introduces
-            on-chain generational memory as a primitive.
-          </p>
-          <div className="novel-grid" id="novel-grid-el">
-            <div className="novel-item">
-              <div className="n">01</div>
-              <div className="t">Post-Mortem as Structured Data</div>
-              <div className="b">Every termination produces a Venice-generated JSON with failureReason, metricsAtTermination, and inheritanceConstraints. Not logs — structured memory.</div>
+      {/* activity log */}
+      <section id="activity" className="space-y-2">
+        <h2 className="text-xl font-semibold" style={{ fontFamily: "var(--display)" }}>
+          Activity log — the judge-facing layer
+        </h2>
+        <p className="text-sm opacity-70">
+          Every onchain action, paired with the rationale that produced it. Raw file:{" "}
+          <a href={`${REPO_URL}/blob/main/celo_activity.jsonl`} target="_blank" rel="noreferrer">
+            celo_activity.jsonl ↗
+          </a>
+        </p>
+        <div className="space-y-2 max-h-[32rem] overflow-y-auto rounded border border-zinc-500/25 p-3">
+          {activity.map((e, i) => (
+            <div key={`${e.timestamp}-${i}`} className="text-xs leading-relaxed border-b border-zinc-500/10 pb-2">
+              <span className="opacity-50">{e.timestamp.replace("T", " ").slice(0, 19)}Z</span>{" "}
+              <strong>{e.agentId}</strong>{" "}
+              <span className="rounded bg-blue-500/10 text-blue-400 px-1">{e.action}</span>{" "}
+              {e.txHash && (
+                <a href={explorerTx(e.txHash)} target="_blank" rel="noreferrer">
+                  tx↗
+                </a>
+              )}
+              <div className="opacity-80 mt-0.5">{e.rationale}</div>
             </div>
-            <div className="novel-item">
-              <div className="n">02</div>
-              <div className="t">IPFS: Permanent, Content-Addressed</div>
-              <div className="b">The post-mortem JSON is pinned via Pinata. The CID is immutable. The data cannot be changed retroactively.</div>
-            </div>
-            <div className="novel-item">
-              <div className="n">03</div>
-              <div className="t">LineageRegistry: Tamper-Proof Ledger</div>
-              <div className="b">pushCID() appends the IPFS CID on-chain with timestamp. getLineage() returns the full ancestor chain. Any observer can reconstruct the full history.</div>
-            </div>
-            <div className="novel-item">
-              <div className="n">04</div>
-              <div className="t">Successor Receives Ancestor Context</div>
-              <div className="b">buildAncestorContext() fetches all ancestor post-mortems and injects them verbatim into the Venice system prompt. The successor reads every predecessor&apos;s exact failure before its first decision.</div>
-            </div>
-            <div className="novel-item span">
-              <div className="n">05</div>
-              <div className="t">GenerationResult: AI Output, On-Chain</div>
-              <div className="b">postGenerationResult() writes Venice-generated performance summaries directly to Mantle. AI output is verifiable and timestamped as a smart contract event.</div>
-            </div>
-          </div>
+          ))}
+          {activity.length === 0 && <p className="opacity-60 text-sm">no activity published yet</p>}
         </div>
       </section>
 
-      {/* ARCHITECTURE */}
-      <section className="section alt">
-        <div className="section-inner">
-          <div className="eyebrow">Architecture</div>
-          <h2 className="sec-title">Three contracts. Six TypeScript modules.</h2>
-          <p className="sec-sub">The full system, end to end. No hidden services. No closed components.</p>
-          <div className="arch-grid">
-            <div className="arch-table">
-              <div className="arch-head" data-tone="blue">Smart Contracts</div>
-              <div className="arch-row"><span className="arch-name">SpawnFactory.sol</span><span className="arch-role">EIP-1167 clone factory. Registers in ERC-8004.</span></div>
-              <div className="arch-row"><span className="arch-name">ChildAgent.sol</span><span className="arch-role">Per-child state. recallChild() stores IPFS CID.</span></div>
-              <div className="arch-row"><span className="arch-name">LineageRegistry.sol</span><span className="arch-role">Append-only CID ledger. postGenerationResult() emits Venice summaries.</span></div>
-            </div>
-            <div className="arch-table">
-              <div className="arch-head" data-tone="green">Agent Runtime</div>
-              <div className="arch-row"><span className="arch-name">parent.ts</span><span className="arch-role">Orchestrator. Spawns, evaluates, recalls, respawns.</span></div>
-              <div className="arch-row"><span className="arch-name">child.ts</span><span className="arch-role">Per-agent loop. Venice decision → Aave execution.</span></div>
-              <div className="arch-row"><span className="arch-name">venice.ts</span><span className="arch-role">Yield reasoning, post-mortem generation, summaries.</span></div>
-              <div className="arch-row"><span className="arch-name">lineage.ts</span><span className="arch-role">buildAncestorContext() — fetches all ancestor CIDs.</span></div>
-              <div className="arch-row"><span className="arch-name">aave.ts</span><span className="arch-role">Aave V3 Pool reads and writes on Mantle.</span></div>
-              <div className="arch-row"><span className="arch-name">ipfs.ts</span><span className="arch-role">Pinata pinning for post-mortem JSON.</span></div>
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* verify it yourself */}
+      <section className="space-y-2 text-sm">
+        <h2 className="text-xl font-semibold" style={{ fontFamily: "var(--display)" }}>
+          Recompute everything yourself
+        </h2>
+        <pre className="rounded border border-zinc-500/25 p-3 overflow-x-auto text-xs">
+{`fitness(agent, epoch) = (V_end / V_start − 1) × (8760 / epoch_hours) − gas_penalty
+gas_penalty           = (gas_paid_cUSD / V_start) × (8760 / epoch_hours)
+reputation_score      = clamp(round(50 + 500 × (fitness − swarm_median)), 0, 100)
 
-      {/* CTA BANNER */}
-      <section className="section dark">
-        <div className="cta-bloom" />
-        <div className="cta-grid" />
-        <div className="section-inner cta-banner">
-          <div className="e">Mantle Turing Test 2026</div>
-          <h2 className="h">Watch the swarm run live.</h2>
-          <p className="b">Five agents. Real USDe. Live Aave positions. Every termination on Mantlescan.</p>
-          <div style={{ marginTop: 36 }}>
-            <Link className="btn btn-lg" href="/terminal">Launch Live Swarm →</Link>
-          </div>
-          <div className="chip-row">
-            <a className="chip" href="https://mantlescan.xyz/address/0x94171e5d54792149e14ffa19197e3c17e263c740" target="_blank" rel="noopener noreferrer">SpawnFactory 0x9417…C740</a>
-            <a className="chip" href="https://mantlescan.xyz/address/0x0466c58d7955cfdfa9e2070077d2f5e26561b59e" target="_blank" rel="noopener noreferrer">LineageRegistry 0x0466…59E</a>
-            <a className="chip" href="https://mantlescan.xyz/address/0xd2d79f4a19e0d77267abe80d85c33630d0923f72" target="_blank" rel="noopener noreferrer">ChildAgent 0xD2d7…3F72</a>
-          </div>
-        </div>
+V = portfolio marked in cUSD via Mento quotes; every input readable on Celoscan.`}
+        </pre>
+        <ul className="grid gap-1 sm:grid-cols-2">
+          {Object.entries(CONTRACTS).map(([name, addr]) => (
+            <li key={name}>
+              <span className="opacity-60">{name}</span>{" "}
+              <a href={explorerAddress(addr)} target="_blank" rel="noreferrer">
+                {addr.slice(0, 10)}…{addr.slice(-6)} ↗
+              </a>
+            </li>
+          ))}
+        </ul>
+        <p className="opacity-60">
+          Hackathon-grade software handling real but small funds ($50 cap, $5/agent, 1% slippage,
+          kill switch — all enforced in code). Do not deposit money you care about.
+        </p>
       </section>
-
-      {/* FOOTER */}
-      <footer className="footer">
-        <div className="footer-inner">
-          <div className="foot-brand">
-            <div className="glyph">S</div>
-            <div className="meta">
-              <div className="name">Spawn Protocol</div>
-              <div className="lic">MIT License · 2026</div>
-            </div>
-          </div>
-          <div className="foot-links">
-            <Link href="/terminal">Swarm Dashboard</Link>
-            <span className="sep">·</span>
-            <a href="https://github.com/PoulavBhowmick03/spawn-yield" target="_blank" rel="noopener noreferrer">GitHub</a>
-            <span className="sep">·</span>
-            <a href="https://mantlescan.xyz/address/0x0466c58d7955cfdfa9e2070077d2f5e26561b59e" target="_blank" rel="noopener noreferrer">Mantlescan</a>
-          </div>
-          <div className="foot-credit">
-            Built by Poulav Bhowmick + Ishita<br />
-            Mantle Turing Test Hackathon 2026<br />
-            Alpha + Data · AI &amp; RWA tracks
-          </div>
-        </div>
-      </footer>
-    </div>
+    </main>
   );
 }

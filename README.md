@@ -89,17 +89,28 @@ Canonical third-party contracts the swarm uses (verified against their authorita
 
 Design note: SpawnFactory's built-in ERC-8004 registration is intentionally inert on Celo (its registry constant has no bytecode here, taking the factory's documented graceful path). Identities are minted by the runtime **from each agent's own wallet** instead — the Reputation Registry forbids owner self-feedback, so agent-owned identities are what make the orchestrator's performance attestations legal.
 
-### ERC-8004 identities (live)
+### ERC-8004 identities (live on 8004scan)
 
-Orchestrator **#9240**; swarm agents **#9241–#9249** ([cards](https://poulavbhowmick03.github.io/spawn-celo/), [registry mapping](docs/agents/registry.json)). Each agent self-registered, paying gas in cUSD.
+All identities are searchable on 8004scan ([search "spawn"](https://www.8004scan.io/agents?search=spawn)) and indexed from the canonical Celo registry. Each agent self-registered, paying gas in cUSD. [Cards](https://poulavbhowmick03.github.io/spawn-celo/) · [registry mapping](docs/agents/registry.json).
 
-## Live links (fill before submission)
+| Identity | 8004scan |
+|---|---|
+| Orchestrator | [#9240](https://www.8004scan.io/agents/celo/9240) |
+| Spawn FX Rotator (cautious / balanced / aggressive) | [#9241](https://www.8004scan.io/agents/celo/9241) · [#9242](https://www.8004scan.io/agents/celo/9242) · [#9243](https://www.8004scan.io/agents/celo/9243) |
+| Spawn Aave Yielder (anchor / balanced / chaser) | [#9244](https://www.8004scan.io/agents/celo/9244) · [#9245](https://www.8004scan.io/agents/celo/9245) · [#9246](https://www.8004scan.io/agents/celo/9246) |
+| Spawn Hedged Carry (light / mid / heavy) | [#9247](https://www.8004scan.io/agents/celo/9247) · [#9248](https://www.8004scan.io/agents/celo/9248) · [#9249](https://www.8004scan.io/agents/celo/9249) |
+| Spawn FX Rotator (cautious) **g2** — first evolved agent, spawned by the epoch-1 cull | [#9256](https://www.8004scan.io/agents/celo/9256) |
 
-- Dashboard: TODO
-- Activity log: TODO
-- Orchestrator on 8004scan: TODO
-- Agent list (8004scan + Celoscan per agent): TODO
-- Demo video: TODO
+Retired agents keep their identity and final reputation (e.g. ay-anchor #9244, culled in epoch 1) — honest history is part of the design.
+
+## Live links
+
+- Dashboard: https://spawn-celo-swarm.vercel.app
+- Activity log (raw, judge-facing): https://github.com/PoulavBhowmick03/spawn-celo/blob/main/celo_activity.jsonl (rendered on the dashboard)
+- Orchestrator on 8004scan: https://www.8004scan.io/agents/celo/9240
+- Agent list: [8004scan search "spawn"](https://www.8004scan.io/agents?search=spawn) · per-agent links in the table above and on the dashboard
+- Epoch reports: [docs/epochs/](docs/epochs/) (also rendered on the dashboard)
+- Demo video: TODO (record per the script below)
 
 ## Demo video script (2-3 minutes, record on Day 2)
 
