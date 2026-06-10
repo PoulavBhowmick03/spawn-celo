@@ -13,6 +13,12 @@
 - **Verified by**: Celoscan receipts (all status success), onchain balance reads (treasury 48.95 cUSD + 2.84 USDT buffer, agent-1 1 cUSD, 0 CELO everywhere), `celo_activity.jsonl` rationale per tx.
 - **Next**: Phase 2 remainder — Aave v3 Celo adapter + fork tests + $2 supply/withdraw smoke (Mento adapter already proven live); then Phase 3 ERC-8004 registration.
 
+## Phase 2 — Protocol adapters + unwind guarantee (2026-06-10)
+
+- **Done**: `aave.ts` (Celo port: verified addresses, USDC/USDT/USDm, live APY reads that throw rather than fake a 0, approve-max batching, feeCurrency + budget rails + rationale logging). `unwind.ts` — developer-required guarantee that culled agents return everything to the treasury they were funded from: withdraw all Aave positions → swap all stables to cUSD (chunked under the $5/tx cap, gas paid in the token being swept) → transfer cUSD home minus fee-currency-priced gas headroom (<$0.01 dust). `smoke-aave.ts` ready (dry-run verified, APY 2.472%).
+- **Verified by**: full-lifecycle anvil fork test (`npm run test:fork:celo`): fund → Aave supply → Mento FX swap → cull-unwind; assertions confirm Aave emptied, USDT swept, cUSD swept, treasury recovered the full seed minus spread. Typecheck clean. Mento adapter additionally proven by 10 live mainnet swaps (Phase 1 treasury conversion).
+- **Next**: awaiting developer go for the $2 Aave mainnet supply/withdraw smoke (last Phase 1-2 gated tx), then Phase 3.
+
 ## Phase 0 — Inventory of the existing Spawn codebase (2026-06-10)
 
 Status: **map complete, awaiting developer confirmation before any code is written.**

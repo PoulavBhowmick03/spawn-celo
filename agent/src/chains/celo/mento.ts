@@ -44,8 +44,8 @@ export type SwapRequest = {
   tokenOutDecimals: number;
   /** USD-equivalent moved, for the budget rail */
   usdValue: number;
-  /** CIP-64 fee currency (token or adapter address) */
-  feeCurrency: Address;
+  /** CIP-64 fee currency (token or adapter address); omit to pay gas in native CELO (fork tests only) */
+  feeCurrency?: Address;
   rationale: string;
 };
 
