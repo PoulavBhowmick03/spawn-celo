@@ -70,3 +70,12 @@ export async function assertCeloMainnet(): Promise<void> {
 }
 
 export type FeeCurrencyOption = { feeCurrency?: Address };
+
+/**
+ * CIP-64 fee currency for live runs; undefined when CELO_NATIVE_GAS=true
+ * (anvil fork tests — anvil can't mine fee-currency txs, gas falls back to
+ * the fork's prefunded native balance).
+ */
+export function maybeFee(feeCurrency: Address): Address | undefined {
+  return /^(1|true|yes)$/i.test(process.env.CELO_NATIVE_GAS ?? "") ? undefined : feeCurrency;
+}

@@ -92,8 +92,12 @@ export async function unwindAgentToTreasury(
     txHashes.push(hash);
   }
 
-  // 2. swap every non-cUSD stable to cUSD, chunked under the per-tx cap
+  // 2. swap every non-cUSD stable to cUSD, chunked under the per-tx cap.
+  // A leg can be unswappable when the Mento FX market is closed (weekends) —
+  // sweep what we can, leave the leg in the wallet, and report it; a later
+  // unwind run (or the next epoch's cull pass) picks it up.
   for (const { symbol, address, decimals } of SWEEPABLE_STABLES) {
+    try {
     let bal = await balanceOf(address, account.address);
     if (bal <= DUST[decimals]) continue;
 
@@ -125,6 +129,14 @@ export async function unwindAgentToTreasury(
       });
       txHashes.push(res.swapTxHash);
       bal -= amountIn;
+    }
+    } catch (e) {
+      console.warn(`unwind ${agentId}: could not sweep ${symbol} (${(e as Error).message?.slice(0, 100)}) — leaving in wallet for a later sweep`);
+      logActivity({
+        agentId,
+        action: "unwind-sweep-deferred",
+        rationale: `Unwind (${reason}): ${symbol} could not be converted to cUSD (likely FX market closed); balance stays in the retired wallet and will be swept on the next unwind pass.`,
+      });
     }
   }
 

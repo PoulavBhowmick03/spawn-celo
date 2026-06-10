@@ -17,7 +17,11 @@
     "cards:celo": "tsx src/chains/celo/generate-cards.ts",
     "register:agents": "tsx src/chains/celo/register-agents.ts",
     "deploy:celo": "tsx src/chains/celo/deploy-contracts.ts",
-    "test:fitness": "tsx src/chains/celo/fitness.test.ts"
+    "test:fitness": "tsx src/chains/celo/fitness.test.ts",
+    "swarm:start": "tsx src/chains/celo/swarm-start.ts",
+    "swarm:status": "tsx src/chains/celo/swarm-status.ts",
+    "swarm:unwind": "tsx src/chains/celo/swarm-unwind.ts",
+    "test:fork:epoch": "bash src/chains/celo/run-fork-epoch.sh"
   },
   "dependencies": {
     "@adraffy/ens-normalize": "^1.11.1",

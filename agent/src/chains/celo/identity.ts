@@ -15,7 +15,7 @@
 import { parseEventLogs, type Address, type Hex } from "viem";
 import type { HDAccount } from "viem/accounts";
 import { ERC8004, FEE_CURRENCIES, explorerTx } from "./addresses.js";
-import { celoPublicClient, celoWalletClient } from "./chain.js";
+import { celoPublicClient, celoWalletClient, maybeFee } from "./chain.js";
 import { assertTxAllowed } from "./budget.js";
 import { logActivity } from "./activity-log.js";
 
@@ -76,7 +76,7 @@ export async function registerIdentity(
     abi: IDENTITY_REGISTRY_ABI,
     functionName: "register",
     args: [cardUrl],
-    feeCurrency: FEE_CURRENCIES.USDm,
+    feeCurrency: maybeFee(FEE_CURRENCIES.USDm),
   });
   const receipt = await celoPublicClient.waitForTransactionReceipt({ hash: txHash });
   if (receipt.status !== "success") {

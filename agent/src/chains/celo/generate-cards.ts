@@ -75,6 +75,27 @@ function buildCard(
   };
 }
 
+/** Write one card (also used by the epoch loop for newly spawned agents). */
+export function writeAgentCard(
+  spec: { slug: string; name: string; description: string } & Partial<AgentSpec>,
+): string {
+  mkdirSync(AGENTS_DIR, { recursive: true });
+  const card = buildCard(spec, loadRegistry());
+  const path = resolve(AGENTS_DIR, `${spec.slug}.json`);
+  writeFileSync(path, JSON.stringify(card, null, 2) + "\n");
+  return path;
+}
+
+/** Persist a registration into registry.json (used by spawn + register flows). */
+export function saveRegistryEntry(
+  slug: string,
+  entry: { agentId: string; address: string; txHash: string },
+): void {
+  const registry = loadRegistry();
+  registry[slug] = entry;
+  writeFileSync(REGISTRY_PATH, JSON.stringify(registry, null, 2) + "\n");
+}
+
 export function generateAllCards(): string[] {
   mkdirSync(AGENTS_DIR, { recursive: true });
   const registry = loadRegistry();

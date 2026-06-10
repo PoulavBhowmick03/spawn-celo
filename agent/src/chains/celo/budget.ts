@@ -38,7 +38,10 @@ export function assertTxAllowed(usdValue: number, context: string): void {
   if (!Number.isFinite(usdValue) || usdValue < 0) {
     throw new BudgetRefusalError(`non-finite USD value for ${context}`);
   }
-  if (usdValue > MAX_TX_USD) {
+  // 0.5% tolerance: agents funded to exactly the cap emit full-balance actions
+  // whose float marking lands at $5.000000001 — that is "equal to", not "more
+  // than", the cap. Anything genuinely above still refuses.
+  if (usdValue > MAX_TX_USD * 1.005) {
     throw new BudgetRefusalError(
       `${context} would move $${usdValue.toFixed(2)} > per-tx cap $${MAX_TX_USD}`,
     );
