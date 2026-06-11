@@ -6,10 +6,16 @@
  *
  *   npm run verify:reputation            # latest settled epoch
  *   npm run verify:reputation -- 5       # specific epoch
+ *
+ * The orchestrator also runs this automatically after every settle and
+ * publishes the result as docs/epochs/epoch-N-verification.json, so the
+ * recomputability claim is continuously self-tested in production, not
+ * just on demand.
  */
 
 import { readFileSync, existsSync } from "node:fs";
 import { resolve } from "node:path";
+import { pathToFileURL } from "node:url";
 import { keccak256, toBytes, decodeFunctionData, parseAbi, type Hex } from "viem";
 import { celoPublicClient } from "./chain.js";
 import { loadState } from "./swarm-state.js";
@@ -25,9 +31,31 @@ function median(v: number[]): number {
   return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2;
 }
 
-async function main() {
-  const state = loadState();
-  const epoch = Number(process.argv[2] ?? 0) || (state ? state.epochNumber - 1 : NaN);
+export type VerificationRow = {
+  slug: string;
+  erc8004AgentId: string;
+  recomputedFitness: number;
+  publishedFitness: number;
+  recomputedScore: number;
+  publishedScore: number;
+  fitnessMatch: boolean;
+  payloadHashMatch: boolean;
+  onchainCalldataMatch: boolean;
+  reputationTx?: Hex;
+};
+
+export type EpochVerification = {
+  epoch: number;
+  verifiedAt: string;
+  swarmMedian: number;
+  verified: number;
+  total: number;
+  method: string;
+  rows: VerificationRow[];
+};
+
+/** Recompute + chain-check one settled epoch. Throws if the report is missing. */
+export async function verifyEpoch(epoch: number): Promise<EpochVerification> {
   const reportPath = resolve(REPO_ROOT, "docs", "epochs", `epoch-${epoch}.json`);
   if (!existsSync(reportPath)) throw new Error(`no report for epoch ${epoch} (${reportPath})`);
   const report = JSON.parse(readFileSync(reportPath, "utf8"));
@@ -49,7 +77,7 @@ async function main() {
     }
   }
 
-  let failures = 0;
+  const rows: VerificationRow[] = [];
   for (const r of report.agents) {
     // 1. independent arithmetic from the published inputs
     const hours = r.epochHours ?? report.epochHours;
@@ -71,17 +99,49 @@ async function main() {
       chainOk = agentId.toString() === r.erc8004AgentId && Number(value) === r.score && chainHash === L.feedbackHash;
     }
 
-    const ok = fitOk && hashOk && chainOk;
-    if (!ok) failures++;
-    console.log(
-      `${ok ? "✓" : "✗"} ${r.slug} (#${r.erc8004AgentId}): fitness ${fit.toFixed(4)} vs published ${r.fitness.toFixed(4)} | score ${score} vs ${r.score} | payload-hash ${hashOk ? "ok" : "MISMATCH"} | onchain ${chainOk ? "ok" : "MISMATCH"}${L ? ` | tx ${L.txHash.slice(0, 14)}…` : " | no logged feedback"}`,
-    );
+    rows.push({
+      slug: r.slug,
+      erc8004AgentId: r.erc8004AgentId,
+      recomputedFitness: fit,
+      publishedFitness: r.fitness,
+      recomputedScore: score,
+      publishedScore: r.score,
+      fitnessMatch: fitOk,
+      payloadHashMatch: hashOk,
+      onchainCalldataMatch: chainOk,
+      reputationTx: L?.txHash,
+    });
   }
-  console.log(`\nepoch ${epoch}: median ${swarmMedian.toFixed(6)}, ${report.agents.length - failures}/${report.agents.length} fully verified`);
-  if (failures > 0) process.exit(1);
+
+  return {
+    epoch,
+    verifiedAt: new Date().toISOString(),
+    swarmMedian,
+    verified: rows.filter((r) => r.fitnessMatch && r.payloadHashMatch && r.onchainCalldataMatch).length,
+    total: rows.length,
+    method:
+      "fitness=annualize((V_end-net_flow)/V_start)-gas_penalty recomputed from the published epoch report; score=clamp(round(50+500*(fitness-median)),0,100); keccak256(logged payload) checked against the logged feedbackHash; agentId+score+feedbackHash decoded from the onchain giveFeedback calldata via eth_getTransactionByHash",
+    rows,
+  };
 }
 
-main().catch((e) => {
-  console.error(e);
-  process.exit(1);
-});
+async function main() {
+  const state = loadState();
+  const epoch = Number(process.argv[2] ?? 0) || (state ? state.epochNumber - 1 : NaN);
+  const v = await verifyEpoch(epoch);
+  for (const r of v.rows) {
+    const ok = r.fitnessMatch && r.payloadHashMatch && r.onchainCalldataMatch;
+    console.log(
+      `${ok ? "✓" : "✗"} ${r.slug} (#${r.erc8004AgentId}): fitness ${r.recomputedFitness.toFixed(4)} vs published ${r.publishedFitness.toFixed(4)} | score ${r.recomputedScore} vs ${r.publishedScore} | payload-hash ${r.payloadHashMatch ? "ok" : "MISMATCH"} | onchain ${r.onchainCalldataMatch ? "ok" : "MISMATCH"}${r.reputationTx ? ` | tx ${r.reputationTx.slice(0, 14)}…` : " | no logged feedback"}`,
+    );
+  }
+  console.log(`\nepoch ${v.epoch}: median ${v.swarmMedian.toFixed(6)}, ${v.verified}/${v.total} fully verified`);
+  if (v.verified !== v.total) process.exit(1);
+}
+
+if (import.meta.url === pathToFileURL(process.argv[1] ?? "").href) {
+  main().catch((e) => {
+    console.error(e);
+    process.exit(1);
+  });
+}
