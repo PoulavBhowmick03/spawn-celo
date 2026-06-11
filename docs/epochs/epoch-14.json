@@ -1,0 +1,182 @@
+{
+  "epoch": 14,
+  "settledAt": "2026-06-11T22:58:30.910Z",
+  "epochHours": 1.5122083333333334,
+  "market": {
+    "timestamp": 1781218529314,
+    "fxUsdPrice": {
+      "EURm": 1.155254625,
+      "BRLm": 0.19487499586
+    },
+    "fxRoundTripCostBps": {
+      "EURm": 49.93750000000019,
+      "BRLm": 59.909999999999684
+    },
+    "fxMomentumBps": {
+      "EURm": 2.1590810950849364,
+      "BRLm": -5.656228908023528
+    },
+    "stableRoundTripCostBps": {
+      "USDC": 4.001349470535986,
+      "USDT": 4.000134373504105
+    },
+    "stableEntryEdgeBps": {
+      "USDC": 0.8699999999994823,
+      "USDT": 7.390000000000452
+    },
+    "stableExitEdgeBps": {
+      "USDC": -4.870925699999029,
+      "USDT": -11.381723280000644
+    },
+    "aaveApyPct": {
+      "USDC": 2.5949881034451723,
+      "USDT": 0.8068427953020223,
+      "USDm": 2.4725301263375994
+    }
+  },
+  "agents": [
+    {
+      "slug": "mfx-cautious",
+      "erc8004AgentId": "9241",
+      "strategy": "MentoFXRotator",
+      "generation": 1,
+      "vStartUsd": 4.999999789098257,
+      "vEndUsd": 4.999999789098257,
+      "gasUsd": 0,
+      "netFlowUsd": 0,
+      "epochHours": 1.5122083333333334,
+      "fitness": 0,
+      "score": 50,
+      "culled": false,
+      "reputationTx": "0x58ef6f5901ff30e230681c8270065516f56a9a012d174cc76eb8b72f7d4e9d72"
+    },
+    {
+      "slug": "mfx-balanced",
+      "erc8004AgentId": "9242",
+      "strategy": "MentoFXRotator",
+      "generation": 1,
+      "vStartUsd": 4.999999789098257,
+      "vEndUsd": 4.999999789098257,
+      "gasUsd": 0,
+      "netFlowUsd": 0,
+      "epochHours": 1.5122083333333334,
+      "fitness": 0,
+      "score": 50,
+      "culled": false,
+      "reputationTx": "0xbf4766a3c4093c3c0c97c1c8663ab9ee36ff0891d4ba8aa13ae736a0844ed09f"
+    },
+    {
+      "slug": "ay-balanced",
+      "erc8004AgentId": "9245",
+      "strategy": "AaveYielder",
+      "generation": 1,
+      "vStartUsd": 4.99215145621346,
+      "vEndUsd": 4.99217145621346,
+      "gasUsd": 0,
+      "netFlowUsd": 0,
+      "epochHours": 1.5122083333333334,
+      "fitness": 0.023207840015073696,
+      "score": 62,
+      "culled": false,
+      "reputationTx": "0xda7866b8221416faf9b2b8fe54834fa996e2aeafe08285105c8916d21b60d9d6"
+    },
+    {
+      "slug": "ay-chaser",
+      "erc8004AgentId": "9246",
+      "strategy": "AaveYielder",
+      "generation": 1,
+      "vStartUsd": 5.1701590030740014,
+      "vEndUsd": 5.166181003074001,
+      "gasUsd": 0,
+      "netFlowUsd": 0,
+      "epochHours": 1.5122083333333334,
+      "fitness": -4.45711006055532,
+      "score": 0,
+      "culled": true,
+      "reputationTx": "0x0bcfcff9ccb8ee7c5e1c39324880933c28cba315553bc35365ec001cacf834b5"
+    },
+    {
+      "slug": "mfx-cautious-g2-i10",
+      "erc8004AgentId": "9256",
+      "strategy": "MentoFXRotator",
+      "generation": 2,
+      "vStartUsd": 4.99999961934825,
+      "vEndUsd": 4.99999961934825,
+      "gasUsd": 0,
+      "netFlowUsd": 0,
+      "epochHours": 1.5122083333333334,
+      "fitness": 0,
+      "score": 50,
+      "culled": false,
+      "reputationTx": "0x18e9ba7a8d1101ddf470ab623c272de3fb578f02b799e5f5ef2494242953bb9e"
+    },
+    {
+      "slug": "mfx-cautious-g2-i11",
+      "erc8004AgentId": "9257",
+      "strategy": "MentoFXRotator",
+      "generation": 2,
+      "vStartUsd": 4.99999975955925,
+      "vEndUsd": 4.99999975955925,
+      "gasUsd": 0,
+      "netFlowUsd": 0,
+      "epochHours": 1.5122083333333334,
+      "fitness": 0,
+      "score": 50,
+      "culled": false,
+      "reputationTx": "0x093ca4ca25d4984db6d1636fee1cf7fc1833316f5082f8126ff2763e3a37f229"
+    },
+    {
+      "slug": "ay-balanced-g2-i13",
+      "erc8004AgentId": "9260",
+      "strategy": "AaveYielder",
+      "generation": 2,
+      "vStartUsd": 4.987381488625393,
+      "vEndUsd": 4.987401488625392,
+      "gasUsd": 0,
+      "netFlowUsd": 0,
+      "epochHours": 1.5122083333333334,
+      "fitness": 0.02323003615955359,
+      "score": 62,
+      "culled": false,
+      "reputationTx": "0x5c589b9eb33a4b5667631f0aae9037b7fe9859064533f27f06cc42feaae1a2d9"
+    },
+    {
+      "slug": "mfx-cautious-g2-i14",
+      "erc8004AgentId": "9262",
+      "strategy": "MentoFXRotator",
+      "generation": 2,
+      "vStartUsd": 4.996942346882545,
+      "vEndUsd": 4.996942346882545,
+      "gasUsd": 0,
+      "netFlowUsd": 0,
+      "epochHours": 1.5122083333333334,
+      "fitness": 0,
+      "score": 50,
+      "culled": false,
+      "reputationTx": "0x51d451ceff9a3e07ba2203f51c7912050e498c1d3ffd66542752023f3e1e270f"
+    },
+    {
+      "slug": "ay-balanced-g3-i30",
+      "erc8004AgentId": "9280",
+      "strategy": "AaveYielder",
+      "generation": 3,
+      "vStartUsd": 0.2548710507570461,
+      "vEndUsd": 0.25517993424860436,
+      "gasUsd": 0,
+      "netFlowUsd": 0,
+      "epochHours": 1.5122083333333334,
+      "fitness": 7.020477754777687,
+      "score": 100,
+      "culled": false,
+      "reputationTx": "0xe6d36d2414e653bb1caf0cd2f9a18697820d3a1ea61fc749cb632523a6468f2c"
+    }
+  ],
+  "swarmMedianFitness": 0,
+  "culled": [
+    "ay-chaser"
+  ],
+  "spawned": [
+    "ay-balanced-g3-i28",
+    "ay-balanced-g3-i29"
+  ]
+}
