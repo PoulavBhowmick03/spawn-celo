@@ -573,8 +573,15 @@ export async function settleEpoch(state: SwarmState, ctx: MarketContext): Promis
       totalBudgetUsd: TOTAL_BUDGET_USD,
       deployedUsd,
     });
-    if (decision.grow) {
+    // resume safety: a crash between the growth enqueue and the epoch advance
+    // re-enters settleEpoch and must not enqueue a second growth spawn
+    // (observed: three growth spawns piled up across the v5/v6 restarts)
+    if (decision.grow && state.lastGrowthEpoch === state.epochNumber) {
+      console.log(`  growth: already enqueued for epoch ${state.epochNumber} (crash-resume) — skipping`);
+    } else if (decision.grow) {
       enqueueSpawn(state, top, MAX_AGENT_BALANCE_USD, "growth");
+      state.lastGrowthEpoch = state.epochNumber;
+      saveState(state);
       console.log(`  growth: +1 spawn enqueued from ${top.slug}'s genome — ${decision.reason}`);
     } else {
       console.log(`  growth: not growing — ${decision.reason}`);

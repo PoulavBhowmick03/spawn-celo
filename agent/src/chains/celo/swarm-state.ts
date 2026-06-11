@@ -65,6 +65,9 @@ export type SwarmState = {
   nextHdIndex: number;
   /** epoch whose cull already ran (resume safety — never cull twice) */
   lastCulledEpoch?: number;
+  /** epoch whose growth spawn already enqueued (resume safety — a crash
+   *  mid-settle must not enqueue a second growth spawn on re-entry) */
+  lastGrowthEpoch?: number;
   /** spawns enqueued by a cull but not yet completed (retried each cycle) */
   pendingSpawns?: PendingSpawn[];
   /** last epoch's market snapshot inputs for momentum computation */
