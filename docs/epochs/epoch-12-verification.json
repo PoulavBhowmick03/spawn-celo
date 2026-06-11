@@ -1,0 +1,118 @@
+{
+  "epoch": 12,
+  "verifiedAt": "2026-06-11T19:50:54.900Z",
+  "swarmMedian": 0,
+  "verified": 9,
+  "total": 9,
+  "method": "fitness=annualize((V_end-net_flow)/V_start)-gas_penalty recomputed from the published epoch report; score=clamp(round(50+500*(fitness-median)),0,100); keccak256(logged payload) checked against the logged feedbackHash; agentId+score+feedbackHash decoded from the onchain giveFeedback calldata via eth_getTransactionByHash",
+  "rows": [
+    {
+      "slug": "mfx-cautious",
+      "erc8004AgentId": "9241",
+      "recomputedFitness": 0,
+      "publishedFitness": 0,
+      "recomputedScore": 50,
+      "publishedScore": 50,
+      "fitnessMatch": true,
+      "payloadHashMatch": true,
+      "onchainCalldataMatch": true,
+      "reputationTx": "0x2908218418e766f14d5eef07370e3b707d58724685e92345a1fdce3f23b11081"
+    },
+    {
+      "slug": "mfx-balanced",
+      "erc8004AgentId": "9242",
+      "recomputedFitness": 0,
+      "publishedFitness": 0,
+      "recomputedScore": 50,
+      "publishedScore": 50,
+      "fitnessMatch": true,
+      "payloadHashMatch": true,
+      "onchainCalldataMatch": true,
+      "reputationTx": "0xb81e488ca2cd3397aea04f39a36b56669ac2a7ccfa750bc7d425e1f06b212c28"
+    },
+    {
+      "slug": "ay-balanced",
+      "erc8004AgentId": "9245",
+      "recomputedFitness": 0.023045399461468646,
+      "publishedFitness": 0.023045399461468646,
+      "recomputedScore": 62,
+      "publishedScore": 62,
+      "fitnessMatch": true,
+      "payloadHashMatch": true,
+      "onchainCalldataMatch": true,
+      "reputationTx": "0xbaa13beae0a6486bd6b55169d57d5b6cc2b882a4adad1b30fa4a1f629792360e"
+    },
+    {
+      "slug": "ay-chaser",
+      "erc8004AgentId": "9246",
+      "recomputedFitness": -4.419077302665782,
+      "publishedFitness": -4.419077302665782,
+      "recomputedScore": 0,
+      "publishedScore": 0,
+      "fitnessMatch": true,
+      "payloadHashMatch": true,
+      "onchainCalldataMatch": true,
+      "reputationTx": "0x35311dec33da177f38b10f8f633cdf47923f7a45791234b1ed84dc46ccadc03c"
+    },
+    {
+      "slug": "mfx-cautious-g2-i10",
+      "erc8004AgentId": "9256",
+      "recomputedFitness": 0,
+      "publishedFitness": 0,
+      "recomputedScore": 50,
+      "publishedScore": 50,
+      "fitnessMatch": true,
+      "payloadHashMatch": true,
+      "onchainCalldataMatch": true,
+      "reputationTx": "0xa44bcbaf3231ad1921ded074a55d507cf2ab98f6c645166014f8f91e269aa611"
+    },
+    {
+      "slug": "mfx-cautious-g2-i11",
+      "erc8004AgentId": "9257",
+      "recomputedFitness": 0,
+      "publishedFitness": 0,
+      "recomputedScore": 50,
+      "publishedScore": 50,
+      "fitnessMatch": true,
+      "payloadHashMatch": true,
+      "onchainCalldataMatch": true,
+      "reputationTx": "0xf260956e81d61b3e1b07fef146fafddc457792180adefa0f8bfdfa27465314f9"
+    },
+    {
+      "slug": "ay-balanced-g2-i13",
+      "erc8004AgentId": "9260",
+      "recomputedFitness": 0.023067440432887994,
+      "publishedFitness": 0.023067440432887994,
+      "recomputedScore": 62,
+      "publishedScore": 62,
+      "fitnessMatch": true,
+      "payloadHashMatch": true,
+      "onchainCalldataMatch": true,
+      "reputationTx": "0x4a874a52d9f17022258e9422e0512f8ab168c4a70b5a196be2c6e56ca855b193"
+    },
+    {
+      "slug": "mfx-cautious-g2-i14",
+      "erc8004AgentId": "9262",
+      "recomputedFitness": 0,
+      "publishedFitness": 0,
+      "recomputedScore": 50,
+      "publishedScore": 50,
+      "fitnessMatch": true,
+      "payloadHashMatch": true,
+      "onchainCalldataMatch": true,
+      "reputationTx": "0x14586bc334d29e29f36d37abeb89b6755a8f23d5a4f96f7db4bbfae37260bd6f"
+    },
+    {
+      "slug": "ay-balanced-g3-i25",
+      "erc8004AgentId": "9277",
+      "recomputedFitness": -53.75146905382147,
+      "publishedFitness": -53.75146905382147,
+      "recomputedScore": 0,
+      "publishedScore": 0,
+      "fitnessMatch": true,
+      "payloadHashMatch": true,
+      "onchainCalldataMatch": true,
+      "reputationTx": "0x481fa33fbc89e22b31118e38495587470b2ebe728fc472e4c3d0f82bf1294258"
+    }
+  ]
+}
