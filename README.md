@@ -137,7 +137,8 @@ Retired agents keep their identity and final reputation (e.g. ay-anchor #9244, c
 - Dashboard: https://spawn-celo-swarm.vercel.app
 - Activity log (raw, judge-facing): https://github.com/PoulavBhowmick03/spawn-celo/blob/main/celo_activity.jsonl (rendered on the dashboard)
 - Orchestrator on 8004scan: https://www.8004scan.io/agents/celo/9240
-- Agent list: [8004scan search "spawn"](https://www.8004scan.io/agents?search=spawn) · per-agent links in the table above and on the dashboard
+- Orchestrator on agentscan (registry agentId #9240): https://agentscan.info/agents/c8e57be1-4cd3-43b3-9085-843af479c10d
+- Agent list: [8004scan search "spawn"](https://www.8004scan.io/agents?search=spawn) · [agentscan search "spawn"](https://agentscan.info/?search=spawn) · per-agent links in the table above and on the dashboard
 - Epoch reports: [docs/epochs/](docs/epochs/) (also rendered on the dashboard)
 - Swarm host (Fly.io, 24/7): https://fly.io/apps/spawn-celo-swarm/monitoring
 - Signal oracle health: https://spawn-celo-swarm.fly.dev/health
