@@ -1,0 +1,210 @@
+{
+  "epoch": 13,
+  "settledAt": "2026-06-11T21:24:21.844Z",
+  "epochHours": 1.5160227777777777,
+  "market": {
+    "timestamp": 1781212963562,
+    "fxUsdPrice": {
+      "EURm": 1.15500525,
+      "BRLm": 0.194985284
+    },
+    "fxRoundTripCostBps": {
+      "EURm": 49.93750000000019,
+      "BRLm": 59.909999999999684
+    },
+    "fxMomentumBps": {
+      "EURm": -0.5786002537200703,
+      "BRLm": 3.507867023502898
+    },
+    "stableRoundTripCostBps": {
+      "USDC": 4.005707251305557,
+      "USDT": 4.008738747784957
+    },
+    "stableEntryEdgeBps": {
+      "USDC": 1.660000000001105,
+      "USDT": 7.330000000000947
+    },
+    "stableExitEdgeBps": {
+      "USDC": -5.66476690000095,
+      "USDT": -11.330433540001073
+    },
+    "aaveApyPct": {
+      "USDC": 2.5947571362593758,
+      "USDT": 0.8066063956616618,
+      "USDm": 2.4725301263375994
+    }
+  },
+  "agents": [
+    {
+      "slug": "mfx-cautious",
+      "erc8004AgentId": "9241",
+      "strategy": "MentoFXRotator",
+      "generation": 1,
+      "vStartUsd": 4.999999789098257,
+      "vEndUsd": 4.999999789098257,
+      "gasUsd": 0,
+      "netFlowUsd": 0,
+      "epochHours": 1.5160227777777777,
+      "fitness": 0,
+      "score": 50,
+      "culled": false,
+      "reputationTx": "0x950b1044b20050ada405095fa4999377318d920d15d55d98e1829e5d3bd33c2b"
+    },
+    {
+      "slug": "mfx-balanced",
+      "erc8004AgentId": "9242",
+      "strategy": "MentoFXRotator",
+      "generation": 1,
+      "vStartUsd": 4.999999789098257,
+      "vEndUsd": 4.999999789098257,
+      "gasUsd": 0,
+      "netFlowUsd": 0,
+      "epochHours": 1.5160227777777777,
+      "fitness": 0,
+      "score": 50,
+      "culled": false,
+      "reputationTx": "0x899eac8370bdbf645dd95d1d2e053ed887327bbfb8ea52805a8676208f51c20b"
+    },
+    {
+      "slug": "ay-balanced",
+      "erc8004AgentId": "9245",
+      "strategy": "AaveYielder",
+      "generation": 1,
+      "vStartUsd": 4.99213045621346,
+      "vEndUsd": 4.99215145621346,
+      "gasUsd": 0,
+      "netFlowUsd": 0,
+      "epochHours": 1.5160227777777777,
+      "fitness": 0.024307021684777393,
+      "score": 62,
+      "culled": false,
+      "reputationTx": "0x8264f102c87a3e1644652ad776ec4e0760b637d062eed9eb7bf9ee9f48a65545"
+    },
+    {
+      "slug": "ay-chaser",
+      "erc8004AgentId": "9246",
+      "strategy": "AaveYielder",
+      "generation": 1,
+      "vStartUsd": 5.1741360030740005,
+      "vEndUsd": 5.1701590030740014,
+      "gasUsd": 0,
+      "netFlowUsd": 0,
+      "epochHours": 1.5160227777777777,
+      "fitness": -4.441361572302666,
+      "score": 0,
+      "culled": false,
+      "reputationTx": "0x6b99a394f82ddc139c237e4d5e0ec153acec136c1062b2b98a58449add729f47"
+    },
+    {
+      "slug": "mfx-cautious-g2-i10",
+      "erc8004AgentId": "9256",
+      "strategy": "MentoFXRotator",
+      "generation": 2,
+      "vStartUsd": 4.99999961934825,
+      "vEndUsd": 4.99999961934825,
+      "gasUsd": 0,
+      "netFlowUsd": 0,
+      "epochHours": 1.5160227777777777,
+      "fitness": 0,
+      "score": 50,
+      "culled": false,
+      "reputationTx": "0x7d56d850d74259543c28fe1ef09b1e8c645f38a8ca48f1653c88fa62b5c1810c"
+    },
+    {
+      "slug": "mfx-cautious-g2-i11",
+      "erc8004AgentId": "9257",
+      "strategy": "MentoFXRotator",
+      "generation": 2,
+      "vStartUsd": 4.99999975955925,
+      "vEndUsd": 4.99999975955925,
+      "gasUsd": 0,
+      "netFlowUsd": 0,
+      "epochHours": 1.5160227777777777,
+      "fitness": 0,
+      "score": 50,
+      "culled": false,
+      "reputationTx": "0xd3a5acde090787e3bdda895cf271b88bae9c464d298e1f7cc79a6dce1c72b82a"
+    },
+    {
+      "slug": "ay-balanced-g2-i13",
+      "erc8004AgentId": "9260",
+      "strategy": "AaveYielder",
+      "generation": 2,
+      "vStartUsd": 4.987360488625392,
+      "vEndUsd": 4.9873804886253925,
+      "gasUsd": 0,
+      "netFlowUsd": 0,
+      "epochHours": 1.5160227777777777,
+      "fitness": 0.023171684947603754,
+      "score": 62,
+      "culled": false,
+      "reputationTx": "0x009c41a5f55295b6bee3e12730744b9b9631947ed8ff7b804b109b15f75b0259"
+    },
+    {
+      "slug": "mfx-cautious-g2-i14",
+      "erc8004AgentId": "9262",
+      "strategy": "MentoFXRotator",
+      "generation": 2,
+      "vStartUsd": 4.996942346882545,
+      "vEndUsd": 4.996942346882545,
+      "gasUsd": 0,
+      "netFlowUsd": 0,
+      "epochHours": 1.5160227777777777,
+      "fitness": 0,
+      "score": 50,
+      "culled": false,
+      "reputationTx": "0x825585143cfd27a45ff7b9118d3f7157f9789daeb1ac23de25510cc8d5d23d0c"
+    },
+    {
+      "slug": "ay-balanced-g2-i26",
+      "erc8004AgentId": "9278",
+      "strategy": "AaveYielder",
+      "generation": 2,
+      "vStartUsd": 3.9968667101810587,
+      "vEndUsd": 3.9869327843558793,
+      "gasUsd": 0.008762462873028,
+      "netFlowUsd": 0,
+      "epochHours": 1.5160227777777777,
+      "fitness": -27.02940232988237,
+      "score": 0,
+      "culled": true,
+      "reputationTx": "0x7bbc819055c0c04e8744a19ba71c7ef7202280ef05c3b731f676f0f7a3c54255"
+    },
+    {
+      "slug": "ay-balanced-g2-i27",
+      "erc8004AgentId": "9279",
+      "strategy": "AaveYielder",
+      "generation": 2,
+      "vStartUsd": 4.3468713622587,
+      "vEndUsd": 4.333153908894298,
+      "gasUsd": 0.008548424188128,
+      "netFlowUsd": 0,
+      "epochHours": 1.5160227777777777,
+      "fitness": -29.597934711769668,
+      "score": 0,
+      "culled": true,
+      "reputationTx": "0x439eb4a77da6beafa82a9811af943521d170bac1f93136e2f1c8aec556dbd317"
+    },
+    {
+      "slug": "ay-balanced-g3-i30",
+      "erc8004AgentId": "9280",
+      "strategy": "AaveYielder",
+      "generation": 3,
+      "vStartUsd": 0.25394615030698126,
+      "vEndUsd": 0.25457064543134605,
+      "gasUsd": 0,
+      "netFlowUsd": 0,
+      "epochHours": 1.5160227777777777,
+      "fitness": 14.209729091903837,
+      "score": 100,
+      "culled": false,
+      "reputationTx": "0x5543a58c1be1d454323fe0c7757476ce607f41938f168e7cc59d655b83777493"
+    }
+  ],
+  "swarmMedianFitness": 0,
+  "culled": [
+    "ay-balanced-g2-i27",
+    "ay-balanced-g2-i26"
+  ],
+  "spawned": []
+}
