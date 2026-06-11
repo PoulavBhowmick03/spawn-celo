@@ -39,6 +39,10 @@ export const metadata: Metadata = {
   title: "Spawn Protocol | Hedge Swarm on Celo",
   description:
     "Darwinian swarm of ERC-8004 agents protecting stablecoin purchasing power on Celo mainnet — Mento FX + Aave v3 yield, recomputable onchain reputation, every transaction with a published rationale.",
+  other: {
+    "talentapp:project_verification":
+      "58f240326e3d03f3c4c7b9422b8c5d52464d103e7aeade52120a12936138af75cbcd2dd3c026147159d3b574c461047ec56a6f2dabe84158c2f050947a0c2386",
+  },
 };
 
 export default function RootLayout({
