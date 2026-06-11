@@ -373,6 +373,9 @@ export type EpochReport = {
     vEndUsd: number;
     gasUsd: number;
     netFlowUsd?: number;
+    /** per-row annualization hours — can differ from the report-level value
+     *  when a crash-resumed settle reuses already-settled rows */
+    epochHours?: number;
     fitness: number;
     score: number;
     culled: boolean;
@@ -438,6 +441,7 @@ export async function settleEpoch(state: SwarmState, ctx: MarketContext): Promis
         vEndUsd: prior.vEndUsd,
         gasUsd: prior.gasUsd,
         netFlowUsd: prior.netFlowUsd ?? 0,
+        epochHours: prior.epochHours ?? epochHours,
         fitness: prior.fitness,
         score: prior.score,
         culled: false,
@@ -477,6 +481,7 @@ export async function settleEpoch(state: SwarmState, ctx: MarketContext): Promis
       vEndUsd: r.vEndUsd,
       gasUsd: r.gasUsd,
       netFlowUsd: r.netFlowUsd,
+      epochHours,
       fitness: r.fitness,
       score,
       culled: false,

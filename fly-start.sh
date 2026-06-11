@@ -47,8 +47,12 @@ ln -sf /deps/node_modules /app/agent/node_modules
 # ── 3. signal oracle on $PORT (Fly health check) ───────────────────────────
 echo "[fly-start] starting signal oracle on :${PORT}…"
 cd /app/agent
-SIGNAL_PORT="${PORT}" SIGNAL_URL="http://127.0.0.1:${PORT}/signal" \
-  ./node_modules/.bin/tsx src/chains/celo/signal-service.ts &
+# export so BOTH the oracle and the swarm see them — the swarm's signal
+# client defaults to :8402 otherwise and every x402 purchase fails with
+# "fetch failed" (incident: handoff day, ~3h of dead signal sales)
+export SIGNAL_PORT="${PORT}"
+export SIGNAL_URL="http://127.0.0.1:${PORT}/signal"
+./node_modules/.bin/tsx src/chains/celo/signal-service.ts &
 
 echo "[fly-start] waiting for oracle…"
 for i in $(seq 1 20); do

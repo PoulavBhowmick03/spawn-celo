@@ -34,7 +34,8 @@
       "netFlowUsd": 0,
       "fitness": 0,
       "score": 50,
-      "culled": false
+      "culled": false,
+      "epochHours": 4.089788333333333
     },
     {
       "slug": "mfx-balanced",
@@ -47,7 +48,8 @@
       "netFlowUsd": 0,
       "fitness": 0,
       "score": 50,
-      "culled": false
+      "culled": false,
+      "epochHours": 4.089788333333333
     },
     {
       "slug": "ay-balanced",
@@ -60,7 +62,8 @@
       "netFlowUsd": 0,
       "fitness": -6.934547470109154,
       "score": 0,
-      "culled": false
+      "culled": false,
+      "epochHours": 4.089788333333333
     },
     {
       "slug": "ay-chaser",
@@ -73,7 +76,8 @@
       "netFlowUsd": 0.2,
       "fitness": -6.944792615574964,
       "score": 0,
-      "culled": false
+      "culled": false,
+      "epochHours": 4.089788333333333
     },
     {
       "slug": "hc-mid",
@@ -86,7 +90,8 @@
       "netFlowUsd": 0,
       "fitness": -28.42592513356385,
       "score": 0,
-      "culled": true
+      "culled": true,
+      "epochHours": 4.089788333333333
     },
     {
       "slug": "mfx-cautious-g2-i10",
@@ -99,7 +104,8 @@
       "netFlowUsd": 0,
       "fitness": 0,
       "score": 50,
-      "culled": false
+      "culled": false,
+      "epochHours": 4.089788333333333
     },
     {
       "slug": "mfx-cautious-g2-i11",
@@ -112,7 +118,8 @@
       "netFlowUsd": 0,
       "fitness": 0,
       "score": 50,
-      "culled": false
+      "culled": false,
+      "epochHours": 4.089788333333333
     },
     {
       "slug": "mfx-aggressive-g2-i12",
@@ -125,7 +132,8 @@
       "netFlowUsd": 0.2,
       "fitness": 0,
       "score": 50,
-      "culled": false
+      "culled": false,
+      "epochHours": 4.089788333333333
     },
     {
       "slug": "ay-balanced-g2-i13",
@@ -138,7 +146,8 @@
       "netFlowUsd": 0,
       "fitness": -7.847847009228477,
       "score": 0,
-      "culled": false
+      "culled": false,
+      "epochHours": 4.089788333333333
     }
   ],
   "swarmMedianFitness": 0,
