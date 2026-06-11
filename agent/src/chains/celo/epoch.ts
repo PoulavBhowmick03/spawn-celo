@@ -253,8 +253,11 @@ async function completeSpawn(
   // replenished it since the spawn was enqueued), capped per agent.
   if ((await usdmBalance(account.address)) < parseUnits("0.05", 18)) {
     const treasuryBal = Number(formatUnits(await usdmBalance(orchestratorAccount().address), 18));
-    pending.fundUsd = Math.min(MAX_AGENT_BALANCE_USD, Math.max(pending.fundUsd, treasuryBal - 0.3));
-    if (pending.fundUsd < 0.5) throw new Error(`spawn pool too small ($${pending.fundUsd.toFixed(2)}) for ${pending.slug}`);
+    // fund to the per-agent target, but NEVER drain the treasury below the
+    // ops float — orchestrator gas and the x402 USDC pool both live there
+    // (observed: epoch-9 replacements left $0.25, starving signal budgets)
+    pending.fundUsd = Math.min(MAX_AGENT_BALANCE_USD, treasuryBal - OPS_FLOAT_USD);
+    if (pending.fundUsd < 2) throw new Error(`spawn pool too small ($${Math.max(0, pending.fundUsd).toFixed(2)} above the $${OPS_FLOAT_USD.toFixed(2)} ops float) for ${pending.slug} — deferring until cull returns replenish the treasury`);
     assertTxAllowed(pending.fundUsd, `fund spawned agent ${pending.slug}`);
     const orchWallet = celoWalletClient(orchestratorAccount());
     const hash = await orchWallet.writeContract({
