@@ -1,5 +1,5 @@
 {
-  "epochNumber": 8,
+  "epochNumber": 9,
   "nextHdIndex": 24,
   "agents": [
     {
@@ -345,7 +345,7 @@
       ],
       "childContract": "0x8e5CBAdF9A98eDbD80aA2000b227BBc139aB4236",
       "spawnTxHash": "0x5df38b0183b6378117222cd186f99e4f925b88222a3c0a573a9cd0d8c3054871",
-      "vStartUsd": 4.9920234562134596,
+      "vStartUsd": 4.99204545621346,
       "epochGasUsd": 0,
       "epochFlowUsd": 0
     },
@@ -433,7 +433,7 @@
       ],
       "childContract": "0xa89Ae17C537728a1c07d878a16Ea2C2879393789",
       "spawnTxHash": "0x1b006cf8cdad3a968fd0f2fabc8b6d5ffeb7f2b4e4803634c111adb48ee12b04",
-      "vStartUsd": 5.190018003074001,
+      "vStartUsd": 5.190042003074001,
       "epochGasUsd": 0,
       "epochFlowUsd": 0
     },
@@ -821,7 +821,7 @@
           "epochHours": 1.5014208333333334
         }
       ],
-      "vStartUsd": 4.987254488625393,
+      "vStartUsd": 4.987276488625392,
       "epochGasUsd": 0,
       "epochFlowUsd": 0
     },
@@ -1030,7 +1030,10 @@
       "status": "ACTIVE",
       "childContract": "0xb659367aB60015BC9d7788EC3D1866fe62a2da64",
       "spawnTxHash": "0xd54ccaaf362b00f781fdfa2d89098d4d9d49a4b9a0f86d2c99c78a77e0c98333",
-      "history": []
+      "history": [],
+      "vStartUsd": 2.4364533652118,
+      "epochGasUsd": 0.00312416410725,
+      "epochFlowUsd": 0
     },
     {
       "slug": "ay-chaser-g2-i20",
@@ -1050,14 +1053,17 @@
       "status": "ACTIVE",
       "childContract": "0x9282C82e118538aa48EB146AB11c0d4B42782Cf6",
       "spawnTxHash": "0xab2ea07c0cede9fc6eef1ccc35b5885237c01e393667f937a2dac3120c0cb0f9",
-      "history": []
+      "history": [],
+      "vStartUsd": 3.9969495015040453,
+      "epochGasUsd": 0.0054233515412999995,
+      "epochFlowUsd": 0
     }
   ],
   "prevFxUsdPrice": {
-    "EURm": 1.1508805875,
-    "BRLm": 0.192266465
+    "EURm": 1.149229725,
+    "BRLm": 0.19244094
   },
-  "epochStartedAt": "2026-06-11T11:47:38.068Z",
+  "epochStartedAt": "2026-06-11T13:26:36.405Z",
   "lastCulledEpoch": 8,
   "pendingSpawns": [
     {
