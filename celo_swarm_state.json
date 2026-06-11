@@ -1546,19 +1546,13 @@
       "epochGasUsd": 0.00858128650653465,
       "epochFlowUsd": 0,
       "recallTxHash": "0x6c4e18f66bcaf7e52028101069d335dedaaadb9adb1480ddc2446315c2a157f0"
-    }
-  ],
-  "prevFxUsdPrice": {
-    "EURm": 1.152062625,
-    "BRLm": 0.19407836295
-  },
-  "epochStartedAt": "2026-06-11T18:14:56.827Z",
-  "lastCulledEpoch": 12,
-  "pendingSpawns": [
+    },
     {
       "slug": "ay-balanced-g2-i26",
       "name": "Spawn Aave Yielder (balanced) g2",
       "hdIndex": 26,
+      "address": "0x74f176aDA6894A12a77A9B49297Ef32e96Cc7fb1",
+      "erc8004AgentId": "9278",
       "strategy": "AaveYielder",
       "params": {
         "minApyDeltaBps": 29,
@@ -1568,9 +1562,19 @@
       "useSignal": false,
       "generation": 2,
       "lineageKey": "ay-balanced",
-      "fundUsd": -0.7213736261310044,
-      "description": "Cull replacement: spawned to replace an agent culled from the bottom 20% of epoch-10 fitness. Generation 2 of the \"ay-balanced\" lineage, spawned from epoch-10 top performer ay-balanced with ±20% mutated parameters. Supply stables to Aave v3, compound, rebalance when APY delta > 29bps; 5.18% reserve"
-    },
+      "status": "ACTIVE",
+      "childContract": "0x5E37a6D40ec934bE333a64a52F95846c2Cf0A375",
+      "spawnTxHash": "0xbcdee14125c23140d583490e160f5db0a45a0afa2fa8c5f33ff6eedc55bd67c8",
+      "history": []
+    }
+  ],
+  "prevFxUsdPrice": {
+    "EURm": 1.152062625,
+    "BRLm": 0.19407836295
+  },
+  "epochStartedAt": "2026-06-11T18:14:56.827Z",
+  "lastCulledEpoch": 12,
+  "pendingSpawns": [
     {
       "slug": "ay-balanced-g2-i27",
       "name": "Spawn Aave Yielder (balanced) g2",
