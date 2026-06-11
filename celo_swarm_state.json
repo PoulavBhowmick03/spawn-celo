@@ -1242,7 +1242,7 @@
       "useSignal": false,
       "generation": 3,
       "lineageKey": "ay-balanced",
-      "fundUsd": 3.9503609185781268,
+      "fundUsd": -0.7499790898178789,
       "description": "Cull replacement: spawned to replace an agent culled from the bottom 20% of epoch-9 fitness. Generation 3 of the \"ay-balanced\" lineage, spawned from epoch-9 top performer ay-balanced-g2-i13 with ±20% mutated parameters. Supply stables to Aave v3, compound, rebalance when APY delta > 32bps; 6.2% reserve"
     },
     {
@@ -1258,7 +1258,7 @@
       "useSignal": true,
       "generation": 3,
       "lineageKey": "ay-balanced",
-      "fundUsd": 3.9503609185781268,
+      "fundUsd": -0.7499790898178789,
       "description": "Cull replacement: spawned to replace an agent culled from the bottom 20% of epoch-9 fitness. Generation 3 of the \"ay-balanced\" lineage, spawned from epoch-9 top performer ay-balanced-g2-i13 with ±20% mutated parameters. Supply stables to Aave v3, compound, rebalance when APY delta > 35bps; 4.55% reserve"
     }
   ]
