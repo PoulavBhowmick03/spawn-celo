@@ -78,5 +78,10 @@
     "agentId": "9262",
     "address": "0x055662c42203a8D38644982161343D75FE940E06",
     "txHash": "0xe363a1863c71e6ef48c76e3ff292de3e9c1284a16b2630785943673243888238"
+  },
+  "mca-tight": {
+    "agentId": "9264",
+    "address": "0x4E55436826bac17087C4ABF6a199D38d54C85021",
+    "txHash": "0x65827913f277b0cb1f66825fcbe86bb40f715567a769b3b6f7f77daea9c80e6e"
   }
 }

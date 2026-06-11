@@ -731,19 +731,13 @@
       "vStartUsd": 4.996942346882545,
       "epochGasUsd": 0,
       "epochFlowUsd": 0
-    }
-  ],
-  "prevFxUsdPrice": {
-    "EURm": 1.1508905625,
-    "BRLm": 0.19232067189
-  },
-  "epochStartedAt": "2026-06-11T08:35:25.780Z",
-  "lastCulledEpoch": 6,
-  "pendingSpawns": [
+    },
     {
       "slug": "mca-tight",
       "name": "Mento Carry Arb (tight)",
       "hdIndex": 15,
+      "address": "0x4E55436826bac17087C4ABF6a199D38d54C85021",
+      "erc8004AgentId": "9264",
       "strategy": "MentoCarryArb",
       "params": {
         "minEdgeBps": 10,
@@ -753,9 +747,19 @@
       "useSignal": false,
       "generation": 1,
       "lineageKey": "mca-tight",
-      "fundUsd": 4,
-      "description": "Genesis agent of the MentoCarryArb lineage: monitors cUSD/USDC/USDT round-trip spreads via Mento broker quotes and rotates capital when the carry edge (Aave APY delta + spread capture - round-trip cost - gas) exceeds 10bps. Activated 2026-06-11 as the swarm's fourth strategy; funded $4 from recycled treasury margin, no new outside capital."
-    },
+      "status": "ACTIVE",
+      "childContract": "0xb6586cAf3ca9917EeaB935A301656F2271Ac9F85",
+      "spawnTxHash": "0xce77275efda708cd4ef317db4cda393434024aab7dcd98ac3f68f4c0e048ef0e",
+      "history": []
+    }
+  ],
+  "prevFxUsdPrice": {
+    "EURm": 1.1508905625,
+    "BRLm": 0.19232067189
+  },
+  "epochStartedAt": "2026-06-11T08:35:25.780Z",
+  "lastCulledEpoch": 6,
+  "pendingSpawns": [
     {
       "slug": "ay-balanced-g3-i16",
       "name": "Spawn Aave Yielder (balanced) g2 g3",
