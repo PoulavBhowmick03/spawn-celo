@@ -1,7 +1,7 @@
 {
   "type": "https://eips.ethereum.org/EIPS/eip-8004#registration-v1",
-  "name": "Spawn Aave Yielder (balanced) g2",
-  "description": "Cull replacement: spawned to replace an agent culled from the bottom 20% of epoch-10 fitness. Generation 2 of the \"ay-balanced\" lineage, spawned from epoch-10 top performer ay-balanced with ±20% mutated parameters. Supply stables to Aave v3, compound, rebalance when APY delta > 24bps; 4.29% reserve",
+  "name": "Spawn Aave Yielder (balanced) g2 g3",
+  "description": "Cull replacement: spawned to replace an agent culled from the bottom 20% of epoch-12 fitness. Generation 3 of the \"ay-balanced\" lineage, spawned from epoch-12 top performer ay-balanced-g2-i13 with ±20% mutated parameters. Supply stables to Aave v3, compound, rebalance when APY delta > 33bps; 5.45% reserve",
   "image": "https://poulavbhowmick03.github.io/spawn-celo/spawn-logo.svg",
   "services": [
     {
@@ -15,27 +15,22 @@
   ],
   "x402Support": false,
   "active": true,
-  "registrations": [
-    {
-      "agentId": 9279,
-      "agentRegistry": "eip155:42220:0x8004A169FB4a3325136EB29fA0ceB6D2e539a432"
-    }
-  ],
+  "registrations": [],
   "supportedTrust": [
     "reputation"
   ],
   "spawn": {
     "role": "swarm-agent",
-    "wallet": "0x8AF540Fe91c0b853532Ca582B0DF1Fb4beD34E91",
+    "wallet": "0x26dbA8A064f6195538D31AF45d3037F021f739fA",
     "strategy": "AaveYielder",
     "params": {
-      "minApyDeltaBps": 24,
-      "reserveBps": 429,
+      "minApyDeltaBps": 33,
+      "reserveBps": 545,
       "compoundEveryEpochs": 1
     },
-    "buysX402Signals": true,
+    "buysX402Signals": false,
     "fitnessFormula": "fitness = annualize(V_end/V_start) - gas_penalty; reputation = clamp(round(50 + 500*(fitness - swarm_median)), 0, 100); inputs recomputable from Celoscan",
-    "explorer": "https://celoscan.io/address/0x8AF540Fe91c0b853532Ca582B0DF1Fb4beD34E91",
+    "explorer": "https://celoscan.io/address/0x26dbA8A064f6195538D31AF45d3037F021f739fA",
     "scan8004": "https://www.8004scan.io/agents/celo"
   }
 }
