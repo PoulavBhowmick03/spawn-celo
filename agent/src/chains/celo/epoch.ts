@@ -281,10 +281,11 @@ async function completeSpawn(
     const usdcBal = await celoPublicClient.readContract({
       address: TOKENS.USDC, abi: erc20Abi, functionName: "balanceOf", args: [account.address],
     });
+    const budget = 350_000n; // 0.35 USDC
+    if (usdcBal < budget / 2n) await ensureTreasuryUsdc(budget);
     const treasuryUsdc = await celoPublicClient.readContract({
       address: TOKENS.USDC, abi: erc20Abi, functionName: "balanceOf", args: [orchestratorAccount().address],
     });
-    const budget = 350_000n; // 0.35 USDC
     if (usdcBal < budget / 2n && treasuryUsdc >= budget) {
       const orchWallet = celoWalletClient(orchestratorAccount());
       const hash = await orchWallet.writeContract({
@@ -601,6 +602,49 @@ export async function settleEpoch(state: SwarmState, ctx: MarketContext): Promis
   return report;
 }
 
+/** Keep the treasury's USDC pool (the source of x402 signal budgets) topped
+ *  up from its cUSD float. The useSignal gene spreads through the population
+ *  and each new buyer gets a 0.35 USDC budget at spawn — a fixed pool drains
+ *  (observed: ay-chaser-g2-i20 spawned with no budget after i18+i19 emptied
+ *  it). Swap is bounded and never touches agent trading capital. */
+const USDC_POOL_TARGET_UNITS = 800_000n; // 0.8 USDC
+const TREASURY_CUSD_FLOAT_USD = 0.4; // cUSD kept for orchestrator gas, never swapped
+
+async function ensureTreasuryUsdc(minUnits: bigint): Promise<void> {
+  const orch = orchestratorAccount();
+  const usdc = await celoPublicClient.readContract({
+    address: TOKENS.USDC, abi: erc20Abi, functionName: "balanceOf", args: [orch.address],
+  });
+  if (usdc >= minUnits) return;
+  const cusd = Number(formatUnits(await usdmBalance(orch.address), 18));
+  const buyUsd = Math.min(
+    Number(formatUnits(USDC_POOL_TARGET_UNITS - usdc, 6)),
+    cusd - TREASURY_CUSD_FLOAT_USD,
+  );
+  if (buyUsd < 0.1) {
+    console.warn(`  treasury USDC pool low (${formatUnits(usdc, 6)}) but cUSD float ($${cusd.toFixed(2)}) can't replenish it`);
+    return;
+  }
+  try {
+    const { executeSwap } = await import("./mento.js");
+    await executeSwap({
+      account: orch,
+      agentId: "orchestrator",
+      tokenIn: TOKENS.USDm,
+      tokenOut: TOKENS.USDC,
+      amountIn: parseUnits(buyUsd.toFixed(6), 18),
+      tokenInDecimals: 18,
+      tokenOutDecimals: 6,
+      usdValue: buyUsd,
+      feeCurrency: maybeFee(FEE_CURRENCIES.USDm),
+      rationale: `Auto-replenish the treasury's USDC pool ($${buyUsd.toFixed(2)} cUSD -> USDC): the useSignal gene is spreading and every new signal-buying agent receives a 0.35 USDC x402 budget at spawn. Ops capital, not trading capital — agent portfolios untouched.`,
+    });
+    console.log(`  treasury USDC pool replenished (+$${buyUsd.toFixed(2)})`);
+  } catch (e) {
+    console.warn(`  treasury USDC replenish failed (${(e as Error).message?.slice(0, 100)}) — will retry when next needed`);
+  }
+}
+
 /** Top up a useSignal agent's USDC x402 budget BEFORE vStart is captured, so
  *  the transfer lands inside the epoch baseline instead of polluting P&L.
  *  Heals all three observed depletion paths: spawns predating spawn-time
@@ -610,11 +654,14 @@ const SIGNAL_LOW_WATER_UNITS = 50_000n; // top up below 0.05 USDC
 
 async function ensureSignalBudget(agent: SwarmAgentState): Promise<void> {
   const orch = orchestratorAccount();
-  const [agentUsdc, treasuryUsdc] = await Promise.all([
-    celoPublicClient.readContract({ address: TOKENS.USDC, abi: erc20Abi, functionName: "balanceOf", args: [agent.address] }),
-    celoPublicClient.readContract({ address: TOKENS.USDC, abi: erc20Abi, functionName: "balanceOf", args: [orch.address] }),
-  ]);
+  const agentUsdc = await celoPublicClient.readContract({
+    address: TOKENS.USDC, abi: erc20Abi, functionName: "balanceOf", args: [agent.address],
+  });
   if (agentUsdc >= SIGNAL_LOW_WATER_UNITS) return;
+  await ensureTreasuryUsdc(SIGNAL_BUDGET_UNITS);
+  const treasuryUsdc = await celoPublicClient.readContract({
+    address: TOKENS.USDC, abi: erc20Abi, functionName: "balanceOf", args: [orch.address],
+  });
   if (treasuryUsdc < SIGNAL_BUDGET_UNITS) {
     console.warn(`  ${agent.slug}: x402 budget low (${formatUnits(agentUsdc, 6)} USDC) but treasury USDC can't cover a top-up`);
     return;
