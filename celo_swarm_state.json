@@ -1171,19 +1171,13 @@
       "childContract": "0x913e0222cca8675d67266106bee883c0392332e5",
       "spawnTxHash": "0xb9661907bbff5cbe1bccd45f09933d57a5cee56d5449b2ca24f140fcab5288a0",
       "history": []
-    }
-  ],
-  "prevFxUsdPrice": {
-    "EURm": 1.149229725,
-    "BRLm": 0.19244094
-  },
-  "epochStartedAt": "2026-06-11T13:26:36.405Z",
-  "lastCulledEpoch": 9,
-  "pendingSpawns": [
+    },
     {
       "slug": "ay-chaser-g2-i22",
       "name": "Spawn Aave Yielder (chaser) g2",
       "hdIndex": 22,
+      "address": "0x9fEa6770458a4A45fE5d2295F55cDd7FBC84A623",
+      "erc8004AgentId": "9272",
       "strategy": "AaveYielder",
       "params": {
         "minApyDeltaBps": 15,
@@ -1193,9 +1187,19 @@
       "useSignal": true,
       "generation": 2,
       "lineageKey": "ay-chaser",
-      "fundUsd": 2.0104631873331593,
-      "description": "Cull replacement: spawned to replace an agent culled from the bottom 20% of epoch-8 fitness. Generation 2 of the \"ay-chaser\" lineage, spawned from epoch-8 top performer ay-chaser with ±20% mutated parameters. Supply stables to Aave v3, compound, rebalance when APY delta > 15bps; 2.15% reserve"
-    },
+      "status": "ACTIVE",
+      "childContract": "0xC321C69a38122ED60588bC5d054296e6019EEE6d",
+      "spawnTxHash": "0xe92cf1761b66afa71f5a23f78fd5c7e46ec2311d6a3a5c64636d4771761f225f",
+      "history": []
+    }
+  ],
+  "prevFxUsdPrice": {
+    "EURm": 1.149229725,
+    "BRLm": 0.19244094
+  },
+  "epochStartedAt": "2026-06-11T13:26:36.405Z",
+  "lastCulledEpoch": 9,
+  "pendingSpawns": [
     {
       "slug": "ay-chaser-g2-i23",
       "name": "Spawn Aave Yielder (chaser) g2",
