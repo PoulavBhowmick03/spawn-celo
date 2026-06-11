@@ -46,7 +46,9 @@ function buildNodes(agents: SwarmAgent[], prev: Map<string, number>): OrbitNode[
   return agents.map((a) => {
     const value = agentValue(a);
     const fitness = agentFitness(a);
-    const rel = span > 0.001 ? (value - vMin) / span : 0.5;
+    // clamp: a just-spawned agent has no vStart/history yet (value 0), which
+    // would otherwise produce a negative node radius and kill ctx.arc()
+    const rel = Math.max(0, Math.min(1, span > 0.001 ? (value - vMin) / span : 0.5));
     // fitness drives speed: 0 → base, positive faster, negative slower
     const f = Math.max(-2, Math.min(2, fitness ?? 0));
     return {
