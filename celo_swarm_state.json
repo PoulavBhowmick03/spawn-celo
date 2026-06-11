@@ -1,5 +1,5 @@
 {
-  "epochNumber": 9,
+  "epochNumber": 10,
   "nextHdIndex": 26,
   "agents": [
     {
@@ -372,7 +372,7 @@
       ],
       "childContract": "0x8e5CBAdF9A98eDbD80aA2000b227BBc139aB4236",
       "spawnTxHash": "0x5df38b0183b6378117222cd186f99e4f925b88222a3c0a573a9cd0d8c3054871",
-      "vStartUsd": 4.99204545621346,
+      "vStartUsd": 4.99206745621346,
       "epochGasUsd": 0,
       "epochFlowUsd": 0
     },
@@ -469,7 +469,7 @@
       ],
       "childContract": "0xa89Ae17C537728a1c07d878a16Ea2C2879393789",
       "spawnTxHash": "0x1b006cf8cdad3a968fd0f2fabc8b6d5ffeb7f2b4e4803634c111adb48ee12b04",
-      "vStartUsd": 5.190042003074001,
+      "vStartUsd": 5.186067003074001,
       "epochGasUsd": 0,
       "epochFlowUsd": 0
     },
@@ -884,7 +884,7 @@
           "epochHours": 1.5148419444444445
         }
       ],
-      "vStartUsd": 4.987276488625392,
+      "vStartUsd": 4.987298488625393,
       "epochGasUsd": 0,
       "epochFlowUsd": 0
     },
@@ -1170,7 +1170,10 @@
       "status": "ACTIVE",
       "childContract": "0x913e0222cca8675d67266106bee883c0392332e5",
       "spawnTxHash": "0xb9661907bbff5cbe1bccd45f09933d57a5cee56d5449b2ca24f140fcab5288a0",
-      "history": []
+      "history": [],
+      "vStartUsd": 2.007410282572306,
+      "epochGasUsd": 0.0054712498302,
+      "epochFlowUsd": 0
     },
     {
       "slug": "ay-chaser-g2-i22",
@@ -1190,7 +1193,10 @@
       "status": "ACTIVE",
       "childContract": "0xC321C69a38122ED60588bC5d054296e6019EEE6d",
       "spawnTxHash": "0xe92cf1761b66afa71f5a23f78fd5c7e46ec2311d6a3a5c64636d4771761f225f",
-      "history": []
+      "history": [],
+      "vStartUsd": 4.346920555361792,
+      "epochGasUsd": 0.0031517562915,
+      "epochFlowUsd": 0
     },
     {
       "slug": "ay-chaser-g2-i23",
@@ -1210,14 +1216,17 @@
       "status": "ACTIVE",
       "childContract": "0xb9DdFED5997eCCb205a6de313793bf06d2C6dF93",
       "spawnTxHash": "0xeab195b77445532641a2ef74de078b2d0b37e6d065b117ef26d02269608fed0e",
-      "history": []
+      "history": [],
+      "vStartUsd": 4.346920555361792,
+      "epochGasUsd": 0.0052606341972,
+      "epochFlowUsd": 0
     }
   ],
   "prevFxUsdPrice": {
-    "EURm": 1.149229725,
-    "BRLm": 0.19244094
+    "EURm": 1.1491998,
+    "BRLm": 0.1933856972
   },
-  "epochStartedAt": "2026-06-11T13:26:36.405Z",
+  "epochStartedAt": "2026-06-11T15:08:34.534Z",
   "lastCulledEpoch": 9,
   "pendingSpawns": [
     {
