@@ -1,5 +1,5 @@
 {
-  "epochNumber": 7,
+  "epochNumber": 8,
   "nextHdIndex": 21,
   "agents": [
     {
@@ -318,7 +318,7 @@
       ],
       "childContract": "0x8e5CBAdF9A98eDbD80aA2000b227BBc139aB4236",
       "spawnTxHash": "0x5df38b0183b6378117222cd186f99e4f925b88222a3c0a573a9cd0d8c3054871",
-      "vStartUsd": 4.99200145621346,
+      "vStartUsd": 4.9920234562134596,
       "epochGasUsd": 0,
       "epochFlowUsd": 0
     },
@@ -397,7 +397,7 @@
       ],
       "childContract": "0xa89Ae17C537728a1c07d878a16Ea2C2879393789",
       "spawnTxHash": "0x1b006cf8cdad3a968fd0f2fabc8b6d5ffeb7f2b4e4803634c111adb48ee12b04",
-      "vStartUsd": 5.189994003074001,
+      "vStartUsd": 5.190018003074001,
       "epochGasUsd": 0,
       "epochFlowUsd": 0
     },
@@ -758,7 +758,7 @@
           "epochHours": 1.5117961111111111
         }
       ],
-      "vStartUsd": 4.987233488625392,
+      "vStartUsd": 4.987254488625393,
       "epochGasUsd": 0,
       "epochFlowUsd": 0
     },
@@ -890,7 +890,10 @@
       "status": "ACTIVE",
       "childContract": "0xA0552136173360d2a91A2cEe5D6A5867a775Bb73",
       "spawnTxHash": "0xc224a31159903b28950f558af8690067b591a8d8d224fcc2c30ce6415b6b8f5e",
-      "history": []
+      "history": [],
+      "vStartUsd": 3.996917259948194,
+      "epochGasUsd": 0.0054814068414,
+      "epochFlowUsd": 0
     },
     {
       "slug": "ay-chaser-g2-i18",
@@ -910,14 +913,17 @@
       "status": "ACTIVE",
       "childContract": "0x614d68bDFCb5751FdD586ba2620fb873d6eB5437",
       "spawnTxHash": "0x69693f813d7bb4f9981ba260fa557be7e020c42962e74099b95a26031b0e3f5f",
-      "history": []
+      "history": [],
+      "vStartUsd": 2.83707955498018,
+      "epochGasUsd": 0.0031580035785,
+      "epochFlowUsd": 0
     }
   ],
   "prevFxUsdPrice": {
-    "EURm": 1.150147425,
-    "BRLm": 0.19236371238
+    "EURm": 1.1508805875,
+    "BRLm": 0.192266465
   },
-  "epochStartedAt": "2026-06-11T10:11:05.467Z",
+  "epochStartedAt": "2026-06-11T11:47:38.068Z",
   "lastCulledEpoch": 7,
   "pendingSpawns": [
     {
