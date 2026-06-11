@@ -69,6 +69,14 @@ async function fundAgents(state: SwarmState): Promise<void> {
   const ctx = await snapshotMarket(state.prevFxUsdPrice ? { fxUsdPrice: state.prevFxUsdPrice } : undefined);
   for (const agent of state.agents) {
     if (agent.status !== "ACTIVE") continue;
+    // never fund an agent whose open epoch is already settled: it may be in
+    // the cull window (settled-but-not-yet-retired after a crash), and any
+    // top-up would be swept straight back by the cull unwind (incident
+    // 2026-06-11: hc-mid was re-funded twice mid-cull, gas wasted both ways)
+    if (agent.history.some((h) => h.epoch === state.epochNumber)) {
+      console.log(`  ${agent.slug}: epoch ${state.epochNumber} already settled — funding deferred to next epoch`);
+      continue;
+    }
     const pf = await readPortfolio(agent.address, ctx);
     const topUp = MAX_AGENT_BALANCE_USD - pf.totalUsd;
     if (topUp < 0.1) {

@@ -18,6 +18,8 @@
     "register:agents": "tsx src/chains/celo/register-agents.ts",
     "deploy:celo": "tsx src/chains/celo/deploy-contracts.ts",
     "test:fitness": "tsx src/chains/celo/fitness.test.ts",
+    "test:growth": "tsx src/chains/celo/growth.test.ts",
+    "test:carryarb": "tsx src/chains/celo/strategies-carryarb.test.ts",
     "swarm:start": "tsx src/chains/celo/swarm-start.ts",
     "swarm:status": "tsx src/chains/celo/swarm-status.ts",
     "swarm:unwind": "tsx src/chains/celo/swarm-unwind.ts",

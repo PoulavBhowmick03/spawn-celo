@@ -32,7 +32,8 @@ import { registerIdentity } from "./identity.js";
 import { cardUrl, writeAgentCard, saveRegistryEntry, PAGES_BASE } from "./generate-cards.js";
 import { loadState, saveState, type SwarmAgentState, type SwarmState } from "./swarm-state.js";
 import { logActivity } from "./activity-log.js";
-import { MAX_AGENT_BALANCE_USD, assertTxAllowed, killSwitchEngaged } from "./budget.js";
+import { MAX_AGENT_BALANCE_USD, TOTAL_BUDGET_USD, assertTxAllowed, killSwitchEngaged } from "./budget.js";
+import { MAX_SWARM_SIZE, OPS_FLOAT_USD, shouldGrowSwarm } from "./growth.js";
 import type { AgentSpec } from "./agents-config.js";
 
 const SPAWN_FACTORY_ABI = [
@@ -201,8 +202,15 @@ export async function sweepRetiredResiduals(state: SwarmState): Promise<void> {
   }
 }
 
-/** Enqueue a replacement spawn (persisted; completed/retried by processPendingSpawns). */
-function enqueueSpawn(state: SwarmState, parent: SwarmAgentState, fundUsd: number): void {
+/** Enqueue a spawn (persisted; completed/retried by processPendingSpawns).
+ *  `spawnReason` distinguishes a cull replacement from a swarm-growth spawn in
+ *  the judge-facing agent card description. */
+function enqueueSpawn(
+  state: SwarmState,
+  parent: SwarmAgentState,
+  fundUsd: number,
+  spawnReason: "cull-replacement" | "growth" = "cull-replacement",
+): void {
   const hdIndex = state.nextHdIndex++;
   const generation = parent.generation + 1;
   const slug = `${parent.lineageKey}-g${generation}-i${hdIndex}`;
@@ -212,6 +220,10 @@ function enqueueSpawn(state: SwarmState, parent: SwarmAgentState, fundUsd: numbe
   // in the pool even when the current top performer doesn't carry it (buyers
   // pay $0.002/call out of their own P&L, so selection prices the trait)
   const useSignal = Math.random() < 0.2 ? !parent.useSignal : parent.useSignal;
+  const why =
+    spawnReason === "growth"
+      ? `Swarm-growth spawn: an extra agent funded purely from treasury margin recycled out of culled agents' returned balances (no new outside capital), growing the swarm toward its ${MAX_SWARM_SIZE}-agent cap.`
+      : `Cull replacement: spawned to replace an agent culled from the bottom 20% of epoch-${state.epochNumber} fitness.`;
   state.pendingSpawns.push({
     slug,
     name: `${parent.name} g${generation}`,
@@ -222,7 +234,7 @@ function enqueueSpawn(state: SwarmState, parent: SwarmAgentState, fundUsd: numbe
     generation,
     lineageKey: parent.lineageKey,
     fundUsd: Math.min(MAX_AGENT_BALANCE_USD, fundUsd),
-    description: `Generation ${generation} of the "${parent.lineageKey}" lineage, spawned from epoch-${state.epochNumber} top performer ${parent.slug} with ±20% mutated parameters. ${strategyFor(parent as unknown as AgentSpec).describe(params)}`,
+    description: `${why} Generation ${generation} of the "${parent.lineageKey}" lineage, spawned from epoch-${state.epochNumber} top performer ${parent.slug} with ±20% mutated parameters. ${strategyFor(parent as unknown as AgentSpec).describe(params)}`,
   });
   saveState(state);
 }
@@ -526,15 +538,42 @@ export async function settleEpoch(state: SwarmState, ctx: MarketContext): Promis
   // 4. spawn replacements from the top performer's mutated genome —
   // enqueued persistently, then completed (failures retry next cycle)
   let spawnedSlugs: string[] = [];
-  if ((culls.length > 0 || (state.pendingSpawns?.length ?? 0) > 0) && /^(1|true|yes)$/i.test(process.env.CELO_SKIP_SPAWN ?? "")) {
-    console.log(`  CELO_SKIP_SPAWN set — skipping replacement spawn(s) (fork test)`);
+  if (/^(1|true|yes)$/i.test(process.env.CELO_SKIP_SPAWN ?? "")) {
+    console.log(`  CELO_SKIP_SPAWN set — skipping replacement/growth spawn(s) (fork test)`);
   } else {
-    if (culls.length > 0) {
-      const top = rows.reduce((a, b) => (a.fitness >= b.fitness ? a : b)).agent;
-      for (let i = 0; i < culls.length; i++) {
-        enqueueSpawn(state, top, spawnPoolUsd / culls.length);
-      }
+    const top = rows.reduce((a, b) => (a.fitness >= b.fitness ? a : b)).agent;
+    for (let i = 0; i < culls.length; i++) {
+      enqueueSpawn(state, top, spawnPoolUsd / culls.length, "cull-replacement");
     }
+
+    // 4b. swarm growth (track 3: every spawn = one new ERC-8004 registration):
+    // at most ONE extra spawn per epoch, funded purely from treasury margin
+    // recycled out of culled agents' returned balances ($5 legacy stakes vs
+    // the $4 funding target). Pure decision rule lives in growth.ts; the
+    // deployed-value guard keeps total deployment under TOTAL_BUDGET_USD.
+    const activeNow = state.agents.filter((a) => a.status === "ACTIVE").length;
+    const pendingNow = state.pendingSpawns?.length ?? 0;
+    const deployedUsd =
+      activeNow * MAX_AGENT_BALANCE_USD +
+      (state.pendingSpawns ?? []).reduce((sum, p) => sum + p.fundUsd, 0);
+    const treasuryUsd = Number(formatUnits(await usdmBalance(orch.address), 18));
+    const decision = shouldGrowSwarm({
+      activeCount: activeNow,
+      pendingCount: pendingNow,
+      treasuryUsd,
+      maxSwarm: MAX_SWARM_SIZE,
+      perAgentUsd: MAX_AGENT_BALANCE_USD,
+      opsFloatUsd: OPS_FLOAT_USD,
+      totalBudgetUsd: TOTAL_BUDGET_USD,
+      deployedUsd,
+    });
+    if (decision.grow) {
+      enqueueSpawn(state, top, MAX_AGENT_BALANCE_USD, "growth");
+      console.log(`  growth: +1 spawn enqueued from ${top.slug}'s genome — ${decision.reason}`);
+    } else {
+      console.log(`  growth: not growing — ${decision.reason}`);
+    }
+
     spawnedSlugs = await processPendingSpawns(state);
   }
 

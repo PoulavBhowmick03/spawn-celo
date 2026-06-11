@@ -26,9 +26,9 @@ primary_region = "sin"        # Singapore — best latency to Celo/forno from As
   CELO_RPC_URL      = "https://forno.celo.org"
 
   # Swarm tuning (non-secret)
-  EPOCH_HOURS       = "4"
-  TICK_MINUTES      = "60"
-  MAX_AGENT_BALANCE_USD = "5"
+  EPOCH_HOURS       = "1.5"
+  TICK_MINUTES      = "45"
+  MAX_AGENT_BALANCE_USD = "4"
   TOTAL_BUDGET_USD  = "50"
   MAX_TX_USD        = "5"
   MAX_SLIPPAGE_BPS  = "100"

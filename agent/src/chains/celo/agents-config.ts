@@ -5,7 +5,7 @@
  * Darwinian loop mutates from generation 1 onward.
  */
 
-export type StrategyId = "MentoFXRotator" | "AaveYielder" | "HedgedCarry";
+export type StrategyId = "MentoFXRotator" | "AaveYielder" | "HedgedCarry" | "MentoCarryArb";
 
 export type AgentSpec = {
   /** HD derivation index and stable agent number (1-based) */
@@ -118,6 +118,42 @@ export const SWARM_AGENTS: AgentSpec[] = [
     params: { fxLegBps: 6000, minEdgeBps: 15, minApyDeltaBps: 25 },
     description:
       "Holds 40% in Aave v3 yield, 60% in the strongest Mento FX leg. The FX-forward end of the crossover.",
+    useSignal: false,
+  },
+];
+
+/**
+ * MentoCarryArb genesis genomes — deliberately NOT in SWARM_AGENTS and NOT
+ * auto-registered. register-agents.ts, generate-cards.ts and x402-setup.ts
+ * all iterate SWARM_AGENTS and would live-register/fund these identities on
+ * the next run; swarm-start's first-run initState would also require registry
+ * entries for them. These specs only define genomes for future activation by
+ * the orchestrating session (card -> register -> fund -> add to state).
+ *
+ * hdIndex values are PROVISIONAL: the live swarm state's nextHdIndex was 15
+ * when these were authored (generation-2 spawns occupy indexes 10-14).
+ * Reconcile with swarm-state nextHdIndex before any registration or funding,
+ * and bump state.nextHdIndex past whatever indexes are consumed.
+ */
+export const CARRY_ARB_SPECS: AgentSpec[] = [
+  {
+    hdIndex: 15,
+    slug: "mca-tight",
+    name: "Spawn Mento Carry Arb (tight)",
+    strategy: "MentoCarryArb",
+    params: { minEdgeBps: 10, maxPositionPct: 80, reserveBps: 500 },
+    description:
+      "Mento-only stable carry/arb: watches the cUSD/USDC and cUSD/USDT broker round-trip spreads and rotates into the USD stable whose Aave carry plus quote misalignment beats round-trip cost + gas by 0.10%. Moves at most 80% of its book per action; 5% cUSD reserve.",
+    useSignal: false,
+  },
+  {
+    hdIndex: 16,
+    slug: "mca-loose",
+    name: "Spawn Mento Carry Arb (loose)",
+    strategy: "MentoCarryArb",
+    params: { minEdgeBps: 25, maxPositionPct: 100, reserveBps: 250 },
+    description:
+      "Mento-only stable carry/arb: rotates between cUSD, USDC and USDT only when the net carry edge (Aave APY advantage + Mento quote misalignment − round-trip cost − gas) exceeds 0.25%. Patient variant: higher bar, full-book moves, 2.5% cUSD reserve.",
     useSignal: false,
   },
 ];

@@ -11,7 +11,12 @@
  */
 
 export const TOTAL_BUDGET_USD = Number(process.env.TOTAL_BUDGET_USD ?? 50);
-export const MAX_AGENT_BALANCE_USD = Number(process.env.MAX_AGENT_BALANCE_USD ?? 5);
+// $4 funding target (was $5): culled agents return up to $5, so each cull
+// leaves ~$1 of margin in the treasury that accumulates into extra growth
+// spawns (more unique ERC-8004 registrations) without new outside capital.
+// Existing agents already holding $5 are NOT clawed back — funding paths only
+// top UP portfolios below this target, never sweep the excess.
+export const MAX_AGENT_BALANCE_USD = Number(process.env.MAX_AGENT_BALANCE_USD ?? 4);
 export const MAX_TX_USD = Number(process.env.MAX_TX_USD ?? 5);
 export const MAX_SLIPPAGE_BPS = Number(process.env.MAX_SLIPPAGE_BPS ?? 100); // 1%
 

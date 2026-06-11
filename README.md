@@ -48,6 +48,21 @@ actually measured. From epoch 5 onward, every score uses the corrected formula
 above, and each reputation feedback's hashed payload embeds `net_flow`, so the
 exclusion is itself verifiable.
 
+**Addendum — duplicate epoch-5 feedback (2026-06-11, ~08:24Z).** For ~35
+minutes a stale-code orchestrator instance on Fly.io ran in parallel with the
+canonical swarm and posted a second, pre-fix set of epoch-5 reputation
+feedbacks before being stopped. Seven of nine duplicates carry identical
+scores; two are materially wrong (`ay-chaser` #9246 scored 100 vs the
+corrected 0, `mfx-aggressive-g2-i12` #9259 scored 100 vs the corrected 50 —
+both inflated by the same net-flow bug described above). The wrong entries are
+mechanically distinguishable: their `feedbackHash` matches no published epoch
+report, while every canonical feedback's hash binds to
+[`docs/epochs/epoch-5.json`](docs/epochs/epoch-5.json). All 13 transactions
+the duplicate instance sent are retro-logged in the activity log (action
+`log-backfill`) and fully reconstructed — with nonce-accounting completeness
+proof — in
+[`docs/incident-2026-06-11-duplicate-swarm.md`](docs/incident-2026-06-11-duplicate-swarm.md).
+
 ## Architecture
 
 ```

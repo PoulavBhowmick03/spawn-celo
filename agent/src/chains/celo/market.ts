@@ -6,13 +6,16 @@
  */
 
 import { formatUnits, parseUnits, type Address } from "viem";
-import { TOKENS } from "./addresses.js";
+import { TOKENS, TOKEN_DECIMALS } from "./addresses.js";
 import { quoteSwap } from "./mento.js";
 import { getSupplyApy, type AaveAsset } from "./aave.js";
 
 export type FxLeg = "EURm" | "BRLm";
 export const FX_LEGS: FxLeg[] = ["EURm", "BRLm"];
 export const AAVE_CHOICES: AaveAsset[] = ["USDC", "USDT", "USDm"];
+/** USD stables quoted against cUSD on the Mento broker (MentoCarryArb legs). */
+export type StableLeg = "USDC" | "USDT";
+export const STABLE_LEGS: StableLeg[] = ["USDC", "USDT"];
 
 export type MarketContext = {
   timestamp: number;
@@ -22,6 +25,22 @@ export type MarketContext = {
   fxRoundTripCostBps: Record<FxLeg, number>;
   /** momentum in bps vs the previous epoch snapshot (0 when no history) */
   fxMomentumBps: Record<FxLeg, number>;
+  /**
+   * Round-trip cost in bps of cUSD -> stable -> cUSD for a $1 probe through
+   * the Mento broker (same probe method as fxRoundTripCostBps). Deliberately
+   * NOT clamped at 0: a negative value is a live quote misalignment a third
+   * party can verify with the same two broker quotes. +Infinity = pair
+   * unquotable this epoch (leg untradeable).
+   */
+  stableRoundTripCostBps: Record<StableLeg, number>;
+  /**
+   * One-way quote misalignment vs 1:1 USD parity, in bps, from the same $1
+   * probe: entry = cUSD -> stable (positive means the broker hands out more
+   * than $1 of the stable per cUSD), exit = stable -> cUSD per stable unit.
+   * entry + exit ≈ -stableRoundTripCostBps by construction.
+   */
+  stableEntryEdgeBps: Record<StableLeg, number>;
+  stableExitEdgeBps: Record<StableLeg, number>;
   aaveApyPct: Record<AaveAsset, number>;
 };
 
@@ -64,6 +83,33 @@ export async function snapshotMarket(prev: PreviousSnapshot): Promise<MarketCont
     }
   }
 
+  // USD-stable legs (USDC/USDT vs cUSD) — one quote pair per asset, exactly
+  // the FX round-trip probe but with parity (1:1 USD) as the fair mid, so the
+  // one-way misalignment is observable too.
+  const stableRoundTripCostBps = {} as Record<StableLeg, number>;
+  const stableEntryEdgeBps = {} as Record<StableLeg, number>;
+  const stableExitEdgeBps = {} as Record<StableLeg, number>;
+  for (const leg of STABLE_LEGS) {
+    try {
+      const dec = TOKEN_DECIMALS[leg];
+      // $1 of cUSD -> stable, then the received amount back -> cUSD
+      const out = await quoteSwap(TOKENS.USDm, TOKENS[leg] as Address, one18);
+      const back = await quoteSwap(TOKENS[leg] as Address, TOKENS.USDm, out);
+      const outUnits = Number(formatUnits(out, dec));
+      const recovered = Number(formatUnits(back, 18));
+      stableEntryEdgeBps[leg] = (outUnits - 1) * 10_000;
+      stableExitEdgeBps[leg] = outUnits > 0 ? (recovered / outUnits - 1) * 10_000 : 0;
+      stableRoundTripCostBps[leg] = (1 - recovered) * 10_000;
+    } catch (e) {
+      stableRoundTripCostBps[leg] = Number.POSITIVE_INFINITY;
+      stableEntryEdgeBps[leg] = 0;
+      stableExitEdgeBps[leg] = 0;
+      console.warn(
+        `market: ${leg}/cUSD quote unavailable (${(e as Error).message?.slice(0, 80)}) — stable leg untradeable this epoch`,
+      );
+    }
+  }
+
   const aaveApyPct = {} as Record<AaveAsset, number>;
   for (const asset of AAVE_CHOICES) {
     aaveApyPct[asset] = await getSupplyApy(asset);
@@ -74,6 +120,9 @@ export async function snapshotMarket(prev: PreviousSnapshot): Promise<MarketCont
     fxUsdPrice,
     fxRoundTripCostBps,
     fxMomentumBps,
+    stableRoundTripCostBps,
+    stableEntryEdgeBps,
+    stableExitEdgeBps,
     aaveApyPct,
   };
 }
