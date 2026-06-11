@@ -1,6 +1,6 @@
 {
   "epochNumber": 4,
-  "nextHdIndex": 13,
+  "nextHdIndex": 14,
   "agents": [
     {
       "slug": "mfx-cautious",
@@ -38,6 +38,13 @@
           "fitness": 0,
           "score": 50,
           "vEndUsd": 4.9999995173473115,
+          "gasUsd": 0
+        },
+        {
+          "epoch": 4,
+          "fitness": 0.00011902692561571726,
+          "score": 50,
+          "vEndUsd": 4.999999789098257,
           "gasUsd": 0
         }
       ],
@@ -83,6 +90,13 @@
           "score": 50,
           "vEndUsd": 4.999999675639267,
           "gasUsd": 0
+        },
+        {
+          "epoch": 4,
+          "fitness": 0.00004969504052931839,
+          "score": 50,
+          "vEndUsd": 4.999999789098257,
+          "gasUsd": 0
         }
       ],
       "childContract": "0xdEB174d15AAda924B3B024e9E4F3F4ca0045aF69",
@@ -105,7 +119,7 @@
       "useSignal": true,
       "generation": 1,
       "lineageKey": "mfx-aggressive",
-      "status": "ACTIVE",
+      "status": "RETIRED",
       "history": [
         {
           "epoch": 1,
@@ -127,12 +141,20 @@
           "score": 100,
           "vEndUsd": 5.348000388603828,
           "gasUsd": 0
+        },
+        {
+          "epoch": 4,
+          "fitness": -142.50584471557298,
+          "score": 0,
+          "vEndUsd": 4.999999789098257,
+          "gasUsd": 0
         }
       ],
       "childContract": "0x4041F095b6FF9e7bb0fd78be7FA183858dB8f83f",
       "spawnTxHash": "0x180ecccd1b13dbff1c641e59a460f0749461b6cb8b763c7372e058c4db26cc1d",
       "vStartUsd": 5.348000388603828,
-      "epochGasUsd": 0
+      "epochGasUsd": 0,
+      "recallTxHash": "0x08a627ae38ab27698f4d59a93c71d20cb67d6af7651d2aa9d6017db48f8390fa"
     },
     {
       "slug": "ay-anchor",
@@ -202,6 +224,13 @@
           "score": 0,
           "vEndUsd": 4.990896018854365,
           "gasUsd": 0.0030379088568555
+        },
+        {
+          "epoch": 4,
+          "fitness": 3.994210861554377,
+          "score": 100,
+          "vEndUsd": 4.99999961934825,
+          "gasUsd": 0
         }
       ],
       "childContract": "0x8e5CBAdF9A98eDbD80aA2000b227BBc139aB4236",
@@ -246,6 +275,13 @@
           "score": 0,
           "vEndUsd": 4.993895414482734,
           "gasUsd": 0.0041777639892
+        },
+        {
+          "epoch": 4,
+          "fitness": 1.3635572259680702,
+          "score": 100,
+          "vEndUsd": 4.99999961934825,
+          "gasUsd": 0.00299486140517475
         }
       ],
       "childContract": "0xa89Ae17C537728a1c07d878a16Ea2C2879393789",
@@ -328,6 +364,13 @@
           "score": 100,
           "vEndUsd": 5.3409884418758,
           "gasUsd": 0.0071572584312
+        },
+        {
+          "epoch": 4,
+          "fitness": -139.81806176276334,
+          "score": 0,
+          "vEndUsd": 5.00000003929203,
+          "gasUsd": 0
         }
       ],
       "childContract": "0x7df6126b0D856a5aCCb8c315b30FB775fed09FF2",
@@ -398,7 +441,15 @@
       "status": "ACTIVE",
       "childContract": "0xF7fA391B77Ac0F070e4E504f86E7851f415a1EdE",
       "spawnTxHash": "0x39c1fe08c152b7715797248fcd342770ab87d7bfd4f335f54291f8cabfdfea9a",
-      "history": [],
+      "history": [
+        {
+          "epoch": 4,
+          "fitness": 1.2986288922111644,
+          "score": 100,
+          "vEndUsd": 4.99999961934825,
+          "gasUsd": 0
+        }
+      ],
       "vStartUsd": 4.997036470519004,
       "epochGasUsd": 0
     },
@@ -420,7 +471,15 @@
       "status": "ACTIVE",
       "childContract": "0x87cDa5843Cf32EEfFE71076483c30cd6250211E8",
       "spawnTxHash": "0x74cd3565389b9969f2b5b32aceec15db46d428e68fbb4b3d0f01417d4d52a388",
-      "history": [],
+      "history": [
+        {
+          "epoch": 4,
+          "fitness": -0.00009553678240181718,
+          "score": 50,
+          "vEndUsd": 4.99999975955925,
+          "gasUsd": 0
+        }
+      ],
       "vStartUsd": 4.999999977679757,
       "epochGasUsd": 0
     },
@@ -442,7 +501,15 @@
       "status": "ACTIVE",
       "childContract": "0x8FEC40a5F7AABf9Dd23fde62cb60bCdDC4f880C3",
       "spawnTxHash": "0x6879878b25f2abe4f5d6b96ff922f32f7eeca5bbd494aba602a288a59d98c2f3",
-      "history": [],
+      "history": [
+        {
+          "epoch": 4,
+          "fitness": 1.2802780591632001,
+          "score": 100,
+          "vEndUsd": 4.99999961934825,
+          "gasUsd": 0
+        }
+      ],
       "vStartUsd": 4.997078318101408,
       "epochGasUsd": 0
     }
@@ -452,6 +519,23 @@
     "BRLm": 0.19198255928
   },
   "epochStartedAt": "2026-06-10T22:43:13.846Z",
-  "lastCulledEpoch": 3,
-  "pendingSpawns": []
+  "lastCulledEpoch": 4,
+  "pendingSpawns": [
+    {
+      "slug": "ay-balanced-g2-i13",
+      "name": "Spawn Aave Yielder (balanced) g2",
+      "hdIndex": 13,
+      "strategy": "AaveYielder",
+      "params": {
+        "minApyDeltaBps": 33,
+        "reserveBps": 547,
+        "compoundEveryEpochs": 1
+      },
+      "useSignal": false,
+      "generation": 2,
+      "lineageKey": "ay-balanced",
+      "fundUsd": 4.995608293098257,
+      "description": "Generation 2 of the \"ay-balanced\" lineage, spawned from epoch-4 top performer ay-balanced with ±20% mutated parameters. Supply stables to Aave v3, compound, rebalance when APY delta > 33bps; 5.47% reserve"
+    }
+  ]
 }
