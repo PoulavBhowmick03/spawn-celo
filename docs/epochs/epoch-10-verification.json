@@ -1,0 +1,142 @@
+{
+  "epoch": 10,
+  "verifiedAt": "2026-06-11T16:40:39.211Z",
+  "swarmMedian": 0,
+  "verified": 11,
+  "total": 11,
+  "method": "fitness=annualize((V_end-net_flow)/V_start)-gas_penalty recomputed from the published epoch report; score=clamp(round(50+500*(fitness-median)),0,100); keccak256(logged payload) checked against the logged feedbackHash; agentId+score+feedbackHash decoded from the onchain giveFeedback calldata via eth_getTransactionByHash",
+  "rows": [
+    {
+      "slug": "mfx-cautious",
+      "erc8004AgentId": "9241",
+      "recomputedFitness": 0,
+      "publishedFitness": 0,
+      "recomputedScore": 50,
+      "publishedScore": 50,
+      "fitnessMatch": true,
+      "payloadHashMatch": true,
+      "onchainCalldataMatch": true,
+      "reputationTx": "0x6915d722828e98a89413a69d9db566e9f758967d6507fa15292de6584d32d512"
+    },
+    {
+      "slug": "mfx-balanced",
+      "erc8004AgentId": "9242",
+      "recomputedFitness": 0,
+      "publishedFitness": 0,
+      "recomputedScore": 50,
+      "publishedScore": 50,
+      "fitnessMatch": true,
+      "payloadHashMatch": true,
+      "onchainCalldataMatch": true,
+      "reputationTx": "0x7e476f076d4f16e044fe989a575eb02ccb3f97851d5885761ceb2010765fb21e"
+    },
+    {
+      "slug": "ay-balanced",
+      "erc8004AgentId": "9245",
+      "recomputedFitness": 0.024542469611474153,
+      "publishedFitness": 0.024542469611474153,
+      "recomputedScore": 62,
+      "publishedScore": 62,
+      "fitnessMatch": true,
+      "payloadHashMatch": true,
+      "onchainCalldataMatch": true,
+      "reputationTx": "0x9c6210593e6ca5e4a459d98a8d2a7fae15b97585c1ec96b8c8ca3b22b50c64f2"
+    },
+    {
+      "slug": "ay-chaser",
+      "erc8004AgentId": "9246",
+      "recomputedFitness": -4.475134243915855,
+      "publishedFitness": -4.475134243915855,
+      "recomputedScore": 0,
+      "publishedScore": 0,
+      "fitnessMatch": true,
+      "payloadHashMatch": true,
+      "onchainCalldataMatch": true,
+      "reputationTx": "0x70cc2be3fa01526fdf5e7dfff682855622d1fa9f9bda869ef935a6d53a4993cc"
+    },
+    {
+      "slug": "mfx-cautious-g2-i10",
+      "erc8004AgentId": "9256",
+      "recomputedFitness": 0,
+      "publishedFitness": 0,
+      "recomputedScore": 50,
+      "publishedScore": 50,
+      "fitnessMatch": true,
+      "payloadHashMatch": true,
+      "onchainCalldataMatch": true,
+      "reputationTx": "0x0d5d197353f218b762dd05b68b4fd283107df3e0f86ff18e690b2cd6891184ab"
+    },
+    {
+      "slug": "mfx-cautious-g2-i11",
+      "erc8004AgentId": "9257",
+      "recomputedFitness": 0,
+      "publishedFitness": 0,
+      "recomputedScore": 50,
+      "publishedScore": 50,
+      "fitnessMatch": true,
+      "payloadHashMatch": true,
+      "onchainCalldataMatch": true,
+      "reputationTx": "0xc0ae9a2ab0e7b208570ad985d4fa315ce247d34e6ede074e0a1bdb8bba54c788"
+    },
+    {
+      "slug": "ay-balanced-g2-i13",
+      "erc8004AgentId": "9260",
+      "recomputedFitness": 0.02339613112087769,
+      "publishedFitness": 0.02339613112087769,
+      "recomputedScore": 62,
+      "publishedScore": 62,
+      "fitnessMatch": true,
+      "payloadHashMatch": true,
+      "onchainCalldataMatch": true,
+      "reputationTx": "0xc8fd3941514d0066e7305820059a4ed62cb20a82cbd30bcf51bb070a58b6d453"
+    },
+    {
+      "slug": "mfx-cautious-g2-i14",
+      "erc8004AgentId": "9262",
+      "recomputedFitness": 0,
+      "publishedFitness": 0,
+      "recomputedScore": 50,
+      "publishedScore": 50,
+      "fitnessMatch": true,
+      "payloadHashMatch": true,
+      "onchainCalldataMatch": true,
+      "reputationTx": "0xd9797913090883dd17a3da1dce40f0016f9628842e0109258c387f7194b77095"
+    },
+    {
+      "slug": "ay-chaser-g2-i21",
+      "erc8004AgentId": "9271",
+      "recomputedFitness": -50.642321911907835,
+      "publishedFitness": -50.642321911907835,
+      "recomputedScore": 0,
+      "publishedScore": 0,
+      "fitnessMatch": true,
+      "payloadHashMatch": true,
+      "onchainCalldataMatch": true,
+      "reputationTx": "0x12ef5e333d72d1a5b2eec4acde48a88ec064d766cdccdda279ba3f7e05055224"
+    },
+    {
+      "slug": "ay-chaser-g2-i22",
+      "erc8004AgentId": "9272",
+      "recomputedFitness": -22.44732118193675,
+      "publishedFitness": -22.44732118193675,
+      "recomputedScore": 0,
+      "publishedScore": 0,
+      "fitnessMatch": true,
+      "payloadHashMatch": true,
+      "onchainCalldataMatch": true,
+      "reputationTx": "0x619729d22a0171fce90c153126f83aaae34766d14210851898eaa909f746c6a3"
+    },
+    {
+      "slug": "ay-chaser-g2-i23",
+      "erc8004AgentId": "9273",
+      "recomputedFitness": -25.566036616516985,
+      "publishedFitness": -25.566036616516985,
+      "recomputedScore": 0,
+      "publishedScore": 0,
+      "fitnessMatch": true,
+      "payloadHashMatch": true,
+      "onchainCalldataMatch": true,
+      "reputationTx": "0xf685c42820375b26c0a324e5589336ecf156a53e97721d7dbe9bcb5b74aa4aea"
+    }
+  ]
+}
