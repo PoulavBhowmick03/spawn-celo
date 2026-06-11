@@ -260,6 +260,34 @@ async function completeSpawn(
     });
   }
 
+  // 1b. signal-buying lineages also need a USDC budget for x402 calls
+  if (pending.useSignal) {
+    const usdcBal = await celoPublicClient.readContract({
+      address: TOKENS.USDC, abi: erc20Abi, functionName: "balanceOf", args: [account.address],
+    });
+    const treasuryUsdc = await celoPublicClient.readContract({
+      address: TOKENS.USDC, abi: erc20Abi, functionName: "balanceOf", args: [orchestratorAccount().address],
+    });
+    const budget = 350_000n; // 0.35 USDC
+    if (usdcBal < budget / 2n && treasuryUsdc >= budget) {
+      const orchWallet = celoWalletClient(orchestratorAccount());
+      const hash = await orchWallet.writeContract({
+        address: TOKENS.USDC, abi: erc20Abi, functionName: "transfer",
+        args: [account.address, budget],
+        feeCurrency: maybeFee(FEE_CURRENCIES.USDm),
+        ...(maybeFee(FEE_CURRENCIES.USDm) ? { gas: 120_000n } : {}),
+      });
+      await celoPublicClient.waitForTransactionReceipt({ hash });
+      logActivity({
+        agentId: "orchestrator",
+        action: "signal-budget-funding",
+        rationale: `Fund spawned agent ${pending.slug} with 0.35 USDC: its inherited genome has useSignal=true, so it buys x402 market signals before each evaluation.`,
+        txHash: hash,
+        recipient: account.address,
+      });
+    }
+  }
+
   // 2. card must resolve before registration (CLAUDE.md §8)
   writeAgentCard(spec);
   publishDocs(`feat(swarm): agent card for spawned ${pending.slug} (epoch ${state.epochNumber})`);

@@ -44,6 +44,13 @@
 - **Also shipped (pre-audit items)**: `report:epoch` judge report (§9), viewer-local dashboard timestamps, mid-epoch hourly ticks (act only when thresholds fire — honest intra-epoch activity), `caffeinate` host-sleep guard.
 - **Next**: supervised kill-switch test at the next epoch boundary (§9), demo video, submission checklist (user items: Self ID, quote-tweet, Telegram).
 
+## Kill switch tested + production hardening (2026-06-11, §9 complete)
+
+- **Kill-switch supervised cycle PASSED on mainnet**: SIGINT during epoch 4 → all 9 active agents unwound to the treasury ($43.76 cUSD recovered; hc-mid's deferred legs picked up by the residual sweeper) → relaunch re-funded every agent to $5 and the swarm resumed the same epoch. The §9 "one supervised unwind-and-restart cycle" requirement is done.
+- **In production since**: epoch 4 settled autonomously (culled + spawned ay-balanced-g2-i13 — fourth evolved agent), epoch 5 running. x402 purchases at epoch start: mfx-aggressive, ay-chaser, hc-mid each bought signals with onchain USDC settlements; spawned useSignal agents now receive a USDC budget at spawn time.
+- **Hardening**: swarm runs under a supervisor (relaunches on crash — e.g. forno receipt-poll timeouts on mined txs; stops on clean kill-switch exit); fixed the flat post-settle sleep that suppressed hourly mid-epoch ticks; caffeinate guards against host sleep.
+- **Remaining (user)**: Self Agent ID, quote-tweet, Telegram, demo video (Day 5). Optional: Fly.io migration if the Mac can't stay on until June 15.
+
 ## Phase 3 — ERC-8004 identities live (2026-06-10, Day 2 milestone hit on Day 1)
 
 - **Done**: repo pushed to github.com/PoulavBhowmick03/spawn-celo (Pages enabled, main:/docs). 10 agent cards (eip-8004 registration-v1) at poulavbhowmick03.github.io/spawn-celo/agents/. All 10 identities minted in the canonical Celo Identity Registry, self-owned by each agent wallet (required so the orchestrator can post reputation feedback — registry forbids owner self-feedback): orchestrator #9240, mfx-cautious #9241, mfx-balanced #9242, mfx-aggressive #9243, ay-anchor #9244, ay-balanced #9245, ay-chaser #9246, hc-light #9247, hc-mid #9248, hc-heavy #9249. Cards regenerated with registrations[] and republished; registry mapping in docs/agents/registry.json.

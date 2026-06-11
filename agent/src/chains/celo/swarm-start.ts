@@ -215,8 +215,8 @@ async function main() {
       console.log("--once: epoch cycle complete, exiting (swarm stays deployed)");
       return;
     }
-    console.log(`sleeping ${EPOCH_HOURS}h until next epoch…`);
-    await new Promise((r) => setTimeout(r, EPOCH_HOURS * 3600 * 1000));
+    // no flat sleep here — the loop top waits out the epoch in tick-sized
+    // slices (runMidEpochTick between slices)
   }
 }
 
