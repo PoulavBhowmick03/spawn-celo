@@ -108,5 +108,10 @@
     "agentId": "9270",
     "address": "0xD0c576Eca355167a54361B814573D91e41Ef85a3",
     "txHash": "0xc1e7329a7620612f7c3a776d136fb8d8fe0271a23877eb82d8622fe5d3722ed0"
+  },
+  "ay-chaser-g2-i21": {
+    "agentId": "9271",
+    "address": "0x8Adf51B8A03F547D0E7cF3a1AAF06A95c86Bb4bc",
+    "txHash": "0xe65b1de4ad0b5d49eb7b4c011638cedc858da6e5c7803a40d406b0605e52a3c6"
   }
 }
