@@ -1,0 +1,66 @@
+# Fly.io config — Spawn Hedge Swarm on Celo mainnet
+#
+# Single always-on machine: oracle + supervised swarm in one container.
+# NEVER scale beyond 1 — every instance derives the same agent wallets
+# from MNEMONIC and would double-spend.  Keep `fly scale count 1 -a spawn-celo-swarm`.
+#
+# Secrets (set with `fly secrets set -a spawn-celo-swarm`):
+#   MNEMONIC                 BIP-39 mnemonic for all agent wallets
+#   GITHUB_PAT               Personal access token with repo write (for publishDocs git-push)
+#   CELO_RPC_URL_BACKUP      Fallback RPC (e.g. a QuickNode/Ankr endpoint)
+#   THIRDWEB_SECRET_KEY      x402 signal oracle settlement
+#
+# Deploy:
+#   fly deploy -c fly.celo.toml --dockerfile Dockerfile.celo -a spawn-celo-swarm
+
+app            = "spawn-celo-swarm"
+primary_region = "sin"        # Singapore — best latency to Celo/forno from Asia
+
+[build]
+  dockerfile = "Dockerfile.celo"
+
+[env]
+  NODE_ENV          = "production"
+
+  # Celo network
+  CELO_RPC_URL      = "https://forno.celo.org"
+
+  # Swarm tuning (non-secret)
+  EPOCH_HOURS       = "4"
+  TICK_MINUTES      = "60"
+  MAX_AGENT_BALANCE_USD = "5"
+  TOTAL_BUDGET_USD  = "50"
+  MAX_TX_USD        = "5"
+  MAX_SLIPPAGE_BPS  = "100"
+  KILL_SWITCH       = ""       # set to "true" via `fly secrets set` to trigger unwind
+
+  # Signal oracle — oracle IS the health-check endpoint, so bind to $PORT
+  # SIGNAL_PORT and SIGNAL_URL are set in fly-start.sh using the $PORT env var
+  # that Fly injects at runtime (default 8080).
+  # PUBLIC_ORACLE_URL is the URL external agents sign payments for — must match
+  # the public HTTPS endpoint Fly terminates.
+  PUBLIC_ORACLE_URL = "https://spawn-celo-swarm.fly.dev/signal"
+
+  # Live flag — swarm writes real transactions
+  ALLOW_LIVE_SWARM  = "true"
+
+[http_service]
+  internal_port     = 8080
+  force_https       = true
+  # Never suspend — the swarm must run 24/7 to accumulate tx count and
+  # 8004scan signals before the June 15 deadline.
+  auto_stop_machines  = false
+  auto_start_machines = false
+  min_machines_running = 1
+
+  [[http_service.checks]]
+    grace_period = "90s"      # allow time for git clone + oracle start
+    interval     = "30s"
+    method       = "GET"
+    timeout      = "10s"
+    path         = "/health"
+
+[[vm]]
+  memory   = "1gb"
+  cpu_kind = "shared"
+  cpus     = 1

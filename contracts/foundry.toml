@@ -21,9 +21,10 @@ out = "out"
 libs = ["lib"]
 remappings = ["@openzeppelin/contracts/=lib/openzeppelin-contracts/contracts/"]
 solc_version = "0.8.28"
-eth_rpc_url = "https://rpc.mantle.xyz"
+eth_rpc_url = "https://forno.celo.org"
 
 [rpc_endpoints]
-mantle = "https://rpc.mantle.xyz"
+celo = "https://forno.celo.org"
+celo_alfajores = "https://alfajores-forno.celo-testnet.org"
 status_testnet = "https://public.sepolia.rpc.status.network"
 filecoin_calibration = "https://api.calibration.node.glif.io/rpc/v1"

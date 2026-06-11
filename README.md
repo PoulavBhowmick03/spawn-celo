@@ -59,7 +59,7 @@ pnpm install
 cp .env.example .env        # fill MNEMONIC, CELO_RPC_URL, budget caps
 pnpm test                    # unit: fitness engine, strategy intents
 pnpm test:fork               # one full epoch against a Celo mainnet fork
-pnpm deploy:celo             # contracts (if any changes from Mantle deploy)
+pnpm deploy:celo             # deploy Spawn Protocol contracts to Celo mainnet
 pnpm register:agents         # mint ERC-8004 identities, verify on 8004scan
 pnpm swarm:start             # goes live; Ctrl-C triggers safe unwind
 ./run-celo.sh start          # OR: full stack in one command (sleep guard +
@@ -72,7 +72,7 @@ Safety rails baked in: $5 per-agent balance cap, 1% slippage cap, $50 total budg
 
 ## Deployed contracts (Celo mainnet, chain 42220)
 
-Spawn Protocol contracts, deployed 2026-06-10 by the orchestrator with **gas paid in cUSD via CIP-64** (the deployer holds zero CELO). Bytecode is identical to the audited-by-use Mantle deployment; deploy transactions are recorded in [`docs/deployments.celo.json`](docs/deployments.celo.json) and the activity log.
+Spawn Protocol contracts, deployed 2026-06-10 by the orchestrator with **gas paid in cUSD via CIP-64** (the deployer holds zero CELO). Bytecode matches the previously audited Spawn Protocol deployment; deploy transactions are recorded in [`docs/deployments.celo.json`](docs/deployments.celo.json) and the activity log.
 
 | Contract | Address | Role |
 |---|---|---|
@@ -118,6 +118,8 @@ Retired agents keep their identity and final reputation (e.g. ay-anchor #9244, c
 - Orchestrator on 8004scan: https://www.8004scan.io/agents/celo/9240
 - Agent list: [8004scan search "spawn"](https://www.8004scan.io/agents?search=spawn) · per-agent links in the table above and on the dashboard
 - Epoch reports: [docs/epochs/](docs/epochs/) (also rendered on the dashboard)
+- Swarm host (Fly.io, 24/7): https://fly.io/apps/spawn-celo-swarm/monitoring
+- Signal oracle health: https://spawn-celo-swarm.fly.dev/health
 - Demo video: TODO (record per the script below)
 
 ## Demo video script (2-3 minutes, record on Day 2)

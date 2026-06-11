@@ -99,7 +99,10 @@ async function main() {
       return;
     }
 
-    const requirements = buildRequirements(payee.address, `http://localhost:${PORT}/signal`);
+    // PUBLIC_ORACLE_URL lets external buyers sign payments for the public URL
+    // while the swarm routes internally via 127.0.0.1 — the two can differ.
+    const publicUrl = process.env.PUBLIC_ORACLE_URL ?? `http://localhost:${PORT}/signal`;
+    const requirements = buildRequirements(payee.address, publicUrl);
     const paymentHeader = req.headers["x-payment"];
     if (!paymentHeader || typeof paymentHeader !== "string") {
       res.writeHead(402);
@@ -131,7 +134,8 @@ async function main() {
     }
   });
 
-  server.listen(PORT, "127.0.0.1", () => console.log(`signal oracle listening on :${PORT}`));
+  // Bind to 0.0.0.0 so Fly.io's proxy can reach the health-check endpoint.
+  server.listen(PORT, "0.0.0.0", () => console.log(`signal oracle listening on :${PORT}`));
 }
 
 // start only when run directly — importers must not boot a server

@@ -19,6 +19,10 @@ agent_log.json
 runtime_budget_state.json
 judge_flow_state.json
 
+# Celo runtime state — fetched from GitHub at container startup.
+celo_swarm_state.json
+celo_activity.jsonl
+
 # VCS / misc
 .git
 .gitignore

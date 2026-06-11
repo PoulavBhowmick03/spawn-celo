@@ -16,13 +16,6 @@ contract MockERC8004RegistryFork {
     }
 }
 
-interface ILBPair {
-    function getActiveId() external view returns (uint24 activeId);
-    function getReserves() external view returns (uint128 reserveX, uint128 reserveY);
-    function getTokenX() external view returns (address tokenX);
-    function getTokenY() external view returns (address tokenY);
-}
-
 interface IAavePool {
     struct ReserveConfigurationMap {
         uint256 data;
@@ -50,8 +43,17 @@ interface IAavePool {
 }
 
 contract IntegrationTest is Test {
-    address internal constant ERC8004_REGISTRY = 0x8004A818BFB912233c491871b3d84c89A494BD9e;
-    string internal constant FORK_RPC_URL = "https://rpc.mantle.xyz";
+    // Canonical Celo mainnet ERC-8004 Identity Registry (indexed by 8004scan)
+    // Source: erc-8004-contracts repo deployments + ai.celo.org
+    address internal constant ERC8004_REGISTRY = 0x8004A169FB4a3325136EB29fA0ceB6D2e539a432;
+
+    // Celo mainnet Aave v3 Pool — from @bgd-labs/aave-address-book AaveV3Celo
+    address internal constant AAVE_POOL = 0x3E59A31363E2ad014dcbc521c4a0d5757d9f3402;
+
+    // USDm (cUSD) — Mento stablecoin, Celo-native
+    address internal constant USDM = 0x765DE816845861e75A25fCA122bb6898B8B1282a;
+
+    string internal constant FORK_RPC_URL = "https://forno.celo.org";
 
     uint256 internal forkId;
 
@@ -60,7 +62,7 @@ contract IntegrationTest is Test {
         vm.selectFork(forkId);
     }
 
-    function test_ERC8004Registry_IsLiveAndHasBytecode() public {
+    function test_ERC8004Registry_IsLiveAndHasBytecodeOnCelo() public {
         uint256 size;
         address registry = ERC8004_REGISTRY;
 
@@ -69,68 +71,45 @@ contract IntegrationTest is Test {
         }
 
         if (size == 0) {
-            vm.skip(true, "ERC-8004 registry has no bytecode on current Mantle RPC");
+            vm.skip(true, "ERC-8004 registry has no bytecode on current Celo RPC");
         }
 
-        assertGt(size, 0, "ERC-8004 registry has no bytecode on Mantle mainnet");
+        assertGt(size, 0, "ERC-8004 Identity Registry must have bytecode on Celo mainnet");
     }
 
-    function test_AaveReserveData_USDYLiquidityRateIsReadable() public {
-        address aavePool = vm.envOr("AAVE_POOL_ADDRESS", address(0));
-        address usdy = vm.envOr("USDY_ADDRESS", address(0));
-
-        if (aavePool == address(0) || usdy == address(0)) {
-            vm.skip(true);
+    function test_AavePool_USDmLiquidityRateIsReadable() public {
+        if (AAVE_POOL.code.length == 0) {
+            vm.skip(true, "Aave pool has no code on current Celo RPC");
+        }
+        if (USDM.code.length == 0) {
+            vm.skip(true, "USDm (cUSD) has no code on current Celo RPC");
         }
 
-        if (aavePool.code.length == 0 || usdy.code.length == 0) {
-            vm.skip(true, "Aave pool or USDY address has no code on current Mantle RPC");
-        }
+        IAavePool.ReserveData memory reserveData = IAavePool(AAVE_POOL).getReserveData(USDM);
 
-        IAavePool.ReserveData memory reserveData = IAavePool(aavePool).getReserveData(usdy);
-
-        assertGt(uint256(reserveData.currentLiquidityRate), 0, "currentLiquidityRate should be > 0");
+        // cUSD is an active Aave v3 Celo reserve — liquidity rate should be > 0
+        assertGt(uint256(reserveData.currentLiquidityRate), 0, "USDm currentLiquidityRate should be > 0");
     }
 
-    function test_LineageRegistry_FullCycleOnMantleFork() public {
+    function test_LineageRegistry_FullCycleOnCeloFork() public {
         LineageRegistry lineageRegistry = new LineageRegistry();
         lineageRegistry.allowCaller(address(this));
 
-        lineageRegistry.pushCID("test-agent", "QmCID1");
-        lineageRegistry.pushCID("test-agent", "QmCID2");
-        lineageRegistry.pushCID("test-agent", "QmCID3");
+        lineageRegistry.pushCID("spawn-mfx-cautious", "QmCID1");
+        lineageRegistry.pushCID("spawn-mfx-cautious", "QmCID2");
+        lineageRegistry.pushCID("spawn-mfx-cautious", "QmCID3");
         lineageRegistry.postGenerationResult(
-            "test-agent", "Venice summary: successor should prefer stable carry over churn.", 747, 1, 3
+            "spawn-mfx-cautious", "Epoch 1: MentoFXRotator cautious outperformed median, spawning g2.", 747, 1, 3
         );
 
-        string[] memory lineage = lineageRegistry.getLineage("test-agent");
+        string[] memory lineage = lineageRegistry.getLineage("spawn-mfx-cautious");
 
-        assertEq(lineageRegistry.getGenerationCount("test-agent"), 3);
+        assertEq(lineageRegistry.getGenerationCount("spawn-mfx-cautious"), 3);
         assertEq(lineage.length, 3);
         assertEq(lineage[0], "QmCID1");
         assertEq(lineage[1], "QmCID2");
         assertEq(lineage[2], "QmCID3");
-        assertEq(lineageRegistry.getLatestCID("test-agent"), "QmCID3");
-    }
-
-    function test_MerchantMoe_PoolExists() public {
-        // USDe/USDC LB pair verified via LBFactory.getAllLBPairs on Mantle mainnet (binStep=1)
-        address pair = 0x7e78B65d0525339dF5F4aA22b82d9e97584Da8FC;
-        address expectedUsde = 0x5d3a1Ff2b6BAb83b63cd9AD0787074081a52ef34;
-        address expectedUsdc = 0x09Bc4E0D864854c6aFB6eB9A9cdF58aC190D0dF9;
-
-        if (pair.code.length == 0) {
-            vm.skip(true, "Merchant Moe USDe/USDC pair has no bytecode on current Mantle RPC");
-        }
-
-        assertEq(ILBPair(pair).getTokenX(), expectedUsde, "tokenX must be USDe");
-        assertEq(ILBPair(pair).getTokenY(), expectedUsdc, "tokenY must be USDC");
-
-        (uint128 reserveX, uint128 reserveY) = ILBPair(pair).getReserves();
-        assertGt(uint256(reserveX) + uint256(reserveY), 0, "USDe/USDC pair has zero reserves");
-
-        uint24 activeId = ILBPair(pair).getActiveId();
-        assertGt(activeId, 0, "active bin ID must be nonzero");
+        assertEq(lineageRegistry.getLatestCID("spawn-mfx-cautious"), "QmCID3");
     }
 
     function test_SpawnFactoryAndLineageRegistry_RegistersSequentialIdsOnFork() public {

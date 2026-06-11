@@ -1,5 +1,11 @@
 # PROGRESS.md — Celo Hedge Swarm build log
 
+> **Context for readers:** This is the development journal for porting Spawn Protocol
+> to Celo for the Celo Onchain Agents Hackathon (deadline June 15, 2026).
+> Phase 0 below is the initial codebase inventory — it documents the *source* codebase
+> that was being ported from (prior chain), not the Celo submission itself.
+> Phases 1–6 record the actual Celo build.
+
 ## Phase 1 — Chain plumbing (2026-06-10)
 
 - **Done**: `agent/src/chains/celo/` — `addresses.ts` (every address triple-verified: authoritative source + docs cross-check + live forno read; source URLs inline), `chain.ts` (viem celo clients, RPC fallback, CIP-64-preserving types), `wallets.ts` (mnemonic+HD, index 0 = orchestrator, N = agent N), `budget.ts` ($50/$5/$5 caps + kill switch, code-enforced), `activity-log.ts` (JSONL with rationales), `smoke-feecurrency.ts` (dry-run by default, `ALLOW_LIVE_SMOKE=true` to broadcast). `.env.example` Celo section added. `npm run smoke:celo`.

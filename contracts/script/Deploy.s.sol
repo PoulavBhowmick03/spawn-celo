@@ -37,12 +37,13 @@ contract Deploy is Script {
 
         vm.stopBroadcast();
 
-        console.log("\n=== Mantle Spawn Protocol - Phase 1 Deploy ===");
+        console.log("\n=== Celo Spawn Protocol - Deploy ===");
+        console.log("Chain:            Celo mainnet (42220)");
         console.log("Signer:           external Forge wallet");
         console.log("ChildAgent (impl):", address(childImpl));
         console.log("LineageRegistry:  ", lineageRegistryAddress);
         console.log("SpawnFactory:     ", address(factory));
-        console.log("ERC-8004 Registry:", 0x8004A818BFB912233c491871b3d84c89A494BD9e);
+        console.log("ERC-8004 Registry:", 0x8004A169FB4a3325136EB29fA0ceB6D2e539a432);
         console.log("\n=== Add these to .env ===");
         console.log("SPAWN_FACTORY_ADDRESS=", address(factory));
         console.log("LINEAGE_REGISTRY_ADDRESS=", lineageRegistryAddress);
