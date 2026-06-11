@@ -62,6 +62,8 @@ pnpm test:fork               # one full epoch against a Celo mainnet fork
 pnpm deploy:celo             # contracts (if any changes from Mantle deploy)
 pnpm register:agents         # mint ERC-8004 identities, verify on 8004scan
 pnpm swarm:start             # goes live; Ctrl-C triggers safe unwind
+./run-celo.sh start          # OR: full stack in one command (sleep guard +
+                             # x402 oracle + supervised swarm); stop / stop --unwind / status / logs
 pnpm swarm:status            # fitness table, balances, links
 pnpm report:epoch            # judge-facing epoch report
 ```
