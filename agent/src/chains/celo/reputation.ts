@@ -62,7 +62,7 @@ export type EpochFeedback = {
   strategy: string;
   epochNumber: number;
   /** the recomputation inputs, embedded in the feedback hash + log */
-  fitnessInputs: { vStartUsd: number; vEndUsd: number; gasUsd: number; epochHours: number };
+  fitnessInputs: { vStartUsd: number; vEndUsd: number; netFlowUsd?: number; gasUsd: number; epochHours: number };
   /** public URL where the epoch report lives */
   feedbackURI: string;
 };
@@ -84,7 +84,7 @@ export async function postEpochFeedback(
     score: fb.score,
     inputs: fb.fitnessInputs,
     formula:
-      "fitness=annualize(V_end/V_start)-gas_penalty; score=clamp(round(50+500*(fitness-median)),0,100)",
+      "fitness=annualize((V_end-net_flow)/V_start)-gas_penalty; score=clamp(round(50+500*(fitness-median)),0,100)",
   });
   const feedbackHash = keccak256(toBytes(payload));
 
@@ -117,7 +117,8 @@ export async function postEpochFeedback(
       `Epoch ${fb.epochNumber} performance attestation for ${fb.agentSlug} (ERC-8004 #${fb.agentId}): ` +
       `score ${fb.score}/100 from the published fitness formula with inputs ` +
       `V_start=$${fb.fitnessInputs.vStartUsd.toFixed(4)}, V_end=$${fb.fitnessInputs.vEndUsd.toFixed(4)}, ` +
-      `gas=$${fb.fitnessInputs.gasUsd.toFixed(4)} over ${fb.fitnessInputs.epochHours}h — all reconstructible ` +
+      `net_flow=$${(fb.fitnessInputs.netFlowUsd ?? 0).toFixed(4)} (external funding excluded from P&L), ` +
+      `gas=$${fb.fitnessInputs.gasUsd.toFixed(4)} over ${fb.fitnessInputs.epochHours.toFixed(2)}h — all reconstructible ` +
       `from Celoscan. feedbackHash=keccak(payload) binds this exact computation.`,
     txHash,
     erc8004AgentId: fb.agentId.toString(),

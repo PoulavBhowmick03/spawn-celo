@@ -208,13 +208,17 @@ function enqueueSpawn(state: SwarmState, parent: SwarmAgentState, fundUsd: numbe
   const slug = `${parent.lineageKey}-g${generation}-i${hdIndex}`;
   const params = mutateParams(parent.params);
   state.pendingSpawns = state.pendingSpawns ?? [];
+  // useSignal is a gene too: a 20% flip chance keeps the signal-buying trait
+  // in the pool even when the current top performer doesn't carry it (buyers
+  // pay $0.002/call out of their own P&L, so selection prices the trait)
+  const useSignal = Math.random() < 0.2 ? !parent.useSignal : parent.useSignal;
   state.pendingSpawns.push({
     slug,
     name: `${parent.name} g${generation}`,
     hdIndex,
     strategy: parent.strategy,
     params,
-    useSignal: parent.useSignal,
+    useSignal,
     generation,
     lineageKey: parent.lineageKey,
     fundUsd: Math.min(MAX_AGENT_BALANCE_USD, fundUsd),
@@ -356,6 +360,7 @@ export type EpochReport = {
     vStartUsd: number;
     vEndUsd: number;
     gasUsd: number;
+    netFlowUsd?: number;
     fitness: number;
     score: number;
     culled: boolean;
@@ -372,26 +377,36 @@ export async function settleEpoch(state: SwarmState, ctx: MarketContext): Promis
   if (active.length === 0) return undefined;
   const orch = orchestratorAccount();
 
+  // Annualize over the epoch's ACTUAL elapsed time (start/settle timestamps
+  // are onchain-verifiable), not the configured cadence — restarts and
+  // cadence changes must not distort the annualization. Floor of 15min
+  // guards against absurd annualization on a near-instant settle.
+  const epochHours = state.epochStartedAt
+    ? Math.max(0.25, (Date.now() - Date.parse(state.epochStartedAt)) / 3600_000)
+    : EPOCH_HOURS;
+
   // 1. mark every portfolio and compute fitness. Idempotent on re-runs after
   // a crash: an agent whose history already covers this epoch was settled and
   // had its feedback posted — reuse the stored numbers, don't recompute or
   // re-post.
-  const rows: Array<{ agent: SwarmAgentState; vEndUsd: number; gasUsd: number; fitness: number; alreadySettled: boolean }> = [];
+  const rows: Array<{ agent: SwarmAgentState; vEndUsd: number; gasUsd: number; netFlowUsd: number; fitness: number; alreadySettled: boolean }> = [];
   for (const agent of active) {
     const prior = agent.history.find((h) => h.epoch === state.epochNumber);
     if (prior) {
-      rows.push({ agent, vEndUsd: prior.vEndUsd, gasUsd: prior.gasUsd, fitness: prior.fitness, alreadySettled: true });
+      rows.push({ agent, vEndUsd: prior.vEndUsd, gasUsd: prior.gasUsd, netFlowUsd: prior.netFlowUsd ?? 0, fitness: prior.fitness, alreadySettled: true });
       continue;
     }
     const pf = await readPortfolio(agent.address, ctx);
-    const gasUsd = (agent as SwarmAgentState & { epochGasUsd?: number }).epochGasUsd ?? 0;
+    const gasUsd = agent.epochGasUsd ?? 0;
+    const netFlowUsd = agent.epochFlowUsd ?? 0;
     const f = fitness({
       vStartUsd: agent.vStartUsd!,
       vEndUsd: pf.totalUsd,
+      netFlowUsd,
       gasUsd,
-      epochHours: EPOCH_HOURS,
+      epochHours,
     });
-    rows.push({ agent, vEndUsd: pf.totalUsd, gasUsd, fitness: f, alreadySettled: false });
+    rows.push({ agent, vEndUsd: pf.totalUsd, gasUsd, netFlowUsd, fitness: f, alreadySettled: false });
   }
   const swarmMedian = median(rows.map((r) => r.fitness));
 
@@ -410,6 +425,7 @@ export async function settleEpoch(state: SwarmState, ctx: MarketContext): Promis
         vStartUsd: r.agent.vStartUsd!,
         vEndUsd: prior.vEndUsd,
         gasUsd: prior.gasUsd,
+        netFlowUsd: prior.netFlowUsd ?? 0,
         fitness: prior.fitness,
         score: prior.score,
         culled: false,
@@ -425,8 +441,9 @@ export async function settleEpoch(state: SwarmState, ctx: MarketContext): Promis
       fitnessInputs: {
         vStartUsd: r.agent.vStartUsd!,
         vEndUsd: r.vEndUsd,
+        netFlowUsd: r.netFlowUsd,
         gasUsd: r.gasUsd,
-        epochHours: EPOCH_HOURS,
+        epochHours,
       },
       feedbackURI: reportUrl,
     }, !process.env.CELO_NATIVE_GAS);
@@ -436,6 +453,8 @@ export async function settleEpoch(state: SwarmState, ctx: MarketContext): Promis
       score,
       vEndUsd: r.vEndUsd,
       gasUsd: r.gasUsd,
+      netFlowUsd: r.netFlowUsd,
+      epochHours,
     });
     reportRows.push({
       slug: r.agent.slug,
@@ -445,6 +464,7 @@ export async function settleEpoch(state: SwarmState, ctx: MarketContext): Promis
       vStartUsd: r.agent.vStartUsd!,
       vEndUsd: r.vEndUsd,
       gasUsd: r.gasUsd,
+      netFlowUsd: r.netFlowUsd,
       fitness: r.fitness,
       score,
       culled: false,
@@ -470,22 +490,30 @@ export async function settleEpoch(state: SwarmState, ctx: MarketContext): Promis
     spawnPoolUsd += Number(formatUnits(unwound.sweptUsdm, 18));
 
     if (agent.childContract) {
-      const orchWallet = celoWalletClient(orch);
-      const recallTx = await orchWallet.writeContract({
-        address: agent.childContract,
-        abi: CHILD_RECALL_ABI,
-        functionName: "recallChild",
-        args: [reason, reportUrl],
-        feeCurrency: maybeFee(FEE_CURRENCIES.USDm),
-      });
-      await celoPublicClient.waitForTransactionReceipt({ hash: recallTx });
-      agent.recallTxHash = recallTx;
-      logActivity({
-        agentId: agent.slug,
-        action: "recall-onchain",
-        rationale: `Onchain recall of culled agent ${agent.slug}: ${reason}. Post-mortem: ${reportUrl}. Funds returned to treasury; ERC-8004 identity #${agent.erc8004AgentId} retired with its honest final reputation intact.`,
-        txHash: recallTx,
-      });
+      try {
+        const orchWallet = celoWalletClient(orch);
+        const recallTx = await orchWallet.writeContract({
+          address: agent.childContract,
+          abi: CHILD_RECALL_ABI,
+          functionName: "recallChild",
+          args: [reason, reportUrl],
+          feeCurrency: maybeFee(FEE_CURRENCIES.USDm),
+        });
+        await celoPublicClient.waitForTransactionReceipt({ hash: recallTx });
+        agent.recallTxHash = recallTx;
+        logActivity({
+          agentId: agent.slug,
+          action: "recall-onchain",
+          rationale: `Onchain recall of culled agent ${agent.slug}: ${reason}. Post-mortem: ${reportUrl}. Funds returned to treasury; ERC-8004 identity #${agent.erc8004AgentId} retired with its honest final reputation intact.`,
+          txHash: recallTx,
+        });
+      } catch (e) {
+        // resume safety: a prior attempt's recall tx can land even when its
+        // receipt poll timed out — the retry then reverts "already recalled".
+        // That IS the recalled state we wanted; anything else is a real error.
+        if (!String((e as Error).message).includes("already recalled")) throw e;
+        console.log(`  ${agent.slug}: recallChild already executed onchain (prior attempt's tx landed) — continuing`);
+      }
     }
     agent.status = "RETIRED";
     state.lastCulledEpoch = state.epochNumber;
@@ -513,7 +541,7 @@ export async function settleEpoch(state: SwarmState, ctx: MarketContext): Promis
   const report: EpochReport = {
     epoch: state.epochNumber,
     settledAt: new Date().toISOString(),
-    epochHours: EPOCH_HOURS,
+    epochHours,
     market: ctx,
     agents: reportRows,
     swarmMedianFitness: swarmMedian,
@@ -529,6 +557,45 @@ export async function settleEpoch(state: SwarmState, ctx: MarketContext): Promis
   return report;
 }
 
+/** Top up a useSignal agent's USDC x402 budget BEFORE vStart is captured, so
+ *  the transfer lands inside the epoch baseline instead of polluting P&L.
+ *  Heals all three observed depletion paths: spawns predating spawn-time
+ *  budgets, kill-switch unwinds sweeping USDC home, and plain exhaustion. */
+const SIGNAL_BUDGET_UNITS = 200_000n; // 0.20 USDC (~100 calls at $0.002)
+const SIGNAL_LOW_WATER_UNITS = 50_000n; // top up below 0.05 USDC
+
+async function ensureSignalBudget(agent: SwarmAgentState): Promise<void> {
+  const orch = orchestratorAccount();
+  const [agentUsdc, treasuryUsdc] = await Promise.all([
+    celoPublicClient.readContract({ address: TOKENS.USDC, abi: erc20Abi, functionName: "balanceOf", args: [agent.address] }),
+    celoPublicClient.readContract({ address: TOKENS.USDC, abi: erc20Abi, functionName: "balanceOf", args: [orch.address] }),
+  ]);
+  if (agentUsdc >= SIGNAL_LOW_WATER_UNITS) return;
+  if (treasuryUsdc < SIGNAL_BUDGET_UNITS) {
+    console.warn(`  ${agent.slug}: x402 budget low (${formatUnits(agentUsdc, 6)} USDC) but treasury USDC can't cover a top-up`);
+    return;
+  }
+  assertTxAllowed(0.2, `x402 signal budget top-up for ${agent.slug}`);
+  const wallet = celoWalletClient(orch);
+  const hash = await wallet.writeContract({
+    address: TOKENS.USDC,
+    abi: erc20Abi,
+    functionName: "transfer",
+    args: [agent.address, SIGNAL_BUDGET_UNITS],
+    feeCurrency: maybeFee(FEE_CURRENCIES.USDm),
+    ...(maybeFee(FEE_CURRENCIES.USDm) ? { gas: 120_000n } : {}),
+  });
+  await celoPublicClient.waitForTransactionReceipt({ hash });
+  logActivity({
+    agentId: "orchestrator",
+    action: "signal-budget-funding",
+    rationale: `Top up ${agent.slug} with 0.2 USDC for x402 signal purchases (balance fell below 0.05 USDC). Done at epoch start before V_start is marked, so the transfer is baseline capital, not P&L.`,
+    txHash: hash,
+    recipient: agent.address,
+  });
+  console.log(`  ${agent.slug}: x402 budget topped up +0.2 USDC`);
+}
+
 /** Start a new epoch: snapshot market, set vStart, evaluate + execute strategies. */
 export async function startEpoch(state: SwarmState): Promise<MarketContext> {
   const ctx = await snapshotMarket(state.prevFxUsdPrice ? { fxUsdPrice: state.prevFxUsdPrice } : undefined);
@@ -538,9 +605,17 @@ export async function startEpoch(state: SwarmState): Promise<MarketContext> {
     if (agent.status !== "ACTIVE") continue;
     if (killSwitchEngaged()) throw new Error("kill switch engaged mid-epoch start");
     const account = deriveAccount(agent.hdIndex);
+    if (agent.useSignal && !process.env.CELO_NATIVE_GAS) {
+      try {
+        await ensureSignalBudget(agent);
+      } catch (e) {
+        console.warn(`  ${agent.slug}: signal budget top-up failed (${(e as Error).message?.slice(0, 100)}) — continuing`);
+      }
+    }
     const pf = await readPortfolio(agent.address, ctx);
     agent.vStartUsd = pf.totalUsd;
-    (agent as SwarmAgentState & { epochGasUsd?: number }).epochGasUsd = 0;
+    agent.epochGasUsd = 0;
+    agent.epochFlowUsd = 0;
 
     // Phase 6: useSignal agents pay the x402 oracle for high-resolution FX
     // momentum; it replaces the epoch-boundary momentum for this agent only.
@@ -562,7 +637,7 @@ export async function startEpoch(state: SwarmState): Promise<MarketContext> {
 
     const actions = strategyFor(agent as unknown as AgentSpec).evaluate(agentCtx, pf, agent.params);
     const result = await executeActions(agent, account, orch, actions, state.epochNumber);
-    (agent as SwarmAgentState & { epochGasUsd?: number }).epochGasUsd = result.gasUsd;
+    agent.epochGasUsd = result.gasUsd;
     console.log(
       `  ${agent.slug}: V_start $${pf.totalUsd.toFixed(3)}, ${result.executed} action(s) executed, ${result.held} hold, gas $${result.gasUsd.toFixed(4)}`,
     );
@@ -589,8 +664,27 @@ export async function runMidEpochTick(): Promise<void> {
     if (killSwitchEngaged()) throw new Error("kill switch engaged mid-tick");
     const account = deriveAccount(agent.hdIndex);
     const pf = await readPortfolio(agent.address, ctx);
+    // useSignal agents refresh their FX momentum mid-epoch the same way they
+    // do at epoch start: by buying it from the oracle via x402. The purchase
+    // is an agent expense (cuts into its own fitness), so it only makes
+    // economic sense because the tick can act on what it learns.
+    let agentCtx = ctx;
+    if (agent.useSignal && !process.env.CELO_NATIVE_GAS) {
+      const { buySignal } = await import("./signal-client.js");
+      const bought = await buySignal(account, agent.slug);
+      const m = bought?.signal?.fxMomentumBps;
+      if (m) {
+        agentCtx = {
+          ...ctx,
+          fxMomentumBps: {
+            EURm: m.EURm.m30 ?? m.EURm.h2 ?? ctx.fxMomentumBps.EURm,
+            BRLm: m.BRLm.m30 ?? m.BRLm.h2 ?? ctx.fxMomentumBps.BRLm,
+          },
+        };
+      }
+    }
     const actions = strategyFor(agent as unknown as AgentSpec)
-      .evaluate(ctx, pf, agent.params)
+      .evaluate(agentCtx, pf, agent.params)
       .filter((a) => a.kind !== "hold"); // ticks only act, never narrate holds
     if (actions.length === 0) continue;
     const result = await executeActions(
@@ -600,8 +694,7 @@ export async function runMidEpochTick(): Promise<void> {
       actions.map((a) => ({ ...a, reason: `[mid-epoch tick] ${a.reason}` })),
       state.epochNumber,
     );
-    const g = agent as SwarmAgentState & { epochGasUsd?: number };
-    g.epochGasUsd = (g.epochGasUsd ?? 0) + result.gasUsd;
+    agent.epochGasUsd = (agent.epochGasUsd ?? 0) + result.gasUsd;
     if (result.executed > 0) {
       console.log(`  tick: ${agent.slug} executed ${result.executed} action(s), gas $${result.gasUsd.toFixed(4)}`);
     }

@@ -4,11 +4,18 @@
  * recompute every reputation score we post. The README documents this exact
  * formula; if you change it here, change it there.
  *
- *   epoch_return   = V_end / V_start              (portfolio marked in cUSD)
+ *   epoch_return   = (V_end - net_flow) / V_start   (portfolio marked in cUSD)
  *   annualize(r)   = (r - 1) * (8760 / epoch_hours)     [linear annualization]
  *   gas_penalty    = (gas_usd / V_start) * (8760 / epoch_hours)
  *   fitness        = annualize(epoch_return) - gas_penalty
  *   reputation     = clamp(round(50 + 500 * (fitness - swarm_median)), 0, 100)
+ *
+ * net_flow = external deposits minus withdrawals into the agent's wallet
+ * during the epoch (orchestrator funding top-ups, signal-budget transfers,
+ * kill-switch sweeps). These are capital movements, not performance, so they
+ * are excluded from P&L. Every flow is an onchain transfer from/to the
+ * orchestrator wallet, so the adjustment stays Celoscan-recomputable.
+ * epoch_hours = actual elapsed time between epoch start and settle.
  */
 
 export type EpochAgentInputs = {
@@ -16,6 +23,9 @@ export type EpochAgentInputs = {
   vStartUsd: number;
   /** portfolio value in cUSD at epoch end */
   vEndUsd: number;
+  /** net external flows (deposits − withdrawals) during the epoch, in cUSD —
+   *  capital movements, not performance; excluded from P&L */
+  netFlowUsd?: number;
   /** total gas paid during the epoch, in cUSD */
   gasUsd: number;
   epochHours: number;
@@ -27,7 +37,7 @@ export function fitness(i: EpochAgentInputs): number {
   if (i.vStartUsd <= 0) throw new Error("vStartUsd must be > 0");
   if (i.epochHours <= 0) throw new Error("epochHours must be > 0");
   const periodsPerYear = HOURS_PER_YEAR / i.epochHours;
-  const annualizedReturn = (i.vEndUsd / i.vStartUsd - 1) * periodsPerYear;
+  const annualizedReturn = ((i.vEndUsd - (i.netFlowUsd ?? 0)) / i.vStartUsd - 1) * periodsPerYear;
   const gasPenalty = (i.gasUsd / i.vStartUsd) * periodsPerYear;
   return annualizedReturn - gasPenalty;
 }

@@ -6,6 +6,12 @@
 > that was being ported from (prior chain), not the Celo submission itself.
 > Phases 1–6 record the actual Celo build.
 
+## Fitness integrity fix + x402 hardening + 1.5h cadence (2026-06-11)
+
+- **Done**: Root-caused the epoch 3/4 fitness anomalies (±140–152 scores): mid-epoch capital flows (0.35 USDC x402 budget transfers, kill-switch unwind/re-fund) were scored as P&L. Fitness now subtracts `net_flow` (tracked per agent per epoch, seeded retroactively for epoch 5's two 0.2 USDC top-ups) and annualizes over ACTUAL elapsed hours; formula updated in README (+ honest correction note for epochs 3–4), dashboard recompute panel, report:epoch, and the hashed reputation payload. x402 budget fixes: epoch-start auto top-up (0.2 USDC when below 0.05, BEFORE vStart capture so it's baseline not P&L — heals hc-mid's empty wallet class of 402 failures), treasury USDC pool replenished ($0.75 cUSD→USDC), useSignal made a mutable gene (20% flip on spawn) so the buyer population can't decay to zero, and mid-epoch ticks now buy a fresh signal too (doubles x402 events per buyer-epoch). Cull made crash-proof: recallChild retry treats "already recalled" as success (was crash-looping epoch 5's settle after a forno receipt timeout). Epoch cadence 4h → 1.5h (ticks 45min).
+- **Verified by**: fitness.test.ts regression tests for both artifact classes; epoch 5 settled live with corrected numbers (ay-chaser netFlow $0.20 → honest −6.94 instead of fake +86; mfx-aggressive-g2-i12 → exactly 0; hc-mid −28.4 real swap-spread loss, culled, recall recovered, **mfx-cautious-g2-i14 spawned as ERC-8004 #9262**); epoch 6 running at 1.5h cadence with x402 purchases settling onchain.
+- **Next**: judge-facing analysis + 4-day execution plan (tx projection, 8004scan dimensions, demo video June 14).
+
 ## Phase 1 — Chain plumbing (2026-06-10)
 
 - **Done**: `agent/src/chains/celo/` — `addresses.ts` (every address triple-verified: authoritative source + docs cross-check + live forno read; source URLs inline), `chain.ts` (viem celo clients, RPC fallback, CIP-64-preserving types), `wallets.ts` (mnemonic+HD, index 0 = orchestrator, N = agent N), `budget.ts` ($50/$5/$5 caps + kill switch, code-enforced), `activity-log.ts` (JSONL with rationales), `smoke-feecurrency.ts` (dry-run by default, `ALLOW_LIVE_SMOKE=true` to broadcast). `.env.example` Celo section added. `npm run smoke:celo`.

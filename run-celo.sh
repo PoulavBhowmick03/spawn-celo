@@ -11,6 +11,7 @@
 #   caffeinate                 keeps the Mac awake (the swarm must run 24/7)
 #   signal-service.ts          x402 signal oracle on :8402
 #   run-swarm-supervised.sh    epoch loop under a crash-restart supervisor
+#   dashboard (next dev)       local view on http://localhost:3000
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")" && pwd)"
@@ -19,6 +20,7 @@ LOG_DIR="${CELO_LOG_DIR:-/tmp/spawn-celo}"
 mkdir -p "$LOG_DIR"
 
 swarm_pids()  { pgrep -f "src/chains/celo/swarm-start.ts" || true; }
+dash_pids()   { pgrep -f "$ROOT/dashboard/node_modules/.bin/next" || true; }
 oracle_pids() { pgrep -f "src/chains/celo/signal-service.ts" || true; }
 super_pids()  { pgrep -f "run-swarm-supervised.sh" || true; }
 
@@ -27,6 +29,7 @@ kill_all() {
   for p in $(super_pids); do kill -9 "$p" 2>/dev/null || true; done
   for p in $(swarm_pids); do kill -9 "$p" 2>/dev/null || true; done
   for p in $(oracle_pids); do kill -9 "$p" 2>/dev/null || true; done
+  for p in $(dash_pids); do kill -9 "$p" 2>/dev/null || true; done
   sleep 1
 }
 
@@ -46,12 +49,15 @@ start() {
   curl -s "http://127.0.0.1:${SIGNAL_PORT:-8402}/health" | grep -q '"ok":true' \
     && echo "   oracle healthy" || { echo "   ORACLE FAILED — see $LOG_DIR/oracle.log"; exit 1; }
 
-  echo "── supervised swarm (EPOCH_HOURS=${EPOCH_HOURS:-4}, TICK_MINUTES=${TICK_MINUTES:-60})"
+  echo "── dashboard (http://localhost:3000)"
+  (cd "$ROOT/dashboard" && nohup npm run dev -- -p 3000 >> "$LOG_DIR/dashboard.log" 2>&1 &)
+
+  echo "── supervised swarm (EPOCH_HOURS=${EPOCH_HOURS:-1.5}, TICK_MINUTES=${TICK_MINUTES:-45})"
   (cd "$AGENT" && nohup bash src/chains/celo/run-swarm-supervised.sh >> "$LOG_DIR/swarm.log" 2>&1 &)
   sleep 3
   status
   echo ""
-  echo "logs: $LOG_DIR/{swarm,oracle}.log · dashboard: https://spawn-celo-swarm.vercel.app"
+  echo "logs: $LOG_DIR/{swarm,oracle,dashboard}.log · local: http://localhost:3000 · public: https://spawn-celo-swarm.vercel.app"
 }
 
 stop() {
@@ -76,6 +82,7 @@ status() {
   [ -n "$(super_pids)" ]  && echo "   supervisor:   RUNNING" || echo "   supervisor:   stopped"
   [ -n "$(swarm_pids)" ]  && echo "   swarm:        RUNNING" || echo "   swarm:        stopped"
   [ -n "$(oracle_pids)" ] && echo "   oracle:       RUNNING" || echo "   oracle:       stopped"
+  [ -n "$(dash_pids)" ]   && echo "   dashboard:    RUNNING (http://localhost:3000)" || echo "   dashboard:    stopped"
   pgrep -x caffeinate >/dev/null && echo "   sleep guard:  ON" || echo "   sleep guard:  off"
   if [ -f "$ROOT/celo_swarm_state.json" ]; then
     python3 - <<'PY'

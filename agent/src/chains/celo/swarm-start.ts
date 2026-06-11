@@ -108,6 +108,12 @@ async function fundAgents(state: SwarmState): Promise<void> {
       txHash: hash,
       recipient: agent.address,
     });
+    // re-funding while an epoch is open is a capital flow, not P&L — record
+    // it so settle excludes it from fitness (the kill-switch-restart case)
+    if (state.epochStartedAt && agent.vStartUsd !== undefined) {
+      agent.epochFlowUsd = (agent.epochFlowUsd ?? 0) + topUp;
+    }
+    saveState(state);
     console.log(`  ${agent.slug}: funded +$${topUp.toFixed(2)}`);
   }
 }
@@ -141,6 +147,11 @@ async function unwindAll(state: SwarmState, reason: string): Promise<void> {
         `kill switch: ${reason}`,
         !process.env.CELO_NATIVE_GAS,
       );
+      // sweeping home mid-epoch is a capital outflow, not a trading loss —
+      // record it so a later settle doesn't read the empty wallet as P&L
+      if (state.epochStartedAt && agent.vStartUsd !== undefined) {
+        agent.epochFlowUsd = (agent.epochFlowUsd ?? 0) - Number(formatUnits(res.sweptUsdm, 18));
+      }
       console.log(`  ${agent.slug}: swept ${formatUnits(res.sweptUsdm, 18)} cUSD home`);
     } catch (e) {
       console.error(`  ${agent.slug}: unwind FAILED — ${(e as Error).message}`);

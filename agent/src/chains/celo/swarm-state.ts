@@ -29,8 +29,21 @@ export type SwarmAgentState = {
   recallTxHash?: Hex;
   /** cUSD portfolio value at the start of the current epoch */
   vStartUsd?: number;
+  /** gas paid during the open epoch, in cUSD (fitness penalty input) */
+  epochGasUsd?: number;
+  /** net external flows (orchestrator deposits − sweeps) during the open
+   *  epoch, in cUSD — excluded from fitness P&L (capital, not performance) */
+  epochFlowUsd?: number;
   /** lifetime fitness history [epoch, fitness, score] */
-  history: Array<{ epoch: number; fitness: number; score: number; vEndUsd: number; gasUsd: number }>;
+  history: Array<{
+    epoch: number;
+    fitness: number;
+    score: number;
+    vEndUsd: number;
+    gasUsd: number;
+    netFlowUsd?: number;
+    epochHours?: number;
+  }>;
 };
 
 export type PendingSpawn = {

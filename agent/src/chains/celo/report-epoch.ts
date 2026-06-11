@@ -23,6 +23,7 @@ type ReportRow = {
   vStartUsd: number;
   vEndUsd: number;
   gasUsd: number;
+  netFlowUsd?: number;
   fitness: number;
   score: number;
   culled: boolean;
@@ -66,16 +67,16 @@ function main() {
   lines.push(`Culled: ${report.culled.join(", ") || "none"} · Spawned: ${report.spawned.join(", ") || "none"}`);
   lines.push("");
   lines.push(
-    "Fitness formula (recomputable from Celoscan): `fitness = (V_end/V_start − 1)·(8760/epoch_h) − (gas/V_start)·(8760/epoch_h)`; `score = clamp(round(50 + 500·(fitness − median)), 0, 100)`",
+    "Fitness formula (recomputable from Celoscan): `fitness = ((V_end − net_flow)/V_start − 1)·(8760/epoch_h) − (gas/V_start)·(8760/epoch_h)`; `score = clamp(round(50 + 500·(fitness − median)), 0, 100)`. `net_flow` = orchestrator funding in/out during the epoch (capital movements, excluded from P&L); `epoch_h` = actual elapsed epoch length.",
   );
   lines.push("");
   lines.push("## Fitness table");
   lines.push("");
-  lines.push("| agent | ERC-8004 | strategy | gen | V_start | V_end | gas | fitness | score | culled | reputation tx |");
-  lines.push("|---|---|---|---|---|---|---|---|---|---|---|");
+  lines.push("| agent | ERC-8004 | strategy | gen | V_start | V_end | net_flow | gas | fitness | score | culled | reputation tx |");
+  lines.push("|---|---|---|---|---|---|---|---|---|---|---|---|");
   for (const r of rows) {
     lines.push(
-      `| ${r.slug} | [#${r.erc8004AgentId}](${SCAN_8004}/agents/celo/${r.erc8004AgentId}) | ${r.strategy} | g${r.generation} | $${r.vStartUsd.toFixed(4)} | $${r.vEndUsd.toFixed(4)} | $${r.gasUsd.toFixed(4)} | ${r.fitness.toFixed(4)} | ${r.score} | ${r.culled ? "**yes**" : ""} | ${r.reputationTx ? `[tx](${explorerTx(r.reputationTx)})` : "—"} |`,
+      `| ${r.slug} | [#${r.erc8004AgentId}](${SCAN_8004}/agents/celo/${r.erc8004AgentId}) | ${r.strategy} | g${r.generation} | $${r.vStartUsd.toFixed(4)} | $${r.vEndUsd.toFixed(4)} | $${(r.netFlowUsd ?? 0).toFixed(4)} | $${r.gasUsd.toFixed(4)} | ${r.fitness.toFixed(4)} | ${r.score} | ${r.culled ? "**yes**" : ""} | ${r.reputationTx ? `[tx](${explorerTx(r.reputationTx)})` : "—"} |`,
     );
   }
   lines.push("");

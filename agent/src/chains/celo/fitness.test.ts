@@ -18,6 +18,15 @@ assert.ok(Math.abs(fitness({ vStartUsd: 5, vEndUsd: 5.005, gasUsd: 0.005, epochH
 // losing epoch is negative
 assert.ok(fitness({ vStartUsd: 5, vEndUsd: 4.95, gasUsd: 0, epochHours: 4 }) < 0);
 
+// external flows are capital, not performance: a $0.35 mid-epoch funding
+// top-up on a flat portfolio must score 0, not +153 (the epoch-3 artifact)
+assert.equal(fitness({ vStartUsd: 5, vEndUsd: 5.35, netFlowUsd: 0.35, gasUsd: 0, epochHours: 4 }), 0);
+// kill-switch sweep + re-fund mid-epoch: vEnd 5.00 after sweeping out 5.34
+// and re-funding 5.00 → netFlow -0.34, real P&L 0 (the epoch-4 mirror artifact)
+assert.ok(Math.abs(fitness({ vStartUsd: 5.34, vEndUsd: 5, netFlowUsd: -0.34, gasUsd: 0, epochHours: 4 })) < 1e-9);
+// flows don't mask real losses: +0.2 funded but vEnd only +0.15 → loss
+assert.ok(fitness({ vStartUsd: 5, vEndUsd: 5.15, netFlowUsd: 0.2, gasUsd: 0, epochHours: 4 }) < 0);
+
 // invalid inputs throw
 assert.throws(() => fitness({ vStartUsd: 0, vEndUsd: 1, gasUsd: 0, epochHours: 4 }));
 assert.throws(() => fitness({ vStartUsd: 1, vEndUsd: 1, gasUsd: 0, epochHours: 0 }));

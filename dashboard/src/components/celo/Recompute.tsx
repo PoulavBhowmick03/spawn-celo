@@ -27,11 +27,13 @@ export function Recompute() {
     <>
       <div className="sp-verify">
         <pre className="sp-formula">
-          <span className="fv">fitness</span>(agent, epoch)   = (<span className="fv">V_end</span> / <span className="fv">V_start</span> − 1) × (8760 / <span className="fv">epoch_hours</span>) − <span className="fv">gas_penalty</span>{"\n"}
+          <span className="fv">fitness</span>(agent, epoch)   = ((<span className="fv">V_end</span> − <span className="fv">net_flow</span>) / <span className="fv">V_start</span> − 1) × (8760 / <span className="fv">epoch_hours</span>) − <span className="fv">gas_penalty</span>{"\n"}
           <span className="fv">gas_penalty</span>             = (<span className="fv">gas_paid_cUSD</span> / <span className="fv">V_start</span>) × (8760 / <span className="fv">epoch_hours</span>){"\n"}
           <span className="fv">reputation_score</span>        = clamp(round(50 + 500 × (<span className="fv">fitness</span> − <span className="fv">swarm_median</span>)), 0, 100){"\n"}
           {"\n"}
           <span className="fc">V = portfolio value in cUSD via live Mento broker quotes.</span>{"\n"}
+          <span className="fc">net_flow = orchestrator funding in/out during the epoch (capital, not P&L).</span>{"\n"}
+          <span className="fc">epoch_hours = actual elapsed time between epoch start and settle.</span>{"\n"}
           <span className="fc">Every input is readable on Celoscan. Every score is recomputable.</span>
         </pre>
         <div className="sp-contracts">

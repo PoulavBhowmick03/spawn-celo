@@ -19,13 +19,34 @@ Emerging-market users hold Mento stables to escape local currency devaluation, b
 ## Fitness formula (public, recomputable)
 
 ```
-fitness(agent, epoch) = annualize(V_end / V_start) - gas_penalty
+fitness(agent, epoch) = annualize((V_end - net_flow) / V_start) - gas_penalty
 V = portfolio value marked in cUSD via Mento broker quotes at epoch boundaries
+net_flow = external deposits - withdrawals into the agent wallet during the
+           epoch (orchestrator funding/top-ups/sweeps; capital, not P&L)
+annualize(r) = (r - 1) * (8760 / epoch_hours), epoch_hours = actual elapsed
+               time between epoch start and settle
 gas_penalty = total gas paid during epoch, in cUSD, / V_start, annualized
 reputation_score = clamp(round(50 + 500 * (fitness - swarm_median)), 0, 100)
 ```
 
-Epoch boundaries, balances, and gas costs are all readable from Celoscan for each agent address listed on the dashboard.
+Epoch boundaries, balances, gas costs, and every net_flow transfer (they are
+plain ERC-20 transfers from/to the orchestrator wallet) are all readable from
+Celoscan for each agent address listed on the dashboard.
+
+### Correction note: epochs 3–4 (2026-06-11)
+
+The original formula did not subtract `net_flow`. Two mid-epoch capital
+movements were therefore scored as P&L in epochs 3 and 4: a 0.35 USDC x402
+signal-budget transfer to `mfx-aggressive` and `hc-mid` mid-epoch-3 (scored as
+spurious gains of +152.4 / +146.8 annualized), and the supervised kill-switch
+unwind/re-fund cycle mid-epoch-4 (the mirror-image spurious losses of −142.5 /
+−139.8, which also caused `mfx-aggressive` to be culled on a flow artifact —
+both agents' real trading P&L across those epochs was ≈ 0). The onchain
+feedback already posted for those epochs is immutable and stays as-is; this
+note plus the per-epoch reports are the public record of what those scores
+actually measured. From epoch 5 onward, every score uses the corrected formula
+above, and each reputation feedback's hashed payload embeds `net_flow`, so the
+exclusion is itself verifiable.
 
 ## Architecture
 
