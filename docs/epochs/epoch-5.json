@@ -1,0 +1,151 @@
+{
+  "epoch": 5,
+  "settledAt": "2026-06-11T08:34:52.593Z",
+  "epochHours": 4.1707519444444445,
+  "market": {
+    "timestamp": 1781166825590,
+    "fxUsdPrice": {
+      "EURm": 1.1508905625,
+      "BRLm": 0.19232067189
+    },
+    "fxRoundTripCostBps": {
+      "EURm": 49.93750000000019,
+      "BRLm": 59.909999999999684
+    },
+    "fxMomentumBps": {
+      "EURm": -6.392305673472656,
+      "BRLm": 17.843140421796264
+    },
+    "aaveApyPct": {
+      "USDC": 2.5949297863026826,
+      "USDT": 0.7953263636134786,
+      "USDm": 2.4724266001170565
+    }
+  },
+  "agents": [
+    {
+      "slug": "mfx-cautious",
+      "erc8004AgentId": "9241",
+      "strategy": "MentoFXRotator",
+      "generation": 1,
+      "vStartUsd": 4.999999789098257,
+      "vEndUsd": 4.999999789098257,
+      "gasUsd": 0,
+      "netFlowUsd": 0,
+      "fitness": 0,
+      "score": 50,
+      "culled": false
+    },
+    {
+      "slug": "mfx-balanced",
+      "erc8004AgentId": "9242",
+      "strategy": "MentoFXRotator",
+      "generation": 1,
+      "vStartUsd": 4.999999789098257,
+      "vEndUsd": 4.999999789098257,
+      "gasUsd": 0,
+      "netFlowUsd": 0,
+      "fitness": 0,
+      "score": 50,
+      "culled": false
+    },
+    {
+      "slug": "ay-balanced",
+      "erc8004AgentId": "9245",
+      "strategy": "AaveYielder",
+      "generation": 1,
+      "vStartUsd": 4.99999961934825,
+      "vEndUsd": 4.99197945621346,
+      "gasUsd": 0.008167524753953284,
+      "netFlowUsd": 0,
+      "fitness": -6.934547470109154,
+      "score": 0,
+      "culled": false
+    },
+    {
+      "slug": "ay-chaser",
+      "erc8004AgentId": "9246",
+      "strategy": "AaveYielder",
+      "generation": 1,
+      "vStartUsd": 4.99999961934825,
+      "vEndUsd": 5.191970003074001,
+      "gasUsd": 0.008181987409705426,
+      "netFlowUsd": 0.2,
+      "fitness": -6.944792615574964,
+      "score": 0,
+      "culled": false
+    },
+    {
+      "slug": "hc-mid",
+      "erc8004AgentId": "9248",
+      "strategy": "HedgedCarry",
+      "generation": 1,
+      "vStartUsd": 5.00000003929203,
+      "vEndUsd": 4.941563212062464,
+      "gasUsd": 0.007919347364636849,
+      "netFlowUsd": 0,
+      "fitness": -28.42592513356385,
+      "score": 0,
+      "culled": true
+    },
+    {
+      "slug": "mfx-cautious-g2-i10",
+      "erc8004AgentId": "9256",
+      "strategy": "MentoFXRotator",
+      "generation": 2,
+      "vStartUsd": 4.99999961934825,
+      "vEndUsd": 4.99999961934825,
+      "gasUsd": 0,
+      "netFlowUsd": 0,
+      "fitness": 0,
+      "score": 50,
+      "culled": false
+    },
+    {
+      "slug": "mfx-cautious-g2-i11",
+      "erc8004AgentId": "9257",
+      "strategy": "MentoFXRotator",
+      "generation": 2,
+      "vStartUsd": 4.99999975955925,
+      "vEndUsd": 4.99999975955925,
+      "gasUsd": 0,
+      "netFlowUsd": 0,
+      "fitness": 0,
+      "score": 50,
+      "culled": false
+    },
+    {
+      "slug": "mfx-aggressive-g2-i12",
+      "erc8004AgentId": "9259",
+      "strategy": "MentoFXRotator",
+      "generation": 2,
+      "vStartUsd": 4.99999961934825,
+      "vEndUsd": 5.19999961934825,
+      "gasUsd": 0,
+      "netFlowUsd": 0.2,
+      "fitness": 0,
+      "score": 50,
+      "culled": false
+    },
+    {
+      "slug": "ay-balanced-g2-i13",
+      "erc8004AgentId": "9260",
+      "strategy": "AaveYielder",
+      "generation": 2,
+      "vStartUsd": 4.99693520048427,
+      "vEndUsd": 4.987210488625393,
+      "gasUsd": 0.00858371254680915,
+      "netFlowUsd": 0,
+      "fitness": -7.847847009228477,
+      "score": 0,
+      "culled": false
+    }
+  ],
+  "swarmMedianFitness": 0,
+  "culled": [
+    "hc-mid"
+  ],
+  "spawned": [
+    "mfx-cautious-g2-i14"
+  ]
+}
