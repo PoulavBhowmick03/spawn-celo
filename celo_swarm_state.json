@@ -1,5 +1,5 @@
 {
-  "epochNumber": 6,
+  "epochNumber": 7,
   "nextHdIndex": 18,
   "agents": [
     {
@@ -291,7 +291,7 @@
       ],
       "childContract": "0x8e5CBAdF9A98eDbD80aA2000b227BBc139aB4236",
       "spawnTxHash": "0x5df38b0183b6378117222cd186f99e4f925b88222a3c0a573a9cd0d8c3054871",
-      "vStartUsd": 4.99198045621346,
+      "vStartUsd": 4.99200145621346,
       "epochGasUsd": 0,
       "epochFlowUsd": 0
     },
@@ -361,7 +361,7 @@
       ],
       "childContract": "0xa89Ae17C537728a1c07d878a16Ea2C2879393789",
       "spawnTxHash": "0x1b006cf8cdad3a968fd0f2fabc8b6d5ffeb7f2b4e4803634c111adb48ee12b04",
-      "vStartUsd": 5.191971003074001,
+      "vStartUsd": 5.189994003074001,
       "epochGasUsd": 0,
       "epochFlowUsd": 0
     },
@@ -695,7 +695,7 @@
           "epochHours": 1.5011427777777777
         }
       ],
-      "vStartUsd": 4.987212488625392,
+      "vStartUsd": 4.987233488625392,
       "epochGasUsd": 0,
       "epochFlowUsd": 0
     },
@@ -750,7 +750,10 @@
       "status": "ACTIVE",
       "childContract": "0xb6586cAf3ca9917EeaB935A301656F2271Ac9F85",
       "spawnTxHash": "0xce77275efda708cd4ef317db4cda393434024aab7dcd98ac3f68f4c0e048ef0e",
-      "history": []
+      "history": [],
+      "vStartUsd": 3.9969701678326,
+      "epochGasUsd": 0,
+      "epochFlowUsd": 0
     },
     {
       "slug": "ay-balanced-g3-i16",
@@ -770,14 +773,17 @@
       "status": "ACTIVE",
       "childContract": "0xbfAFa8295bd75F4993FEf187a83d9C1ed2A2c461",
       "spawnTxHash": "0xa40fccd9190b0f20abd11151542f1c8f84679c6e8c3a0eaba9b743e35f267277",
-      "history": []
+      "history": [],
+      "vStartUsd": 3.9969688624123,
+      "epochGasUsd": 0.0053937549351,
+      "epochFlowUsd": 0
     }
   ],
   "prevFxUsdPrice": {
-    "EURm": 1.1508905625,
-    "BRLm": 0.19232067189
+    "EURm": 1.150147425,
+    "BRLm": 0.19236371238
   },
-  "epochStartedAt": "2026-06-11T08:35:25.780Z",
+  "epochStartedAt": "2026-06-11T10:11:05.467Z",
   "lastCulledEpoch": 6,
   "pendingSpawns": [
     {
