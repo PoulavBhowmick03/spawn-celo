@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
-import { IBM_Plex_Mono, Syne } from "next/font/google";
+import { IBM_Plex_Mono, Inter, JetBrains_Mono, Space_Grotesk, Syne } from "next/font/google";
 import "./globals.css";
+import "./celo-dash.css";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 
@@ -16,6 +17,24 @@ const mono = IBM_Plex_Mono({
   variable: "--font-mono",
 });
 
+// Celo dashboard faces (scoped under .sp in celo-dash.css)
+const spaceGrotesk = Space_Grotesk({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-sg",
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
+  variable: "--font-jbm",
+});
+
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter",
+});
+
 export const metadata: Metadata = {
   title: "Spawn Protocol | Hedge Swarm on Celo",
   description:
@@ -28,7 +47,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${display.variable} ${mono.variable}`}>
+    <html
+      lang="en"
+      className={`${display.variable} ${mono.variable} ${spaceGrotesk.variable} ${jetbrainsMono.variable} ${inter.variable}`}
+    >
       <body>
         {children}
         <Analytics />
