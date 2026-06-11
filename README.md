@@ -142,6 +142,7 @@ Retired agents keep their identity and final reputation (e.g. ay-anchor #9244, c
 - Epoch reports: [docs/epochs/](docs/epochs/) (also rendered on the dashboard)
 - Swarm host (Fly.io, 24/7): https://fly.io/apps/spawn-celo-swarm/monitoring
 - Signal oracle health: https://spawn-celo-swarm.fly.dev/health
+- Self Agent ID (ai.self.xyz): **#162** — agent `0x23A7196aFcd9b4E9294909af1f9Ef26d375b5235`, passport-verified onchain (Celo mainnet), linked to the orchestrator wallet
 - Demo video: TODO (record per the script below)
 
 ## Demo video script (2-3 minutes, record on Day 2)
@@ -156,10 +157,10 @@ Retired agents keep their identity and final reputation (e.g. ay-anchor #9244, c
 ## Submission checklist
 
 - [ ] Quote-tweet the @CeloDevs announcement, tagging @CeloDevs and @Celo, with agent name + one-liner + 8004scan registry link (#CeloAgents). Deadline June 15.
-- [ ] Join the hackathon Telegram group.
-- [ ] Self Agent ID for the orchestrator via ai.self.xyz; if region-unsupported, screenshot the app message and attach to the submission (FAQ-approved fallback).
-- [ ] Swarm live for 3+ epochs with the evolution story visible onchain.
-- [ ] All "Live links" above filled.
+- [X] Join the hackathon Telegram group.
+- [X] Self Agent ID for the orchestrator via ai.self.xyz: **#162**, passport-verified onchain, linked to the orchestrator wallet (no region block hit).
+- [X] Swarm live for 3+ epochs with the evolution story visible onchain.
+- [X] All "Live links" above filled.
 - [ ] Demo video recorded and linked.
 - [ ] Submit via Celo Builders Skill: `npx skills add https://celobuilders.xyz`, then ask the coding agent to submit to `celo-onchain-agents`; review the draft before publishing.
 
