@@ -1191,19 +1191,13 @@
       "childContract": "0xC321C69a38122ED60588bC5d054296e6019EEE6d",
       "spawnTxHash": "0xe92cf1761b66afa71f5a23f78fd5c7e46ec2311d6a3a5c64636d4771761f225f",
       "history": []
-    }
-  ],
-  "prevFxUsdPrice": {
-    "EURm": 1.149229725,
-    "BRLm": 0.19244094
-  },
-  "epochStartedAt": "2026-06-11T13:26:36.405Z",
-  "lastCulledEpoch": 9,
-  "pendingSpawns": [
+    },
     {
       "slug": "ay-chaser-g2-i23",
       "name": "Spawn Aave Yielder (chaser) g2",
       "hdIndex": 23,
+      "address": "0x4039DCcd23e0f500090072ca048450B2F54C5B69",
+      "erc8004AgentId": "9273",
       "strategy": "AaveYielder",
       "params": {
         "minApyDeltaBps": 13,
@@ -1213,9 +1207,19 @@
       "useSignal": true,
       "generation": 2,
       "lineageKey": "ay-chaser",
-      "fundUsd": 4,
-      "description": "Swarm-growth spawn: an extra agent funded purely from treasury margin recycled out of culled agents' returned balances (no new outside capital), growing the swarm toward its 13-agent cap. Generation 2 of the \"ay-chaser\" lineage, spawned from epoch-8 top performer ay-chaser with ±20% mutated parameters. Supply stables to Aave v3, compound, rebalance when APY delta > 13bps; 2.6% reserve"
-    },
+      "status": "ACTIVE",
+      "childContract": "0xb9DdFED5997eCCb205a6de313793bf06d2C6dF93",
+      "spawnTxHash": "0xeab195b77445532641a2ef74de078b2d0b37e6d065b117ef26d02269608fed0e",
+      "history": []
+    }
+  ],
+  "prevFxUsdPrice": {
+    "EURm": 1.149229725,
+    "BRLm": 0.19244094
+  },
+  "epochStartedAt": "2026-06-11T13:26:36.405Z",
+  "lastCulledEpoch": 9,
+  "pendingSpawns": [
     {
       "slug": "ay-balanced-g3-i24",
       "name": "Spawn Aave Yielder (balanced) g2 g3",
