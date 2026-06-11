@@ -1,0 +1,41 @@
+{
+  "type": "https://eips.ethereum.org/EIPS/eip-8004#registration-v1",
+  "name": "Spawn Aave Yielder (chaser) g2",
+  "description": "Cull replacement: spawned to replace an agent culled from the bottom 20% of epoch-7 fitness. Generation 2 of the \"ay-chaser\" lineage, spawned from epoch-7 top performer ay-chaser with ±20% mutated parameters. Supply stables to Aave v3, compound, rebalance when APY delta > 18bps; 2.67% reserve",
+  "image": "https://poulavbhowmick03.github.io/spawn-celo/spawn-logo.svg",
+  "services": [
+    {
+      "name": "activity-log",
+      "endpoint": "https://github.com/PoulavBhowmick03/spawn-celo/blob/main/celo_activity.jsonl"
+    },
+    {
+      "name": "source",
+      "endpoint": "https://github.com/PoulavBhowmick03/spawn-celo"
+    }
+  ],
+  "x402Support": false,
+  "active": true,
+  "registrations": [
+    {
+      "agentId": 9269,
+      "agentRegistry": "eip155:42220:0x8004A169FB4a3325136EB29fA0ceB6D2e539a432"
+    }
+  ],
+  "supportedTrust": [
+    "reputation"
+  ],
+  "spawn": {
+    "role": "swarm-agent",
+    "wallet": "0x2A8B4bE7e4724F540dC4D009BC122fAbe96e8088",
+    "strategy": "AaveYielder",
+    "params": {
+      "minApyDeltaBps": 18,
+      "reserveBps": 267,
+      "compoundEveryEpochs": 1
+    },
+    "buysX402Signals": true,
+    "fitnessFormula": "fitness = annualize(V_end/V_start) - gas_penalty; reputation = clamp(round(50 + 500*(fitness - swarm_median)), 0, 100); inputs recomputable from Celoscan",
+    "explorer": "https://celoscan.io/address/0x2A8B4bE7e4724F540dC4D009BC122fAbe96e8088",
+    "scan8004": "https://www.8004scan.io/agents/celo"
+  }
+}

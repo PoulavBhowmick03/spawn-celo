@@ -1,6 +1,6 @@
 {
-  "epochNumber": 6,
-  "nextHdIndex": 15,
+  "epochNumber": 8,
+  "nextHdIndex": 21,
   "agents": [
     {
       "slug": "mfx-cautious",
@@ -55,6 +55,24 @@
           "gasUsd": 0,
           "netFlowUsd": 0,
           "epochHours": 4.089788333333333
+        },
+        {
+          "epoch": 6,
+          "fitness": 0,
+          "score": 50,
+          "vEndUsd": 4.999999789098257,
+          "gasUsd": 0,
+          "netFlowUsd": 0,
+          "epochHours": 1.5011427777777777
+        },
+        {
+          "epoch": 7,
+          "fitness": 0,
+          "score": 50,
+          "vEndUsd": 4.999999789098257,
+          "gasUsd": 0,
+          "netFlowUsd": 0,
+          "epochHours": 1.5117961111111111
         }
       ],
       "childContract": "0xC52393e7a3AB59A5D4D60a80275094A2343a536B",
@@ -116,6 +134,24 @@
           "gasUsd": 0,
           "netFlowUsd": 0,
           "epochHours": 4.089788333333333
+        },
+        {
+          "epoch": 6,
+          "fitness": 0,
+          "score": 50,
+          "vEndUsd": 4.999999789098257,
+          "gasUsd": 0,
+          "netFlowUsd": 0,
+          "epochHours": 1.5011427777777777
+        },
+        {
+          "epoch": 7,
+          "fitness": 0,
+          "score": 50,
+          "vEndUsd": 4.999999789098257,
+          "gasUsd": 0,
+          "netFlowUsd": 0,
+          "epochHours": 1.5117961111111111
         }
       ],
       "childContract": "0xdEB174d15AAda924B3B024e9E4F3F4ca0045aF69",
@@ -260,11 +296,29 @@
           "gasUsd": 0.008167524753953284,
           "netFlowUsd": 0,
           "epochHours": 4.089788333333333
+        },
+        {
+          "epoch": 6,
+          "fitness": 0.02337971561972187,
+          "score": 62,
+          "vEndUsd": 4.99200045621346,
+          "gasUsd": 0,
+          "netFlowUsd": 0,
+          "epochHours": 1.5011427777777777
+        },
+        {
+          "epoch": 7,
+          "fitness": 0.02437560893130336,
+          "score": 62,
+          "vEndUsd": 4.99202245621346,
+          "gasUsd": 0,
+          "netFlowUsd": 0,
+          "epochHours": 1.5117961111111111
         }
       ],
       "childContract": "0x8e5CBAdF9A98eDbD80aA2000b227BBc139aB4236",
       "spawnTxHash": "0x5df38b0183b6378117222cd186f99e4f925b88222a3c0a573a9cd0d8c3054871",
-      "vStartUsd": 4.99198045621346,
+      "vStartUsd": 4.9920234562134596,
       "epochGasUsd": 0,
       "epochFlowUsd": 0
     },
@@ -321,11 +375,29 @@
           "gasUsd": 0.008181987409705426,
           "netFlowUsd": 0.2,
           "epochHours": 4.089788333333333
+        },
+        {
+          "epoch": 6,
+          "fitness": -2.2231877153919304,
+          "score": 0,
+          "vEndUsd": 5.189993003074001,
+          "gasUsd": 0,
+          "netFlowUsd": 0,
+          "epochHours": 1.5011427777777777
+        },
+        {
+          "epoch": 7,
+          "fitness": 0.02567863074926053,
+          "score": 63,
+          "vEndUsd": 5.190017003074001,
+          "gasUsd": 0,
+          "netFlowUsd": 0,
+          "epochHours": 1.5117961111111111
         }
       ],
       "childContract": "0xa89Ae17C537728a1c07d878a16Ea2C2879393789",
       "spawnTxHash": "0x1b006cf8cdad3a968fd0f2fabc8b6d5ffeb7f2b4e4803634c111adb48ee12b04",
-      "vStartUsd": 5.191971003074001,
+      "vStartUsd": 5.190018003074001,
       "epochGasUsd": 0,
       "epochFlowUsd": 0
     },
@@ -507,6 +579,24 @@
           "gasUsd": 0,
           "netFlowUsd": 0,
           "epochHours": 4.089788333333333
+        },
+        {
+          "epoch": 6,
+          "fitness": 0,
+          "score": 50,
+          "vEndUsd": 4.99999961934825,
+          "gasUsd": 0,
+          "netFlowUsd": 0,
+          "epochHours": 1.5011427777777777
+        },
+        {
+          "epoch": 7,
+          "fitness": 0,
+          "score": 50,
+          "vEndUsd": 4.99999961934825,
+          "gasUsd": 0,
+          "netFlowUsd": 0,
+          "epochHours": 1.5117961111111111
         }
       ],
       "vStartUsd": 4.99999961934825,
@@ -547,6 +637,24 @@
           "gasUsd": 0,
           "netFlowUsd": 0,
           "epochHours": 4.089788333333333
+        },
+        {
+          "epoch": 6,
+          "fitness": 0,
+          "score": 50,
+          "vEndUsd": 4.99999975955925,
+          "gasUsd": 0,
+          "netFlowUsd": 0,
+          "epochHours": 1.5011427777777777
+        },
+        {
+          "epoch": 7,
+          "fitness": 0,
+          "score": 50,
+          "vEndUsd": 4.99999975955925,
+          "gasUsd": 0,
+          "netFlowUsd": 0,
+          "epochHours": 1.5117961111111111
         }
       ],
       "vStartUsd": 4.99999975955925,
@@ -568,7 +676,7 @@
       "useSignal": true,
       "generation": 2,
       "lineageKey": "mfx-aggressive",
-      "status": "ACTIVE",
+      "status": "RETIRED",
       "childContract": "0x8FEC40a5F7AABf9Dd23fde62cb60bCdDC4f880C3",
       "spawnTxHash": "0x6879878b25f2abe4f5d6b96ff922f32f7eeca5bbd494aba602a288a59d98c2f3",
       "history": [
@@ -587,11 +695,21 @@
           "gasUsd": 0,
           "netFlowUsd": 0.2,
           "epochHours": 4.089788333333333
+        },
+        {
+          "epoch": 6,
+          "fitness": -2.2444440767006895,
+          "score": 0,
+          "vEndUsd": 5.19799961934825,
+          "gasUsd": 0,
+          "netFlowUsd": 0,
+          "epochHours": 1.5011427777777777
         }
       ],
       "vStartUsd": 5.19999961934825,
       "epochGasUsd": 0,
-      "epochFlowUsd": 0
+      "epochFlowUsd": 0,
+      "recallTxHash": "0xbdb97d7d153a6cd8f784c793c1ec9a9e6f53a6c1f7896e22f335040417a33a46"
     },
     {
       "slug": "ay-balanced-g2-i13",
@@ -620,9 +738,27 @@
           "gasUsd": 0.00858371254680915,
           "netFlowUsd": 0,
           "epochHours": 4.089788333333333
+        },
+        {
+          "epoch": 6,
+          "fitness": 0.02340206753036029,
+          "score": 62,
+          "vEndUsd": 4.987232488625392,
+          "gasUsd": 0,
+          "netFlowUsd": 0,
+          "epochHours": 1.5011427777777777
+        },
+        {
+          "epoch": 7,
+          "fitness": 0.023237059863001383,
+          "score": 62,
+          "vEndUsd": 4.9872534886253925,
+          "gasUsd": 0,
+          "netFlowUsd": 0,
+          "epochHours": 1.5117961111111111
         }
       ],
-      "vStartUsd": 4.987212488625392,
+      "vStartUsd": 4.987254488625393,
       "epochGasUsd": 0,
       "epochFlowUsd": 0
     },
@@ -644,17 +780,187 @@
       "status": "ACTIVE",
       "childContract": "0x8b2DA57e64B413907d94c6F577671956e21586d9",
       "spawnTxHash": "0x6470d1f4f928f94c8fe6a14d69c22ecfe0523c02dbafb9efb77f77704487b4ae",
-      "history": [],
+      "history": [
+        {
+          "epoch": 6,
+          "fitness": 0,
+          "score": 50,
+          "vEndUsd": 4.996942346882545,
+          "gasUsd": 0,
+          "netFlowUsd": 0,
+          "epochHours": 1.5011427777777777
+        },
+        {
+          "epoch": 7,
+          "fitness": 0,
+          "score": 50,
+          "vEndUsd": 4.996942346882545,
+          "gasUsd": 0,
+          "netFlowUsd": 0,
+          "epochHours": 1.5117961111111111
+        }
+      ],
       "vStartUsd": 4.996942346882545,
       "epochGasUsd": 0,
       "epochFlowUsd": 0
+    },
+    {
+      "slug": "mca-tight",
+      "name": "Mento Carry Arb (tight)",
+      "hdIndex": 15,
+      "address": "0x4E55436826bac17087C4ABF6a199D38d54C85021",
+      "erc8004AgentId": "9264",
+      "strategy": "MentoCarryArb",
+      "params": {
+        "minEdgeBps": 10,
+        "maxPositionPct": 80,
+        "reserveBps": 500
+      },
+      "useSignal": false,
+      "generation": 1,
+      "lineageKey": "mca-tight",
+      "status": "RETIRED",
+      "childContract": "0xb6586cAf3ca9917EeaB935A301656F2271Ac9F85",
+      "spawnTxHash": "0xce77275efda708cd4ef317db4cda393434024aab7dcd98ac3f68f4c0e048ef0e",
+      "history": [
+        {
+          "epoch": 7,
+          "fitness": -1.7097117127272958,
+          "score": 0,
+          "vEndUsd": 3.99579081728935,
+          "gasUsd": 0,
+          "netFlowUsd": 0,
+          "epochHours": 1.5117961111111111
+        }
+      ],
+      "vStartUsd": 3.9969701678326,
+      "epochGasUsd": 0,
+      "epochFlowUsd": 0,
+      "recallTxHash": "0xa41c67e802ca0547ad6b2ab0a1110addc0ca08b1efd2935e5bfcbc1dc939227a"
+    },
+    {
+      "slug": "ay-balanced-g3-i16",
+      "name": "Spawn Aave Yielder (balanced) g2 g3",
+      "hdIndex": 16,
+      "address": "0x213b94756B0E02e23F73e678b47e94d96AB7EDCc",
+      "erc8004AgentId": "9265",
+      "strategy": "AaveYielder",
+      "params": {
+        "minApyDeltaBps": 32,
+        "reserveBps": 515,
+        "compoundEveryEpochs": 1
+      },
+      "useSignal": false,
+      "generation": 3,
+      "lineageKey": "ay-balanced",
+      "status": "RETIRED",
+      "childContract": "0xbfAFa8295bd75F4993FEf187a83d9C1ed2A2c461",
+      "spawnTxHash": "0xa40fccd9190b0f20abd11151542f1c8f84679c6e8c3a0eaba9b743e35f267277",
+      "history": [
+        {
+          "epoch": 7,
+          "fitness": -26.334012689492234,
+          "score": 0,
+          "vEndUsd": 3.9873278375761174,
+          "gasUsd": 0.00852403878057375,
+          "netFlowUsd": 0,
+          "epochHours": 1.5117961111111111
+        }
+      ],
+      "vStartUsd": 3.9969688624123,
+      "epochGasUsd": 0.00852403878057375,
+      "epochFlowUsd": 0,
+      "recallTxHash": "0xd75afcdd69e8630423c3de56c97cf2c285d96f7b69281be0877f547266d1b2d7"
+    },
+    {
+      "slug": "ay-balanced-g3-i17",
+      "name": "Spawn Aave Yielder (balanced) g2 g3",
+      "hdIndex": 17,
+      "address": "0x2656A48267bcB6324DDEa387ED67C08545d22e35",
+      "erc8004AgentId": "9266",
+      "strategy": "AaveYielder",
+      "params": {
+        "minApyDeltaBps": 34,
+        "reserveBps": 513,
+        "compoundEveryEpochs": 1
+      },
+      "useSignal": false,
+      "generation": 3,
+      "lineageKey": "ay-balanced",
+      "status": "ACTIVE",
+      "childContract": "0xA0552136173360d2a91A2cEe5D6A5867a775Bb73",
+      "spawnTxHash": "0xc224a31159903b28950f558af8690067b591a8d8d224fcc2c30ce6415b6b8f5e",
+      "history": [],
+      "vStartUsd": 3.996917259948194,
+      "epochGasUsd": 0.0054814068414,
+      "epochFlowUsd": 0
+    },
+    {
+      "slug": "ay-chaser-g2-i18",
+      "name": "Spawn Aave Yielder (chaser) g2",
+      "hdIndex": 18,
+      "address": "0x7Ea191cb96A7906372E17144239fCc559eb126fF",
+      "erc8004AgentId": "9267",
+      "strategy": "AaveYielder",
+      "params": {
+        "minApyDeltaBps": 17,
+        "reserveBps": 206,
+        "compoundEveryEpochs": 1
+      },
+      "useSignal": true,
+      "generation": 2,
+      "lineageKey": "ay-chaser",
+      "status": "ACTIVE",
+      "childContract": "0x614d68bDFCb5751FdD586ba2620fb873d6eB5437",
+      "spawnTxHash": "0x69693f813d7bb4f9981ba260fa557be7e020c42962e74099b95a26031b0e3f5f",
+      "history": [],
+      "vStartUsd": 2.83707955498018,
+      "epochGasUsd": 0.0031580035785,
+      "epochFlowUsd": 0
+    },
+    {
+      "slug": "ay-chaser-g2-i19",
+      "name": "Spawn Aave Yielder (chaser) g2",
+      "hdIndex": 19,
+      "address": "0x2A8B4bE7e4724F540dC4D009BC122fAbe96e8088",
+      "erc8004AgentId": "9269",
+      "strategy": "AaveYielder",
+      "params": {
+        "minApyDeltaBps": 18,
+        "reserveBps": 267,
+        "compoundEveryEpochs": 1
+      },
+      "useSignal": true,
+      "generation": 2,
+      "lineageKey": "ay-chaser",
+      "status": "ACTIVE",
+      "childContract": "0xb659367aB60015BC9d7788EC3D1866fe62a2da64",
+      "spawnTxHash": "0xd54ccaaf362b00f781fdfa2d89098d4d9d49a4b9a0f86d2c99c78a77e0c98333",
+      "history": []
     }
   ],
   "prevFxUsdPrice": {
-    "EURm": 1.1508905625,
-    "BRLm": 0.19232067189
+    "EURm": 1.1508805875,
+    "BRLm": 0.192266465
   },
-  "epochStartedAt": "2026-06-11T08:35:25.780Z",
-  "lastCulledEpoch": 5,
-  "pendingSpawns": []
+  "epochStartedAt": "2026-06-11T11:47:38.068Z",
+  "lastCulledEpoch": 7,
+  "pendingSpawns": [
+    {
+      "slug": "ay-chaser-g2-i20",
+      "name": "Spawn Aave Yielder (chaser) g2",
+      "hdIndex": 20,
+      "strategy": "AaveYielder",
+      "params": {
+        "minApyDeltaBps": 13,
+        "reserveBps": 254,
+        "compoundEveryEpochs": 1
+      },
+      "useSignal": true,
+      "generation": 2,
+      "lineageKey": "ay-chaser",
+      "fundUsd": 4,
+      "description": "Swarm-growth spawn: an extra agent funded purely from treasury margin recycled out of culled agents' returned balances (no new outside capital), growing the swarm toward its 13-agent cap. Generation 2 of the \"ay-chaser\" lineage, spawned from epoch-7 top performer ay-chaser with ±20% mutated parameters. Supply stables to Aave v3, compound, rebalance when APY delta > 13bps; 2.54% reserve"
+    }
+  ]
 }

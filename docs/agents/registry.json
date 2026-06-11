@@ -78,5 +78,30 @@
     "agentId": "9262",
     "address": "0x055662c42203a8D38644982161343D75FE940E06",
     "txHash": "0xe363a1863c71e6ef48c76e3ff292de3e9c1284a16b2630785943673243888238"
+  },
+  "mca-tight": {
+    "agentId": "9264",
+    "address": "0x4E55436826bac17087C4ABF6a199D38d54C85021",
+    "txHash": "0x65827913f277b0cb1f66825fcbe86bb40f715567a769b3b6f7f77daea9c80e6e"
+  },
+  "ay-balanced-g3-i16": {
+    "agentId": "9265",
+    "address": "0x213b94756B0E02e23F73e678b47e94d96AB7EDCc",
+    "txHash": "0x4cc77ea848d4828f957f540f1f242506b9d9abc60fa4c1da4a0db8b4b2047eaa"
+  },
+  "ay-balanced-g3-i17": {
+    "agentId": "9266",
+    "address": "0x2656A48267bcB6324DDEa387ED67C08545d22e35",
+    "txHash": "0x9fa98d69530c9245b9459c13a0375a220244173156e38506f08ed6496ff11a03"
+  },
+  "ay-chaser-g2-i18": {
+    "agentId": "9267",
+    "address": "0x7Ea191cb96A7906372E17144239fCc559eb126fF",
+    "txHash": "0xcb14af2405e2b0c0d96116a7266b7be537c9fc27fe32f49ec84b5ca720dbf9dc"
+  },
+  "ay-chaser-g2-i19": {
+    "agentId": "9269",
+    "address": "0x2A8B4bE7e4724F540dC4D009BC122fAbe96e8088",
+    "txHash": "0x31bf540a846e8821e5a12d13d8320e363c262e5644f660a9869f26eb89229568"
   }
 }
