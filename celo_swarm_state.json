@@ -1,5 +1,5 @@
 {
-  "epochNumber": 15,
+  "epochNumber": 16,
   "nextHdIndex": 36,
   "agents": [
     {
@@ -534,7 +534,7 @@
       ],
       "childContract": "0x8e5CBAdF9A98eDbD80aA2000b227BBc139aB4236",
       "spawnTxHash": "0x5df38b0183b6378117222cd186f99e4f925b88222a3c0a573a9cd0d8c3054871",
-      "vStartUsd": 4.99217245621346,
+      "vStartUsd": 4.99219445621346,
       "epochGasUsd": 0,
       "epochFlowUsd": 0
     },
@@ -1254,7 +1254,7 @@
           "epochHours": 1.5155611111111111
         }
       ],
-      "vStartUsd": 4.987401488625392,
+      "vStartUsd": 4.987423488625392,
       "epochGasUsd": 0,
       "epochFlowUsd": 0
     },
@@ -1960,7 +1960,10 @@
       "status": "ACTIVE",
       "childContract": "0xDEA6A650ffE129e75D3b6770aff5516008be68F1",
       "spawnTxHash": "0x1944297ac561d255dac45c3139341887bcab35de63a9151a80ea3ed7036aa4c6",
-      "history": []
+      "history": [],
+      "vStartUsd": 3.9968685261214194,
+      "epochGasUsd": 0.005611989067241929,
+      "epochFlowUsd": 0
     },
     {
       "slug": "ay-balanced-g4-i32",
@@ -1980,20 +1983,17 @@
       "status": "ACTIVE",
       "childContract": "0x08796Ca59a886dCAbfA7971d176049D2C32E0b78",
       "spawnTxHash": "0xc450d14c1431c3a3ebf0137b72d826e430d4424b5d8e5d96534874a0be86bb0a",
-      "history": []
-    }
-  ],
-  "prevFxUsdPrice": {
-    "EURm": 1.15536435,
-    "BRLm": 0.19484833608
-  },
-  "epochStartedAt": "2026-06-11T22:59:12.443Z",
-  "lastCulledEpoch": 15,
-  "pendingSpawns": [
+      "history": [],
+      "vStartUsd": 4.346869369599311,
+      "epochGasUsd": 0.0053573214219696,
+      "epochFlowUsd": 0
+    },
     {
       "slug": "ay-balanced-g4-i33",
       "name": "Spawn Aave Yielder (balanced) g2 g3 g4",
       "hdIndex": 33,
+      "address": "0x05D0eD0a59980EfE05bF85A2027BD4EB641a84ca",
+      "erc8004AgentId": "9285",
       "strategy": "AaveYielder",
       "params": {
         "minApyDeltaBps": 37,
@@ -2003,9 +2003,22 @@
       "useSignal": true,
       "generation": 4,
       "lineageKey": "ay-balanced",
-      "fundUsd": -0.005509314038359414,
-      "description": "Cull replacement: spawned to replace an agent culled from the bottom 20% of epoch-14 fitness. Generation 4 of the \"ay-balanced\" lineage, spawned from epoch-14 top performer ay-balanced-g3-i30 with ±20% mutated parameters. Supply stables to Aave v3, compound, rebalance when APY delta > 37bps; 6.33% reserve"
-    },
+      "status": "ACTIVE",
+      "childContract": "0x986296BdE7778B7cbDFbf64ead32Ce5040DcF01b",
+      "spawnTxHash": "0x79d78618590b0754664930abf1e531bd97088dbc9b46063644992d087e9d2e51",
+      "history": [],
+      "vStartUsd": 2.3688828495856757,
+      "epochGasUsd": 0.0053818492948371705,
+      "epochFlowUsd": 0
+    }
+  ],
+  "prevFxUsdPrice": {
+    "EURm": 1.1542720875,
+    "BRLm": 0.19487118732
+  },
+  "epochStartedAt": "2026-06-12T00:37:00.825Z",
+  "lastCulledEpoch": 15,
+  "pendingSpawns": [
     {
       "slug": "ay-balanced-g3-i34",
       "name": "Spawn Aave Yielder (balanced) g2 g3",
@@ -2019,7 +2032,7 @@
       "useSignal": false,
       "generation": 3,
       "lineageKey": "ay-balanced",
-      "fundUsd": 2.068016303481148,
+      "fundUsd": -0.00501123298952999,
       "description": "Cull replacement: spawned to replace an agent culled from the bottom 20% of epoch-15 fitness. Generation 3 of the \"ay-balanced\" lineage, spawned from epoch-15 top performer ay-balanced-g2-i13 with ±20% mutated parameters. Supply stables to Aave v3, compound, rebalance when APY delta > 35bps; 4.74% reserve"
     },
     {
@@ -2035,7 +2048,7 @@
       "useSignal": false,
       "generation": 3,
       "lineageKey": "ay-balanced",
-      "fundUsd": 2.068016303481148,
+      "fundUsd": -0.00501123298952999,
       "description": "Cull replacement: spawned to replace an agent culled from the bottom 20% of epoch-15 fitness. Generation 3 of the \"ay-balanced\" lineage, spawned from epoch-15 top performer ay-balanced-g2-i13 with ±20% mutated parameters. Supply stables to Aave v3, compound, rebalance when APY delta > 26bps; 5.55% reserve"
     }
   ]
