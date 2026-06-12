@@ -2113,19 +2113,13 @@
       "epochGasUsd": 0.0053818492948371705,
       "epochFlowUsd": 0,
       "recallTxHash": "0xad10a3faa0a097045a0fe17bb20960573e110b3fd74777d4a04b0be569b65135"
-    }
-  ],
-  "prevFxUsdPrice": {
-    "EURm": 1.1542720875,
-    "BRLm": 0.19487118732
-  },
-  "epochStartedAt": "2026-06-12T00:37:00.825Z",
-  "lastCulledEpoch": 16,
-  "pendingSpawns": [
+    },
     {
       "slug": "ay-balanced-g3-i34",
       "name": "Spawn Aave Yielder (balanced) g2 g3",
       "hdIndex": 34,
+      "address": "0x792AD5cFcf1f9b337A987a165C11464355673dfF",
+      "erc8004AgentId": "9286",
       "strategy": "AaveYielder",
       "params": {
         "minApyDeltaBps": 35,
@@ -2135,9 +2129,19 @@
       "useSignal": false,
       "generation": 3,
       "lineageKey": "ay-balanced",
-      "fundUsd": -0.00501123298952999,
-      "description": "Cull replacement: spawned to replace an agent culled from the bottom 20% of epoch-15 fitness. Generation 3 of the \"ay-balanced\" lineage, spawned from epoch-15 top performer ay-balanced-g2-i13 with ±20% mutated parameters. Supply stables to Aave v3, compound, rebalance when APY delta > 35bps; 4.74% reserve"
-    },
+      "status": "ACTIVE",
+      "childContract": "0x8e943215643a44cED13C5Fff808eC7E443b8bCdc",
+      "spawnTxHash": "0xddf9a7800df6393657344bdc75b4bfc93ff726cd34659a9b0bcfd7386d3aee5d",
+      "history": []
+    }
+  ],
+  "prevFxUsdPrice": {
+    "EURm": 1.1542720875,
+    "BRLm": 0.19487118732
+  },
+  "epochStartedAt": "2026-06-12T00:37:00.825Z",
+  "lastCulledEpoch": 16,
+  "pendingSpawns": [
     {
       "slug": "ay-balanced-g3-i35",
       "name": "Spawn Aave Yielder (balanced) g2 g3",
@@ -2151,7 +2155,7 @@
       "useSignal": false,
       "generation": 3,
       "lineageKey": "ay-balanced",
-      "fundUsd": -0.00501123298952999,
+      "fundUsd": -0.0012136696403857172,
       "description": "Cull replacement: spawned to replace an agent culled from the bottom 20% of epoch-15 fitness. Generation 3 of the \"ay-balanced\" lineage, spawned from epoch-15 top performer ay-balanced-g2-i13 with ±20% mutated parameters. Supply stables to Aave v3, compound, rebalance when APY delta > 26bps; 5.55% reserve"
     }
   ]
