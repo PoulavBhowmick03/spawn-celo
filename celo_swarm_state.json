@@ -145,6 +145,15 @@
           "gasUsd": 0,
           "netFlowUsd": 0,
           "epochHours": 1.5155611111111111
+        },
+        {
+          "epoch": 16,
+          "fitness": 0,
+          "score": 50,
+          "vEndUsd": 4.999999789098257,
+          "gasUsd": 0,
+          "netFlowUsd": 0,
+          "epochHours": 1.540971388888889
         }
       ],
       "childContract": "0xC52393e7a3AB59A5D4D60a80275094A2343a536B",
@@ -296,6 +305,15 @@
           "gasUsd": 0,
           "netFlowUsd": 0,
           "epochHours": 1.5155611111111111
+        },
+        {
+          "epoch": 16,
+          "fitness": 0,
+          "score": 50,
+          "vEndUsd": 4.999999789098257,
+          "gasUsd": 0,
+          "netFlowUsd": 0,
+          "epochHours": 1.540971388888889
         }
       ],
       "childContract": "0xdEB174d15AAda924B3B024e9E4F3F4ca0045aF69",
@@ -530,6 +548,15 @@
           "gasUsd": 0,
           "netFlowUsd": 0,
           "epochHours": 1.5155611111111111
+        },
+        {
+          "epoch": 16,
+          "fitness": 0.022774457093042533,
+          "score": 61,
+          "vEndUsd": 4.99221445621346,
+          "gasUsd": 0,
+          "netFlowUsd": 0,
+          "epochHours": 1.540971388888889
         }
       ],
       "childContract": "0x8e5CBAdF9A98eDbD80aA2000b227BBc139aB4236",
@@ -949,6 +976,15 @@
           "gasUsd": 0,
           "netFlowUsd": 0,
           "epochHours": 1.5155611111111111
+        },
+        {
+          "epoch": 16,
+          "fitness": 0,
+          "score": 50,
+          "vEndUsd": 4.99999961934825,
+          "gasUsd": 0,
+          "netFlowUsd": 0,
+          "epochHours": 1.540971388888889
         }
       ],
       "vStartUsd": 4.99999961934825,
@@ -1079,6 +1115,15 @@
           "gasUsd": 0,
           "netFlowUsd": 0,
           "epochHours": 1.5155611111111111
+        },
+        {
+          "epoch": 16,
+          "fitness": 0,
+          "score": 50,
+          "vEndUsd": 4.99999975955925,
+          "gasUsd": 0,
+          "netFlowUsd": 0,
+          "epochHours": 1.540971388888889
         }
       ],
       "vStartUsd": 4.99999975955925,
@@ -1252,6 +1297,15 @@
           "gasUsd": 0,
           "netFlowUsd": 0,
           "epochHours": 1.5155611111111111
+        },
+        {
+          "epoch": 16,
+          "fitness": 0.022796243131631984,
+          "score": 61,
+          "vEndUsd": 4.987443488625392,
+          "gasUsd": 0,
+          "netFlowUsd": 0,
+          "epochHours": 1.540971388888889
         }
       ],
       "vStartUsd": 4.987423488625392,
@@ -1366,6 +1420,15 @@
           "gasUsd": 0,
           "netFlowUsd": 0,
           "epochHours": 1.5155611111111111
+        },
+        {
+          "epoch": 16,
+          "fitness": 0,
+          "score": 50,
+          "vEndUsd": 4.996942346882545,
+          "gasUsd": 0,
+          "netFlowUsd": 0,
+          "epochHours": 1.540971388888889
         }
       ],
       "vStartUsd": 4.996942346882545,
@@ -1868,6 +1931,15 @@
           "gasUsd": 0,
           "netFlowUsd": 0,
           "epochHours": 1.5155611111111111
+        },
+        {
+          "epoch": 16,
+          "fitness": 27.565867106670215,
+          "score": 100,
+          "vEndUsd": 0.256417330079447,
+          "gasUsd": 0,
+          "netFlowUsd": 0,
+          "epochHours": 1.540971388888889
         }
       ],
       "vStartUsd": 0.25517993424860436,
@@ -1960,9 +2032,19 @@
       "status": "ACTIVE",
       "childContract": "0xDEA6A650ffE129e75D3b6770aff5516008be68F1",
       "spawnTxHash": "0x1944297ac561d255dac45c3139341887bcab35de63a9151a80ea3ed7036aa4c6",
-      "history": [],
+      "history": [
+        {
+          "epoch": 16,
+          "fitness": -25.90794566060821,
+          "score": 0,
+          "vEndUsd": 3.9874593884335097,
+          "gasUsd": 0.00880645511321785,
+          "netFlowUsd": 0,
+          "epochHours": 1.540971388888889
+        }
+      ],
       "vStartUsd": 3.9968685261214194,
-      "epochGasUsd": 0.005611989067241929,
+      "epochGasUsd": 0.00880645511321785,
       "epochFlowUsd": 0
     },
     {
@@ -1983,9 +2065,19 @@
       "status": "ACTIVE",
       "childContract": "0x08796Ca59a886dCAbfA7971d176049D2C32E0b78",
       "spawnTxHash": "0xc450d14c1431c3a3ebf0137b72d826e430d4424b5d8e5d96534874a0be86bb0a",
-      "history": [],
+      "history": [
+        {
+          "epoch": 16,
+          "fitness": -28.332671536725655,
+          "score": 0,
+          "vEndUsd": 4.333737824571144,
+          "gasUsd": 0.00853325002869435,
+          "netFlowUsd": 0,
+          "epochHours": 1.540971388888889
+        }
+      ],
       "vStartUsd": 4.346869369599311,
-      "epochGasUsd": 0.0053573214219696,
+      "epochGasUsd": 0.00853325002869435,
       "epochFlowUsd": 0
     },
     {
@@ -2003,13 +2095,24 @@
       "useSignal": true,
       "generation": 4,
       "lineageKey": "ay-balanced",
-      "status": "ACTIVE",
+      "status": "RETIRED",
       "childContract": "0x986296BdE7778B7cbDFbf64ead32Ce5040DcF01b",
       "spawnTxHash": "0x79d78618590b0754664930abf1e531bd97088dbc9b46063644992d087e9d2e51",
-      "history": [],
+      "history": [
+        {
+          "epoch": 16,
+          "fitness": -45.343256161888114,
+          "score": 0,
+          "vEndUsd": 2.355369704938208,
+          "gasUsd": 0.0053818492948371705,
+          "netFlowUsd": 0,
+          "epochHours": 1.540971388888889
+        }
+      ],
       "vStartUsd": 2.3688828495856757,
       "epochGasUsd": 0.0053818492948371705,
-      "epochFlowUsd": 0
+      "epochFlowUsd": 0,
+      "recallTxHash": "0xad10a3faa0a097045a0fe17bb20960573e110b3fd74777d4a04b0be569b65135"
     }
   ],
   "prevFxUsdPrice": {
@@ -2017,7 +2120,7 @@
     "BRLm": 0.19487118732
   },
   "epochStartedAt": "2026-06-12T00:37:00.825Z",
-  "lastCulledEpoch": 15,
+  "lastCulledEpoch": 16,
   "pendingSpawns": [
     {
       "slug": "ay-balanced-g3-i34",

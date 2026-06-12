@@ -1,0 +1,36 @@
+{
+  "type": "https://eips.ethereum.org/EIPS/eip-8004#registration-v1",
+  "name": "Spawn Aave Yielder (balanced) g2 g3",
+  "description": "Cull replacement: spawned to replace an agent culled from the bottom 20% of epoch-15 fitness. Generation 3 of the \"ay-balanced\" lineage, spawned from epoch-15 top performer ay-balanced-g2-i13 with ±20% mutated parameters. Supply stables to Aave v3, compound, rebalance when APY delta > 35bps; 4.74% reserve",
+  "image": "https://poulavbhowmick03.github.io/spawn-celo/spawn-logo.svg",
+  "services": [
+    {
+      "name": "activity-log",
+      "endpoint": "https://github.com/PoulavBhowmick03/spawn-celo/blob/main/celo_activity.jsonl"
+    },
+    {
+      "name": "source",
+      "endpoint": "https://github.com/PoulavBhowmick03/spawn-celo"
+    }
+  ],
+  "x402Support": false,
+  "active": true,
+  "registrations": [],
+  "supportedTrust": [
+    "reputation"
+  ],
+  "spawn": {
+    "role": "swarm-agent",
+    "wallet": "0x792AD5cFcf1f9b337A987a165C11464355673dfF",
+    "strategy": "AaveYielder",
+    "params": {
+      "minApyDeltaBps": 35,
+      "reserveBps": 474,
+      "compoundEveryEpochs": 1
+    },
+    "buysX402Signals": false,
+    "fitnessFormula": "fitness = annualize(V_end/V_start) - gas_penalty; reputation = clamp(round(50 + 500*(fitness - swarm_median)), 0, 100); inputs recomputable from Celoscan",
+    "explorer": "https://celoscan.io/address/0x792AD5cFcf1f9b337A987a165C11464355673dfF",
+    "scan8004": "https://www.8004scan.io/agents/celo"
+  }
+}
