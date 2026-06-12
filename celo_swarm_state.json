@@ -712,6 +712,15 @@
           "gasUsd": 0,
           "netFlowUsd": 0,
           "epochHours": 1.5205669444444445
+        },
+        {
+          "epoch": 28,
+          "fitness": 0.02423675798006628,
+          "score": 51,
+          "vEndUsd": 4.99247445621346,
+          "gasUsd": 0,
+          "netFlowUsd": 0,
+          "epochHours": 1.5203194444444443
         }
       ],
       "childContract": "0x8e5CBAdF9A98eDbD80aA2000b227BBc139aB4236",
@@ -1460,6 +1469,15 @@
           "gasUsd": 0,
           "netFlowUsd": 0,
           "epochHours": 1.5205669444444445
+        },
+        {
+          "epoch": 28,
+          "fitness": 0,
+          "score": 38,
+          "vEndUsd": 4.99999975955925,
+          "gasUsd": 0,
+          "netFlowUsd": 0,
+          "epochHours": 1.5203194444444443
         }
       ],
       "vStartUsd": 4.99999975955925,
@@ -1741,6 +1759,15 @@
           "gasUsd": 0,
           "netFlowUsd": 0,
           "epochHours": 1.5205669444444445
+        },
+        {
+          "epoch": 28,
+          "fitness": 0.02310471559684634,
+          "score": 50,
+          "vEndUsd": 4.987700488625392,
+          "gasUsd": 0,
+          "netFlowUsd": 0,
+          "epochHours": 1.5203194444444443
         }
       ],
       "vStartUsd": 4.987680488625393,
@@ -1963,6 +1990,15 @@
           "gasUsd": 0,
           "netFlowUsd": 0,
           "epochHours": 1.5205669444444445
+        },
+        {
+          "epoch": 28,
+          "fitness": 0,
+          "score": 38,
+          "vEndUsd": 4.996942346882545,
+          "gasUsd": 0,
+          "netFlowUsd": 0,
+          "epochHours": 1.5203194444444443
         }
       ],
       "vStartUsd": 4.996942346882545,
@@ -2573,6 +2609,15 @@
           "gasUsd": 0,
           "netFlowUsd": 0,
           "epochHours": 1.5205669444444445
+        },
+        {
+          "epoch": 28,
+          "fitness": 0.9788453499626427,
+          "score": 100,
+          "vEndUsd": 3.99330912122415,
+          "gasUsd": 0,
+          "netFlowUsd": 0,
+          "epochHours": 1.5203194444444443
         }
       ],
       "vStartUsd": 3.992630849076145,
@@ -2773,6 +2818,15 @@
           "gasUsd": 0,
           "netFlowUsd": 0,
           "epochHours": 1.5205669444444445
+        },
+        {
+          "epoch": 28,
+          "fitness": 0.023119177612808673,
+          "score": 50,
+          "vEndUsd": 3.98766438843351,
+          "gasUsd": 0,
+          "netFlowUsd": 0,
+          "epochHours": 1.5203194444444443
         }
       ],
       "vStartUsd": 3.98764838843351,
@@ -3618,7 +3672,7 @@
       "spawnTxHash": "0x64698f9dd7574bcbead5a1b686db084688a72134003636ef51762a38e8cf9282",
       "history": [],
       "vStartUsd": 4.196916703384817,
-      "epochGasUsd": 0.0052763210256852,
+      "epochGasUsd": 0.00843295905136845,
       "epochFlowUsd": 0
     }
   ],
