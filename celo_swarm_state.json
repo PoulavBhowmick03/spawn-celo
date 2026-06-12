@@ -2643,19 +2643,13 @@
       "vStartUsd": 3.500515757127347,
       "epochGasUsd": 0.00836381962092105,
       "epochFlowUsd": 0
-    }
-  ],
-  "prevFxUsdPrice": {
-    "EURm": 1.154117475,
-    "BRLm": 0.19548635626
-  },
-  "epochStartedAt": "2026-06-12T07:05:54.862Z",
-  "lastCulledEpoch": 20,
-  "pendingSpawns": [
+    },
     {
       "slug": "ay-balanced-g4-i40",
       "name": "Spawn Aave Yielder (balanced) g2 g3 g4",
       "hdIndex": 40,
+      "address": "0xcB61850969172AB40839E2e1326E84927cAC9352",
+      "erc8004AgentId": "9292",
       "strategy": "AaveYielder",
       "params": {
         "minApyDeltaBps": 38,
@@ -2665,9 +2659,19 @@
       "useSignal": false,
       "generation": 4,
       "lineageKey": "ay-balanced",
-      "fundUsd": -0.005860637852971862,
-      "description": "Swarm-growth spawn: an extra agent funded purely from treasury margin recycled out of culled agents' returned balances (no new outside capital), growing the swarm toward its 13-agent cap. Generation 4 of the \"ay-balanced\" lineage, spawned from epoch-18 top performer ay-balanced-g3-i30 with ±20% mutated parameters. Supply stables to Aave v3, compound, rebalance when APY delta > 38bps; 5.64% reserve"
-    },
+      "status": "ACTIVE",
+      "childContract": "0xA2aFbF50779B5Ba1214403Fd1e528A14867d7603",
+      "spawnTxHash": "0x815924f1e2a3934570ffd34c206d69f918d4e9e29d82672d12773f2aa26f8aa0",
+      "history": []
+    }
+  ],
+  "prevFxUsdPrice": {
+    "EURm": 1.154117475,
+    "BRLm": 0.19548635626
+  },
+  "epochStartedAt": "2026-06-12T07:05:54.862Z",
+  "lastCulledEpoch": 20,
+  "pendingSpawns": [
     {
       "slug": "ay-balanced-g4-i41",
       "name": "Spawn Aave Yielder (balanced) g2 g3 g4",
