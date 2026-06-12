@@ -119,3 +119,26 @@ export async function fetchEpochReports(throughEpoch: number): Promise<EpochRepo
   }
   return reports.reverse(); // newest first
 }
+
+export type EpochVerification = {
+  epoch: number;
+  verifiedAt: string;
+  verified: number;
+  total: number;
+  method: string;
+};
+
+/** Latest auto-published post-settle verification: the orchestrator
+ *  recomputes every score it just posted and checks it against the actual
+ *  onchain giveFeedback calldata, publishing the result each epoch. */
+export async function fetchLatestVerification(throughEpoch: number): Promise<EpochVerification | null> {
+  for (let i = throughEpoch; i >= Math.max(1, throughEpoch - 4); i--) {
+    try {
+      const res = await fetch(`${RAW_BASE}/docs/epochs/epoch-${i}-verification.json`, REVALIDATE);
+      if (res.ok) return (await res.json()) as EpochVerification;
+    } catch {
+      /* not published for this epoch */
+    }
+  }
+  return null;
+}

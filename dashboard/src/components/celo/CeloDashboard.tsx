@@ -1,6 +1,6 @@
 "use client";
 
-import type { ActivityEntry, EpochReport, SwarmState } from "@/lib/celo-data";
+import type { ActivityEntry, EpochReport, EpochVerification, SwarmState } from "@/lib/celo-data";
 import { CONTRACTS, PAGES_BASE, REPO_URL, SCAN_8004, explorerAddress } from "@/lib/celo";
 import { useSwarmLive } from "@/lib/celo-live";
 import { OrbitalHero } from "./OrbitalHero";
@@ -14,6 +14,7 @@ export function CeloDashboard(props: {
   initialState: SwarmState | null;
   initialActivity: ActivityEntry[];
   initialReports: EpochReport[];
+  verification?: EpochVerification | null;
 }) {
   const { state, activity, reports } = useSwarmLive({
     state: props.initialState,
@@ -114,7 +115,7 @@ export function CeloDashboard(props: {
             from Celoscan data and compare it with what the orchestrator wrote to the Reputation
             Registry.
           </p>
-          <Recompute />
+          <Recompute verification={props.verification ?? null} />
         </section>
       </main>
     </div>

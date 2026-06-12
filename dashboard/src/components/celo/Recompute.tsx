@@ -22,9 +22,27 @@ function CopyButton({ value }: { value: string }) {
   );
 }
 
-export function Recompute() {
+export function Recompute({ verification }: { verification?: import("@/lib/celo-data").EpochVerification | null }) {
   return (
     <>
+      {verification && (
+        <div className="sp-verify-badge" style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14, fontFamily: '"JetBrains Mono", monospace', fontSize: 13 }}>
+          <span style={{ color: verification.verified === verification.total ? "#22D3A1" : "#FF5050", fontWeight: 600 }}>
+            {verification.verified === verification.total ? "✓" : "✗"} epoch {verification.epoch}: {verification.verified}/{verification.total} scores recomputed &amp; matched onchain calldata
+          </span>
+          <span style={{ color: "#8892A4" }}>
+            — self-verified by the orchestrator after settling, every epoch.{" "}
+            <a
+              href={`https://github.com/PoulavBhowmick03/spawn-celo/blob/main/docs/epochs/epoch-${verification.epoch}-verification.json`}
+              target="_blank"
+              rel="noreferrer"
+              style={{ color: "#4D9EFF" }}
+            >
+              artifact ↗
+            </a>
+          </span>
+        </div>
+      )}
       <div className="sp-verify">
         <pre className="sp-formula">
           <span className="fv">fitness</span>(agent, epoch)   = ((<span className="fv">V_end</span> − <span className="fv">net_flow</span>) / <span className="fv">V_start</span> − 1) × (8760 / <span className="fv">epoch_hours</span>) − <span className="fv">gas_penalty</span>{"\n"}
