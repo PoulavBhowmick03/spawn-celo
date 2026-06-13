@@ -1887,6 +1887,15 @@
           "gasUsd": 0,
           "netFlowUsd": 0,
           "epochHours": 1.5232072222222222
+        },
+        {
+          "epoch": 37,
+          "fitness": 0.02301339443167177,
+          "score": 50,
+          "vEndUsd": 4.987891488625392,
+          "gasUsd": 0,
+          "netFlowUsd": 0,
+          "epochHours": 1.5262938888888888
         }
       ],
       "vStartUsd": 4.987871488625393,
@@ -2828,6 +2837,15 @@
           "gasUsd": 0,
           "netFlowUsd": 0,
           "epochHours": 1.5232072222222222
+        },
+        {
+          "epoch": 37,
+          "fitness": 0.8944961010878815,
+          "score": 100,
+          "vEndUsd": 3.9953305138202566,
+          "gasUsd": 0,
+          "netFlowUsd": 0,
+          "epochHours": 1.5262938888888888
         }
       ],
       "vStartUsd": 3.9947079304116766,
@@ -3109,6 +3127,15 @@
           "gasUsd": 0,
           "netFlowUsd": 0,
           "epochHours": 1.5232072222222222
+        },
+        {
+          "epoch": 37,
+          "fitness": 0.023027797578766898,
+          "score": 50,
+          "vEndUsd": 3.98781738843351,
+          "gasUsd": 0,
+          "netFlowUsd": 0,
+          "epochHours": 1.5262938888888888
         }
       ],
       "vStartUsd": 3.98780138843351,
@@ -3789,6 +3816,15 @@
           "gasUsd": 0,
           "netFlowUsd": 0,
           "epochHours": 1.5232072222222222
+        },
+        {
+          "epoch": 37,
+          "fitness": 0.023028711950146812,
+          "score": 50,
+          "vEndUsd": 3.9876590498017874,
+          "gasUsd": 0,
+          "netFlowUsd": 0,
+          "epochHours": 1.5262938888888888
         }
       ],
       "vStartUsd": 3.987643049801788,
@@ -3946,6 +3982,15 @@
           "gasUsd": 0,
           "netFlowUsd": 0,
           "epochHours": 1.5232072222222222
+        },
+        {
+          "epoch": 37,
+          "fitness": 0.02303069835544912,
+          "score": 50,
+          "vEndUsd": 3.9873151145894243,
+          "gasUsd": 0,
+          "netFlowUsd": 0,
+          "epochHours": 1.5262938888888888
         }
       ],
       "vStartUsd": 3.9872991145894243,
@@ -4069,6 +4114,15 @@
           "gasUsd": 0,
           "netFlowUsd": 0,
           "epochHours": 1.5232072222222222
+        },
+        {
+          "epoch": 37,
+          "fitness": 0.02303052222046148,
+          "score": 50,
+          "vEndUsd": 3.987345609087492,
+          "gasUsd": 0,
+          "netFlowUsd": 0,
+          "epochHours": 1.5262938888888888
         }
       ],
       "vStartUsd": 3.9873296090874915,
@@ -4335,6 +4389,15 @@
           "gasUsd": 0,
           "netFlowUsd": 0,
           "epochHours": 1.5232072222222222
+        },
+        {
+          "epoch": 37,
+          "fitness": 0.02447106636934007,
+          "score": 51,
+          "vEndUsd": 3.9871614253451355,
+          "gasUsd": 0,
+          "netFlowUsd": 0,
+          "epochHours": 1.5262938888888888
         }
       ],
       "vStartUsd": 3.9871444253451354,
@@ -4886,7 +4949,7 @@
       "spawnTxHash": "0x4fa5877a823b5413eb8993f4ccb627b689e35a5f2579e8a5a4acf0e834b38faa",
       "history": [],
       "vStartUsd": 4.3468723778853,
-      "epochGasUsd": 0.0053521734635999995,
+      "epochGasUsd": 0.00856962882822825,
       "epochFlowUsd": 0
     },
     {
@@ -4909,8 +4972,8 @@
       "spawnTxHash": "0x740b44bcaa49f79c847b775c2dc26134a732f182a58358b35de1f9d20759345e",
       "history": [],
       "vStartUsd": 3.8324633778853,
-      "epochGasUsd": 0.0055651449087,
-      "epochFlowUsd": 0
+      "epochGasUsd": 0.00878260027332825,
+      "epochFlowUsd": 0.17737781263742125
     }
   ],
   "prevFxUsdPrice": {
@@ -4986,7 +5049,7 @@
     }
   ],
   "lastGrowthEpoch": 18,
-  "patronScanFromBlock": "69445853",
+  "patronScanFromBlock": "69451663",
   "processedDeposits": [
     "0xbb31495bcccc116159f31609199df7d6bd096f10db2c4c5fa55616473957ee98"
   ],
