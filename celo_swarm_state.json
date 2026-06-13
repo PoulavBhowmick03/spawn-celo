@@ -1860,6 +1860,15 @@
           "gasUsd": 0,
           "netFlowUsd": 0,
           "epochHours": 1.5159852777777778
+        },
+        {
+          "epoch": 34,
+          "fitness": 0.02399675767109018,
+          "score": 50,
+          "vEndUsd": 4.987828488625392,
+          "gasUsd": 0,
+          "netFlowUsd": 0,
+          "epochHours": 1.536955
         }
       ],
       "vStartUsd": 4.987807488625393,
@@ -2774,6 +2783,15 @@
           "gasUsd": 0,
           "netFlowUsd": 0,
           "epochHours": 1.5159852777777778
+        },
+        {
+          "epoch": 34,
+          "fitness": 1.8251830158106779,
+          "score": 100,
+          "vEndUsd": 3.9946739304116763,
+          "gasUsd": 0,
+          "netFlowUsd": 0,
+          "epochHours": 1.536955
         }
       ],
       "vStartUsd": 3.99339512122415,
@@ -3028,6 +3046,15 @@
           "gasUsd": 0,
           "netFlowUsd": 0,
           "epochHours": 1.5159852777777778
+        },
+        {
+          "epoch": 34,
+          "fitness": 0.02286835738356908,
+          "score": 49,
+          "vEndUsd": 3.98776638843351,
+          "gasUsd": 0,
+          "netFlowUsd": 0,
+          "epochHours": 1.536955
         }
       ],
       "vStartUsd": 3.98775038843351,
@@ -3681,6 +3708,15 @@
           "gasUsd": 0,
           "netFlowUsd": 0,
           "epochHours": 1.5159852777777778
+        },
+        {
+          "epoch": 34,
+          "fitness": 0.02429860062013666,
+          "score": 50,
+          "vEndUsd": 3.9876080498017874,
+          "gasUsd": 0,
+          "netFlowUsd": 0,
+          "epochHours": 1.536955
         }
       ],
       "vStartUsd": 3.9875910498017877,
@@ -3811,6 +3847,15 @@
           "gasUsd": 0,
           "netFlowUsd": 0,
           "epochHours": 1.5159852777777778
+        },
+        {
+          "epoch": 34,
+          "fitness": 0.024300696588311663,
+          "score": 50,
+          "vEndUsd": 3.9872641145894243,
+          "gasUsd": 0,
+          "netFlowUsd": 0,
+          "epochHours": 1.536955
         }
       ],
       "vStartUsd": 3.987247114589424,
@@ -3907,6 +3952,15 @@
           "gasUsd": 0,
           "netFlowUsd": 0,
           "epochHours": 1.5159852777777778
+        },
+        {
+          "epoch": 34,
+          "fitness": 0.02287106893087581,
+          "score": 49,
+          "vEndUsd": 3.9872936090874918,
+          "gasUsd": 0,
+          "netFlowUsd": 0,
+          "epochHours": 1.536955
         }
       ],
       "vStartUsd": 3.9872776090874913,
@@ -4146,6 +4200,15 @@
           "gasUsd": 0,
           "netFlowUsd": 0,
           "epochHours": 1.5159852777777778
+        },
+        {
+          "epoch": 34,
+          "fitness": 0.024301639394764974,
+          "score": 50,
+          "vEndUsd": 3.9871094253451353,
+          "gasUsd": 0,
+          "netFlowUsd": 0,
+          "epochHours": 1.536955
         }
       ],
       "vStartUsd": 3.987092425345135,
@@ -4299,6 +4362,15 @@
           "gasUsd": 0,
           "netFlowUsd": 0,
           "epochHours": 1.5159852777777778
+        },
+        {
+          "epoch": 34,
+          "fitness": 0.02430263644190924,
+          "score": 50,
+          "vEndUsd": 3.986945849704324,
+          "gasUsd": 0,
+          "netFlowUsd": 0,
+          "epochHours": 1.536955
         }
       ],
       "vStartUsd": 3.986928849704324,
@@ -4459,7 +4531,17 @@
       "status": "ACTIVE",
       "childContract": "0x743535C694B6087153802B0550835417Ff950aa1",
       "spawnTxHash": "0x85084c7454eec897b7e588319277a35d725190784834d26424cff9d95418d614",
-      "history": [],
+      "history": [
+        {
+          "epoch": 34,
+          "fitness": -20.696868242778194,
+          "score": 0,
+          "vEndUsd": 4.336415017085925,
+          "gasUsd": 0.005294819437199999,
+          "netFlowUsd": 0,
+          "epochHours": 1.536955
+        }
+      ],
       "vStartUsd": 4.346905097819659,
       "epochGasUsd": 0.005294819437199999,
       "epochFlowUsd": 0
@@ -4489,7 +4571,7 @@
         "amountUsd": 1
       },
       "vStartUsd": 1.196906041623,
-      "epochGasUsd": 0.0052945233174,
+      "epochGasUsd": 0.0084946929595065,
       "epochFlowUsd": 0
     },
     {
