@@ -1,6 +1,6 @@
 {
   "epochNumber": 33,
-  "nextHdIndex": 67,
+  "nextHdIndex": 70,
   "agents": [
     {
       "slug": "mfx-cautious",
@@ -476,7 +476,7 @@
       "useSignal": false,
       "generation": 1,
       "lineageKey": "ay-balanced",
-      "status": "ACTIVE",
+      "status": "RETIRED",
       "history": [
         {
           "epoch": 1,
@@ -757,13 +757,23 @@
           "gasUsd": 0,
           "netFlowUsd": 0,
           "epochHours": 1.5439327777777778
+        },
+        {
+          "epoch": 33,
+          "fitness": 0.023148118585134565,
+          "score": 50,
+          "vEndUsd": 4.99258145621346,
+          "gasUsd": 0,
+          "netFlowUsd": 0,
+          "epochHours": 1.5159852777777778
         }
       ],
       "childContract": "0x8e5CBAdF9A98eDbD80aA2000b227BBc139aB4236",
       "spawnTxHash": "0x5df38b0183b6378117222cd186f99e4f925b88222a3c0a573a9cd0d8c3054871",
       "vStartUsd": 4.99256145621346,
       "epochGasUsd": 0,
-      "epochFlowUsd": 0
+      "epochFlowUsd": 0,
+      "recallTxHash": "0xd75178cd2ab88acf65974e6525697bb9ce6e2ba39153f19db16bf5f07afd6b3c"
     },
     {
       "slug": "ay-chaser",
@@ -1841,6 +1851,15 @@
           "gasUsd": 0,
           "netFlowUsd": 0,
           "epochHours": 1.5439327777777778
+        },
+        {
+          "epoch": 33,
+          "fitness": 0.02317027901973349,
+          "score": 50,
+          "vEndUsd": 4.9878064886253926,
+          "gasUsd": 0,
+          "netFlowUsd": 0,
+          "epochHours": 1.5159852777777778
         }
       ],
       "vStartUsd": 4.987786488625392,
@@ -2746,6 +2765,15 @@
           "gasUsd": 0,
           "netFlowUsd": 0,
           "epochHours": 1.5439327777777778
+        },
+        {
+          "epoch": 33,
+          "fitness": 0.023152002577892634,
+          "score": 50,
+          "vEndUsd": 3.99339512122415,
+          "gasUsd": 0,
+          "netFlowUsd": 0,
+          "epochHours": 1.5159852777777778
         }
       ],
       "vStartUsd": 3.99337912122415,
@@ -2991,6 +3019,15 @@
           "gasUsd": 0,
           "netFlowUsd": 0,
           "epochHours": 1.5439327777777778
+        },
+        {
+          "epoch": 33,
+          "fitness": 0.02318478060136621,
+          "score": 50,
+          "vEndUsd": 3.98774938843351,
+          "gasUsd": 0,
+          "netFlowUsd": 0,
+          "epochHours": 1.5159852777777778
         }
       ],
       "vStartUsd": 3.9877333884335098,
@@ -3635,6 +3672,15 @@
           "gasUsd": 0,
           "netFlowUsd": 0,
           "epochHours": 1.5439327777777778
+        },
+        {
+          "epoch": 33,
+          "fitness": 0.024634813725906035,
+          "score": 51,
+          "vEndUsd": 3.9875910498017877,
+          "gasUsd": 0,
+          "netFlowUsd": 0,
+          "epochHours": 1.5159852777777778
         }
       ],
       "vStartUsd": 3.987574049801788,
@@ -3756,6 +3802,15 @@
           "gasUsd": 0,
           "netFlowUsd": 0,
           "epochHours": 1.5439327777777778
+        },
+        {
+          "epoch": 33,
+          "fitness": 0.02318770120195616,
+          "score": 50,
+          "vEndUsd": 3.987247114589424,
+          "gasUsd": 0,
+          "netFlowUsd": 0,
+          "epochHours": 1.5159852777777778
         }
       ],
       "vStartUsd": 3.987231114589424,
@@ -3843,6 +3898,15 @@
           "gasUsd": 0,
           "netFlowUsd": 0,
           "epochHours": 1.5439327777777778
+        },
+        {
+          "epoch": 33,
+          "fitness": 0.023187529678988465,
+          "score": 50,
+          "vEndUsd": 3.987276609087492,
+          "gasUsd": 0,
+          "netFlowUsd": 0,
+          "epochHours": 1.5159852777777778
         }
       ],
       "vStartUsd": 3.9872606090874916,
@@ -4073,6 +4137,15 @@
           "gasUsd": 0,
           "netFlowUsd": 0,
           "epochHours": 1.5439327777777778
+        },
+        {
+          "epoch": 33,
+          "fitness": 0.023188606645684604,
+          "score": 50,
+          "vEndUsd": 3.9870914253451355,
+          "gasUsd": 0,
+          "netFlowUsd": 0,
+          "epochHours": 1.5159852777777778
         }
       ],
       "vStartUsd": 3.9870754253451355,
@@ -4217,6 +4290,15 @@
           "gasUsd": 0,
           "netFlowUsd": 0,
           "epochHours": 1.5439327777777778
+        },
+        {
+          "epoch": 33,
+          "fitness": 0.024638905408725455,
+          "score": 51,
+          "vEndUsd": 3.986928849704324,
+          "gasUsd": 0,
+          "netFlowUsd": 0,
+          "epochHours": 1.5159852777777778
         }
       ],
       "vStartUsd": 3.986911849704324,
@@ -4340,13 +4422,24 @@
       "useSignal": false,
       "generation": 6,
       "lineageKey": "ay-balanced",
-      "status": "ACTIVE",
+      "status": "RETIRED",
       "childContract": "0x3dFBa9c2e4b5f21AB5Ad883e4B4F7665B872bC7a",
       "spawnTxHash": "0x4ca51d0cbe6750e3e23d6509ea112c5b32c23725cf67913713266e94e88d99bd",
-      "history": [],
+      "history": [
+        {
+          "epoch": 33,
+          "fitness": -22.177486286936524,
+          "score": 0,
+          "vEndUsd": 3.987064079430256,
+          "gasUsd": 0.0054888253105428,
+          "netFlowUsd": 0,
+          "epochHours": 1.5159852777777778
+        }
+      ],
       "vStartUsd": 3.996915352601439,
       "epochGasUsd": 0.0054888253105428,
-      "epochFlowUsd": 0
+      "epochFlowUsd": 0,
+      "recallTxHash": "0xd1a1c21058228a33aa86c59ddf81ca6e87beded6f4976781c0f5028a1f896a48"
     },
     {
       "slug": "ay-balanced-g6-i64",
@@ -4374,7 +4467,7 @@
     "BRLm": 0.19640675675
   },
   "epochStartedAt": "2026-06-13T04:10:27.300Z",
-  "lastCulledEpoch": 32,
+  "lastCulledEpoch": 33,
   "pendingSpawns": [
     {
       "slug": "ay-balanced-g6-i65",
@@ -4389,7 +4482,7 @@
       "useSignal": false,
       "generation": 6,
       "lineageKey": "ay-balanced",
-      "fundUsd": 1.5273922545601764,
+      "fundUsd": 1.558148160156052,
       "description": "Cull replacement: spawned to replace an agent culled from the bottom 20% of epoch-32 fitness. Generation 6 of the \"ay-balanced\" lineage, spawned from epoch-32 top performer ay-balanced-g5-i59 with ±20% mutated parameters. Supply stables to Aave v3, compound, rebalance when APY delta > 34bps; 3.56% reserve"
     },
     {
@@ -4405,9 +4498,67 @@
       "useSignal": false,
       "generation": 6,
       "lineageKey": "ay-balanced",
-      "fundUsd": 1.5273922545601764,
+      "fundUsd": 1.558148160156052,
       "description": "Cull replacement: spawned to replace an agent culled from the bottom 20% of epoch-32 fitness. Generation 6 of the \"ay-balanced\" lineage, spawned from epoch-32 top performer ay-balanced-g5-i59 with ±20% mutated parameters. Supply stables to Aave v3, compound, rebalance when APY delta > 33bps; 4.45% reserve"
+    },
+    {
+      "slug": "patron-ae5731-i67",
+      "name": "Spawn Sponsored Agent (patron-ae5731)",
+      "hdIndex": 67,
+      "strategy": "AaveYielder",
+      "params": {
+        "minApyDeltaBps": 32,
+        "reserveBps": 340,
+        "compoundEveryEpochs": 1
+      },
+      "useSignal": true,
+      "generation": 1,
+      "lineageKey": "patron-ae5731",
+      "fundUsd": 1,
+      "description": "Sponsored agent: externally funded by 0xAE5731159385B231B1c65885ca8CA909936b4070 via a $1.00 cUSD deposit (tx 0xbb31495bcccc116159f31609199df7d6bd096f10db2c4c5fa55616473957ee98) — a sponsorship of an autonomous swarm agent, not a custodial deposit. It seeds its genome from current top performer ay-balanced-g5-i59 and competes (and can be culled) like any other agent. Founding generation of the sponsor lineage \"patron-ae5731\". Supply stables to Aave v3, compound, rebalance when APY delta > 32bps; 3.4% reserve",
+      "patron": {
+        "depositor": "0xAE5731159385B231B1c65885ca8CA909936b4070",
+        "depositTx": "0xbb31495bcccc116159f31609199df7d6bd096f10db2c4c5fa55616473957ee98",
+        "amountUsd": 1
+      }
+    },
+    {
+      "slug": "ay-balanced-g6-i68",
+      "name": "Spawn Aave Yielder (balanced) g2 g3 g4 g5 g6",
+      "hdIndex": 68,
+      "strategy": "AaveYielder",
+      "params": {
+        "minApyDeltaBps": 35,
+        "reserveBps": 394,
+        "compoundEveryEpochs": 1
+      },
+      "useSignal": false,
+      "generation": 6,
+      "lineageKey": "ay-balanced",
+      "fundUsd": 0.1786549785212828,
+      "description": "Cull replacement: spawned to replace an agent culled from the bottom 20% of epoch-33 fitness. Generation 6 of the \"ay-balanced\" lineage, spawned from epoch-33 top performer ay-balanced-g5-i59 with ±20% mutated parameters. Supply stables to Aave v3, compound, rebalance when APY delta > 35bps; 3.94% reserve"
+    },
+    {
+      "slug": "ay-balanced-g6-i69",
+      "name": "Spawn Aave Yielder (balanced) g2 g3 g4 g5 g6",
+      "hdIndex": 69,
+      "strategy": "AaveYielder",
+      "params": {
+        "minApyDeltaBps": 28,
+        "reserveBps": 428,
+        "compoundEveryEpochs": 1
+      },
+      "useSignal": false,
+      "generation": 6,
+      "lineageKey": "ay-balanced",
+      "fundUsd": 0.1786549785212828,
+      "description": "Cull replacement: spawned to replace an agent culled from the bottom 20% of epoch-33 fitness. Generation 6 of the \"ay-balanced\" lineage, spawned from epoch-33 top performer ay-balanced-g5-i59 with ±20% mutated parameters. Supply stables to Aave v3, compound, rebalance when APY delta > 28bps; 4.28% reserve"
     }
   ],
-  "lastGrowthEpoch": 18
+  "lastGrowthEpoch": 18,
+  "patronScanFromBlock": "69428522",
+  "processedDeposits": [
+    "0xbb31495bcccc116159f31609199df7d6bd096f10db2c4c5fa55616473957ee98"
+  ],
+  "patronCapitalUsd": 1
 }
