@@ -78,9 +78,16 @@ async function fundAgents(state: SwarmState): Promise<void> {
       continue;
     }
     const pf = await readPortfolio(agent.address, ctx);
-    const topUp = MAX_AGENT_BALANCE_USD - pf.totalUsd;
+    // a sponsored (patron) agent is capped at what its sponsor actually
+    // contributed — never topped up from swarm capital toward the $4 target.
+    // This keeps "your $X sponsorship funds an $X agent" literally true and
+    // keeps patron and developer capital cleanly separated.
+    const target = agent.patron
+      ? Math.min(MAX_AGENT_BALANCE_USD, agent.patron.amountUsd)
+      : MAX_AGENT_BALANCE_USD;
+    const topUp = target - pf.totalUsd;
     if (topUp < 0.1) {
-      console.log(`  ${agent.slug}: already funded (portfolio $${pf.totalUsd.toFixed(2)})`);
+      console.log(`  ${agent.slug}: already funded (portfolio $${pf.totalUsd.toFixed(2)}${agent.patron ? ", patron-capped" : ""})`);
       continue;
     }
     const treasuryBal = Number(
@@ -112,7 +119,7 @@ async function fundAgents(state: SwarmState): Promise<void> {
     logActivity({
       agentId: "orchestrator",
       action: "agent-funding",
-      rationale: `Fund ${agent.slug} to the $${MAX_AGENT_BALANCE_USD} per-agent cap (+$${topUp.toFixed(2)} cUSD) so its ${agent.strategy} strategy can trade. Total swarm deployment stays within the $50 budget.`,
+      rationale: `Fund ${agent.slug} to its $${target.toFixed(2)} target (+$${topUp.toFixed(2)} cUSD) so its ${agent.strategy} strategy can trade.${agent.patron ? ` Capped at the sponsor's $${agent.patron.amountUsd.toFixed(2)} contribution (patron capital, separate from the developer budget).` : " Total swarm deployment stays within the $50 budget."}`,
       txHash: hash,
       recipient: agent.address,
     });
