@@ -4491,19 +4491,13 @@
       "vStartUsd": 1.196906041623,
       "epochGasUsd": 0.0052945233174,
       "epochFlowUsd": 0
-    }
-  ],
-  "prevFxUsdPrice": {
-    "EURm": 1.154077575,
-    "BRLm": 0.19640675675
-  },
-  "epochStartedAt": "2026-06-13T05:45:17.899Z",
-  "lastCulledEpoch": 33,
-  "pendingSpawns": [
+    },
     {
       "slug": "ay-balanced-g6-i65",
       "name": "Spawn Aave Yielder (balanced) g2 g3 g4 g5 g6",
       "hdIndex": 65,
+      "address": "0x006eCdD0850aE57cbA371E9e1cbFD233f355132C",
+      "erc8004AgentId": "9322",
       "strategy": "AaveYielder",
       "params": {
         "minApyDeltaBps": 34,
@@ -4513,9 +4507,19 @@
       "useSignal": false,
       "generation": 6,
       "lineageKey": "ay-balanced",
-      "fundUsd": 1.558148160156052,
-      "description": "Cull replacement: spawned to replace an agent culled from the bottom 20% of epoch-32 fitness. Generation 6 of the \"ay-balanced\" lineage, spawned from epoch-32 top performer ay-balanced-g5-i59 with ±20% mutated parameters. Supply stables to Aave v3, compound, rebalance when APY delta > 34bps; 3.56% reserve"
-    },
+      "status": "ACTIVE",
+      "childContract": "0x0626FD55eDa0240221D7261A3937013acBc936Ee",
+      "spawnTxHash": "0xb815c6e44faf6ba7f57587f5d0a658682ea8d16cd79e0df48aecac9372d9abeb",
+      "history": []
+    }
+  ],
+  "prevFxUsdPrice": {
+    "EURm": 1.154077575,
+    "BRLm": 0.19640675675
+  },
+  "epochStartedAt": "2026-06-13T05:45:17.899Z",
+  "lastCulledEpoch": 33,
+  "pendingSpawns": [
     {
       "slug": "ay-balanced-g6-i66",
       "name": "Spawn Aave Yielder (balanced) g2 g3 g4 g5 g6",
@@ -4529,7 +4533,7 @@
       "useSignal": false,
       "generation": 6,
       "lineageKey": "ay-balanced",
-      "fundUsd": 1.558148160156052,
+      "fundUsd": 0.8753422122445218,
       "description": "Cull replacement: spawned to replace an agent culled from the bottom 20% of epoch-32 fitness. Generation 6 of the \"ay-balanced\" lineage, spawned from epoch-32 top performer ay-balanced-g5-i59 with ±20% mutated parameters. Supply stables to Aave v3, compound, rebalance when APY delta > 33bps; 4.45% reserve"
     },
     {
@@ -4545,7 +4549,7 @@
       "useSignal": false,
       "generation": 6,
       "lineageKey": "ay-balanced",
-      "fundUsd": -0.0006712606825728384,
+      "fundUsd": 0.8753422122445218,
       "description": "Cull replacement: spawned to replace an agent culled from the bottom 20% of epoch-33 fitness. Generation 6 of the \"ay-balanced\" lineage, spawned from epoch-33 top performer ay-balanced-g5-i59 with ±20% mutated parameters. Supply stables to Aave v3, compound, rebalance when APY delta > 35bps; 3.94% reserve"
     },
     {
@@ -4561,7 +4565,7 @@
       "useSignal": false,
       "generation": 6,
       "lineageKey": "ay-balanced",
-      "fundUsd": -0.0006712606825728384,
+      "fundUsd": 0.8753422122445218,
       "description": "Cull replacement: spawned to replace an agent culled from the bottom 20% of epoch-33 fitness. Generation 6 of the \"ay-balanced\" lineage, spawned from epoch-33 top performer ay-balanced-g5-i59 with ±20% mutated parameters. Supply stables to Aave v3, compound, rebalance when APY delta > 28bps; 4.28% reserve"
     }
   ],

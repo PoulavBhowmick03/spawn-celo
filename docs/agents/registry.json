@@ -333,5 +333,10 @@
     "agentId": "9321",
     "address": "0xf206688449A41D4f1dE229982c04A4a78A9d7AF8",
     "txHash": "0x65c4a790672f2d16e05d58d97e0ad828a2803c9bada37b4f67919cf9d2f3f04a"
+  },
+  "ay-balanced-g6-i65": {
+    "agentId": "9322",
+    "address": "0x006eCdD0850aE57cbA371E9e1cbFD233f355132C",
+    "txHash": "0xee76b441939989f93ea9911755cbf066e5521b28810a52ec4d6e16426087923e"
   }
 }
