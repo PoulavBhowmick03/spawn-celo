@@ -33,6 +33,12 @@ export const CONTRACTS = {
   TREASURY: "0xC0296012Cfbb0e6DF5dA7158B65Dbc46DD9650e0",
 } as const;
 
+/** Celo mainnet chain id + cUSD (USDm) token — used by the sponsor flow. */
+export const CELO_CHAIN_ID = 42220;
+export const CUSD_ADDRESS = "0x765DE816845861e75A25fCA122bb6898B8B1282a" as const;
+/** Smallest sponsorship that spawns an agent (mirrors agent MIN_PATRON_USD). */
+export const MIN_SPONSOR_USD = 1;
+
 export const explorerTx = (hash: string) => `${CELO_EXPLORER}/tx/${hash}`;
 export const explorerAddress = (addr: string) => `${CELO_EXPLORER}/address/${addr}`;
 export const scanAgent = (agentId: string | number) => `${SCAN_8004}/agents/celo/${agentId}`;

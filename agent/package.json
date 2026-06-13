@@ -25,6 +25,7 @@
     "swarm:status": "tsx src/chains/celo/swarm-status.ts",
     "swarm:unwind": "tsx src/chains/celo/swarm-unwind.ts",
     "test:fork:epoch": "bash src/chains/celo/run-fork-epoch.sh",
+    "test:fork:patron": "bash src/chains/celo/run-fork-patron.sh",
     "report:epoch": "tsx src/chains/celo/report-epoch.ts",
     "signal:serve": "tsx src/chains/celo/signal-service.ts",
     "x402:setup": "tsx src/chains/celo/x402-setup.ts"

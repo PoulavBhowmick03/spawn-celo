@@ -27,6 +27,8 @@ export type SwarmAgentState = {
   childContract?: Address;
   spawnTxHash?: Hex;
   recallTxHash?: Hex;
+  /** set when an external sponsor funded this agent (not the developer budget) */
+  patron?: { depositor: Address; depositTx: Hex; amountUsd: number };
   /** cUSD portfolio value at the start of the current epoch */
   vStartUsd?: number;
   /** gas paid during the open epoch, in cUSD (fitness penalty input) */
@@ -57,6 +59,8 @@ export type PendingSpawn = {
   lineageKey: string;
   fundUsd: number;
   description: string;
+  /** set for externally-sponsored agents (funded by a patron deposit) */
+  patron?: { depositor: Address; depositTx: Hex; amountUsd: number };
 };
 
 export type SwarmState = {
@@ -68,6 +72,15 @@ export type SwarmState = {
   /** epoch whose growth spawn already enqueued (resume safety — a crash
    *  mid-settle must not enqueue a second growth spawn on re-entry) */
   lastGrowthEpoch?: number;
+  /** block from which to scan for external patron cUSD deposits to the
+   *  treasury — initialized to the block at first run so historical
+   *  setup/Mento transfers are never misread as sponsorships */
+  patronScanFromBlock?: string;
+  /** cUSD deposit txs already converted to patron spawns (dedupe) */
+  processedDeposits?: string[];
+  /** cumulative external capital contributed by sponsors, in cUSD — additive
+   *  to and tracked separately from the developer's $50 budget */
+  patronCapitalUsd?: number;
   /** spawns enqueued by a cull but not yet completed (retried each cycle) */
   pendingSpawns?: PendingSpawn[];
   /** last epoch's market snapshot inputs for momentum computation */

@@ -37,6 +37,9 @@ export function CeloDashboard(props: {
               Spawn Protocol <span className="dim">— Hedge Swarm on Celo</span>
             </h1>
             <nav className="sp-extlinks">
+              <a href="/sponsor" style={{ color: "#FCFF52" }}>
+                sponsor an agent →
+              </a>
               <a href={`${SCAN_8004}/agents?search=spawn`} target="_blank" rel="noreferrer">
                 8004scan ↗
               </a>

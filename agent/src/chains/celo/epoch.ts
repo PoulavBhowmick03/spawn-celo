@@ -34,6 +34,7 @@ import { loadState, saveState, type SwarmAgentState, type SwarmState } from "./s
 import { logActivity } from "./activity-log.js";
 import { MAX_AGENT_BALANCE_USD, TOTAL_BUDGET_USD, assertTxAllowed, killSwitchEngaged } from "./budget.js";
 import { MAX_SWARM_SIZE, OPS_FLOAT_USD, shouldGrowSwarm } from "./growth.js";
+import { detectPatronDeposits, patronLineageKey, MIN_PATRON_USD } from "./patrons.js";
 import type { AgentSpec } from "./agents-config.js";
 
 const SPAWN_FACTORY_ABI = [
@@ -98,6 +99,9 @@ export function publishDocs(message: string): void {
 }
 
 async function waitForCard(url: string, timeoutMs = 360_000): Promise<void> {
+  // fork tests don't publish cards (no git push), so the URL can't resolve —
+  // registration still records the (eventual) URL; skip the resolve pre-check.
+  if (/^(1|true|yes)$/i.test(process.env.CELO_NO_PUBLISH ?? "")) return;
   const start = Date.now();
   while (Date.now() - start < timeoutMs) {
     try {
@@ -205,15 +209,19 @@ export async function sweepRetiredResiduals(state: SwarmState): Promise<void> {
 /** Enqueue a spawn (persisted; completed/retried by processPendingSpawns).
  *  `spawnReason` distinguishes a cull replacement from a swarm-growth spawn in
  *  the judge-facing agent card description. */
-function enqueueSpawn(
+export function enqueueSpawn(
   state: SwarmState,
   parent: SwarmAgentState,
   fundUsd: number,
-  spawnReason: "cull-replacement" | "growth" = "cull-replacement",
+  spawnReason: "cull-replacement" | "growth" | "patron" = "cull-replacement",
+  patron?: { depositor: Address; depositTx: Hex; amountUsd: number },
 ): void {
   const hdIndex = state.nextHdIndex++;
-  const generation = parent.generation + 1;
-  const slug = `${parent.lineageKey}-g${generation}-i${hdIndex}`;
+  // A patron agent founds its own lineage (generation 1) in the sponsor's
+  // name; cull/growth spawns descend from the top performer's lineage.
+  const generation = patron ? 1 : parent.generation + 1;
+  const lineageKey = patron ? patronLineageKey(patron.depositor) : parent.lineageKey;
+  const slug = patron ? `${lineageKey}-i${hdIndex}` : `${lineageKey}-g${generation}-i${hdIndex}`;
   const params = mutateParams(parent.params);
   state.pendingSpawns = state.pendingSpawns ?? [];
   // useSignal is a gene too: a 20% flip chance keeps the signal-buying trait
@@ -223,18 +231,28 @@ function enqueueSpawn(
   const why =
     spawnReason === "growth"
       ? `Swarm-growth spawn: an extra agent funded purely from treasury margin recycled out of culled agents' returned balances (no new outside capital), growing the swarm toward its ${MAX_SWARM_SIZE}-agent cap.`
-      : `Cull replacement: spawned to replace an agent culled from the bottom 20% of epoch-${state.epochNumber} fitness.`;
+      : spawnReason === "patron"
+        ? `Sponsored agent: externally funded by ${patron!.depositor} via a $${patron!.amountUsd.toFixed(2)} cUSD deposit (tx ${patron!.depositTx}) — a sponsorship of an autonomous swarm agent, not a custodial deposit. It seeds its genome from current top performer ${parent.slug} and competes (and can be culled) like any other agent.`
+        : `Cull replacement: spawned to replace an agent culled from the bottom 20% of epoch-${state.epochNumber} fitness.`;
+  const provenance = patron
+    ? `Founding generation of the sponsor lineage "${lineageKey}".`
+    : `Generation ${generation} of the "${lineageKey}" lineage, spawned from epoch-${state.epochNumber} top performer ${parent.slug} with ±20% mutated parameters.`;
   state.pendingSpawns.push({
     slug,
-    name: `${parent.name} g${generation}`,
+    name: patron ? `Spawn Sponsored Agent (${lineageKey})` : `${parent.name} g${generation}`,
     hdIndex,
     strategy: parent.strategy,
     params,
     useSignal,
     generation,
-    lineageKey: parent.lineageKey,
+    lineageKey,
     fundUsd: Math.min(MAX_AGENT_BALANCE_USD, fundUsd),
-    description: `${why} Generation ${generation} of the "${parent.lineageKey}" lineage, spawned from epoch-${state.epochNumber} top performer ${parent.slug} with ±20% mutated parameters. ${strategyFor(parent as unknown as AgentSpec).describe(params)}`,
+    description: `${why} ${provenance} ${strategyFor(parent as unknown as AgentSpec).describe(params)}`,
+    // store only the serializable fields (a PatronDeposit also carries a
+    // bigint block, which JSON.stringify in saveState cannot serialize)
+    ...(patron
+      ? { patron: { depositor: patron.depositor, depositTx: patron.depositTx, amountUsd: patron.amountUsd } }
+      : {}),
   });
   saveState(state);
 }
@@ -255,9 +273,15 @@ async function completeSpawn(
     const treasuryBal = Number(formatUnits(await usdmBalance(orchestratorAccount().address), 18));
     // fund to the per-agent target, but NEVER drain the treasury below the
     // ops float — orchestrator gas and the x402 USDC pool both live there
-    // (observed: epoch-9 replacements left $0.25, starving signal budgets)
-    pending.fundUsd = Math.min(MAX_AGENT_BALANCE_USD, treasuryBal - OPS_FLOAT_USD);
-    if (pending.fundUsd < 2) throw new Error(`spawn pool too small ($${Math.max(0, pending.fundUsd).toFixed(2)} above the $${OPS_FLOAT_USD.toFixed(2)} ops float) for ${pending.slug} — deferring until cull returns replenish the treasury`);
+    // (observed: epoch-9 replacements left $0.25, starving signal budgets).
+    // A patron agent is additionally capped at the sponsor's deposit, and may
+    // be as small as MIN_PATRON_USD (a $1 sponsorship spawns a real $1 agent).
+    const perAgentCap = pending.patron
+      ? Math.min(MAX_AGENT_BALANCE_USD, pending.patron.amountUsd)
+      : MAX_AGENT_BALANCE_USD;
+    const floor = pending.patron ? MIN_PATRON_USD * 0.9 : 2;
+    pending.fundUsd = Math.min(perAgentCap, treasuryBal - OPS_FLOAT_USD);
+    if (pending.fundUsd < floor) throw new Error(`spawn pool too small ($${Math.max(0, pending.fundUsd).toFixed(2)} above the $${OPS_FLOAT_USD.toFixed(2)} ops float) for ${pending.slug} — deferring until cull returns replenish the treasury`);
     assertTxAllowed(pending.fundUsd, `fund spawned agent ${pending.slug}`);
     const orchWallet = celoWalletClient(orchestratorAccount());
     const hash = await orchWallet.writeContract({
@@ -341,6 +365,7 @@ async function completeSpawn(
     childContract,
     spawnTxHash: spawnTx,
     history: [],
+    ...(pending.patron ? { patron: pending.patron } : {}),
   };
 }
 
@@ -803,12 +828,62 @@ export async function runMidEpochTick(): Promise<void> {
   }
 }
 
+/** Detect external sponsor (patron) cUSD deposits to the treasury and enqueue
+ *  one agent per deposit, seeded from the current top performer's genome.
+ *  Fully isolated + guarded by the caller: a failure here must never break the
+ *  core epoch loop. The enqueued spawns are completed by the same cycle's
+ *  processPendingSpawns (inside settleEpoch). */
+async function enqueuePatronSpawns(state: SwarmState): Promise<string[]> {
+  const deposits = await detectPatronDeposits(state);
+  if (deposits.length === 0) {
+    saveState(state); // persist the advanced scan cursor even with no deposits
+    return [];
+  }
+  // seed each patron agent from the current top performer (best last fitness)
+  const active = state.agents.filter((a) => a.status === "ACTIVE");
+  const top =
+    active.length > 0
+      ? active.reduce((a, b) => {
+          const fa = a.history[a.history.length - 1]?.fitness ?? 0;
+          const fb = b.history[b.history.length - 1]?.fitness ?? 0;
+          return fb > fa ? b : a;
+        })
+      : state.agents[0];
+  if (!top) return [];
+  const enqueued: string[] = [];
+  for (const d of deposits) {
+    const key = patronLineageKey(d.depositor);
+    enqueueSpawn(state, top, Math.min(MAX_AGENT_BALANCE_USD, d.amountUsd), "patron", d);
+    state.processedDeposits = [...(state.processedDeposits ?? []), d.depositTx];
+    state.patronCapitalUsd = (state.patronCapitalUsd ?? 0) + d.amountUsd;
+    enqueued.push(key);
+    logActivity({
+      agentId: "orchestrator",
+      action: "patron-deposit",
+      rationale: `External sponsor ${d.depositor} deposited $${d.amountUsd.toFixed(2)} cUSD (tx ${d.depositTx}). Spawning a sponsored agent in lineage "${key}" seeded from top performer ${top.slug}. This is a sponsorship of an autonomous agent — funds join the swarm and are not withdrawable; cumulative external capital is tracked separately from the developer's $50 budget.`,
+      txHash: d.depositTx,
+      recipient: orchestratorAccount().address,
+    });
+    console.log(`  patron: ${d.depositor} sponsored $${d.amountUsd.toFixed(2)} — enqueued ${key} (min $${MIN_PATRON_USD})`);
+  }
+  saveState(state);
+  return enqueued;
+}
+
 /** One full cycle: settle the open epoch (if any), then start the next. */
 export async function runEpochCycle(): Promise<void> {
   const state = loadState();
   if (!state) throw new Error("no swarm state — run swarm-start first");
 
   await sweepRetiredResiduals(state);
+  // external sponsorships → patron spawns (isolated; never breaks the loop)
+  if (!/^(1|true|yes)$/i.test(process.env.CELO_NO_PATRONS ?? "")) {
+    try {
+      await enqueuePatronSpawns(state);
+    } catch (e) {
+      console.warn(`  patron detection failed (${(e as Error).message?.slice(0, 120)}) — continuing, will retry next cycle`);
+    }
+  }
   const ctx = await snapshotMarket(state.prevFxUsdPrice ? { fxUsdPrice: state.prevFxUsdPrice } : undefined);
   const report = await settleEpoch(state, ctx);
   if (report) {

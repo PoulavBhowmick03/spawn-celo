@@ -26,6 +26,12 @@ requires it, not to inflate a counter, and each entry's rationale says which.
 
 **Highest 8004scan Rank.** Every swarm agent (including retired ones) is a unique ERC-8004 identity on Celo's canonical registries. The orchestrator posts per-epoch reputation feedback derived from a published fitness formula whose inputs are entirely onchain-observable. This is performance attestation, not wash reputation: anyone can recompute every score from Celoscan data using the formula below.
 
+## Sponsor an agent (open, external capital)
+
+Anyone can sponsor a swarm agent at **[spawn-celo-swarm.vercel.app/sponsor](https://spawn-celo-swarm.vercel.app/sponsor)**: connect a wallet, send cUSD to the treasury, and the orchestrator detects the deposit onchain and spawns a new ERC-8004 agent in your name at the next epoch — a real self-owned identity with its own wallet, seeded from the current top performer's genome, competing (and cullable) like any other agent. The deposit is a plain cUSD transfer (no custody contract); detection scans `Transfer(to=treasury)` logs and excludes every swarm wallet, so agent cull-unwinds are never mistaken for sponsorships.
+
+This is the answer to "it's a closed $50 simulation": the swarm is **open to external capital**, and a judge can become a real participant for as little as $1 in one transaction. It is explicitly a **sponsorship of an autonomous agent, not a custodial deposit** — sponsored funds join the swarm and are not withdrawable. The distinction that keeps the budget claim honest: the **developer's at-risk capital stays exactly $50** (the per-agent $5 and per-tx $5 caps are enforced in code for every agent, sponsored or not); sponsor capital is additive, externally sourced, and tracked separately as `patronCapitalUsd` in the published state. Every sponsorship is logged with its depositor address and deposit tx, and recomputable from Celoscan like everything else.
+
 ## Fitness formula (public, recomputable)
 
 ```
