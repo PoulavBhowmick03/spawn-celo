@@ -1,7 +1,7 @@
 {
   "type": "https://eips.ethereum.org/EIPS/eip-8004#registration-v1",
-  "name": "Spawn Aave Yielder (chaser) g2",
-  "description": "Swarm-growth spawn: an extra agent funded purely from treasury margin recycled out of culled agents' returned balances (no new outside capital), growing the swarm toward its 13-agent cap. Generation 2 of the \"ay-chaser\" lineage, spawned from epoch-7 top performer ay-chaser with ±20% mutated parameters. Supply stables to Aave v3, compound, rebalance when APY delta > 13bps; 2.54% reserve",
+  "name": "Spawn Aave Yielder (balanced) g2 g3 g4 g5",
+  "description": "Cull replacement: spawned to replace an agent culled from the bottom 20% of epoch-27 fitness. Generation 5 of the \"ay-balanced\" lineage, spawned from epoch-27 top performer ay-balanced-g4-i48 with ±20% mutated parameters. Supply stables to Aave v3, compound, rebalance when APY delta > 38bps; 5.89% reserve",
   "image": "https://poulavbhowmick03.github.io/spawn-celo/spawn-logo.svg",
   "services": [
     {
@@ -17,7 +17,7 @@
   "active": true,
   "registrations": [
     {
-      "agentId": 9270,
+      "agentId": 9311,
       "agentRegistry": "eip155:42220:0x8004A169FB4a3325136EB29fA0ceB6D2e539a432"
     }
   ],
@@ -26,16 +26,16 @@
   ],
   "spawn": {
     "role": "swarm-agent",
-    "wallet": "0xD0c576Eca355167a54361B814573D91e41Ef85a3",
+    "wallet": "0xDE35E3AF5CEb9C1075De26cbB1796e879A099E16",
     "strategy": "AaveYielder",
     "params": {
-      "minApyDeltaBps": 13,
-      "reserveBps": 254,
+      "minApyDeltaBps": 38,
+      "reserveBps": 589,
       "compoundEveryEpochs": 1
     },
-    "buysX402Signals": true,
+    "buysX402Signals": false,
     "fitnessFormula": "fitness = annualize(V_end/V_start) - gas_penalty; reputation = clamp(round(50 + 500*(fitness - swarm_median)), 0, 100); inputs recomputable from Celoscan",
-    "explorer": "https://celoscan.io/address/0xD0c576Eca355167a54361B814573D91e41Ef85a3",
+    "explorer": "https://celoscan.io/address/0xDE35E3AF5CEb9C1075De26cbB1796e879A099E16",
     "scan8004": "https://www.8004scan.io/agents/celo"
   }
 }

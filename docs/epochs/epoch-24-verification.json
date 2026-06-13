@@ -1,0 +1,118 @@
+{
+  "epoch": 24,
+  "verifiedAt": "2026-06-12T15:11:15.932Z",
+  "swarmMedian": 0,
+  "verified": 9,
+  "total": 9,
+  "method": "fitness=annualize((V_end-net_flow)/V_start)-gas_penalty recomputed from the published epoch report; score=clamp(round(50+500*(fitness-median)),0,100); keccak256(logged payload) checked against the logged feedbackHash; agentId+score+feedbackHash decoded from the onchain giveFeedback calldata via eth_getTransactionByHash",
+  "rows": [
+    {
+      "slug": "ay-balanced",
+      "erc8004AgentId": "9245",
+      "recomputedFitness": 0.02406879528764716,
+      "publishedFitness": 0.02406879528764716,
+      "recomputedScore": 62,
+      "publishedScore": 62,
+      "fitnessMatch": true,
+      "payloadHashMatch": true,
+      "onchainCalldataMatch": true,
+      "reputationTx": "0xc8e73aa28e6bf00e5f7540b1846af06336c1b68fec6fdff9aa2bfa9f07a5d827"
+    },
+    {
+      "slug": "mfx-cautious-g2-i10",
+      "erc8004AgentId": "9256",
+      "recomputedFitness": 0,
+      "publishedFitness": 0,
+      "recomputedScore": 50,
+      "publishedScore": 50,
+      "fitnessMatch": true,
+      "payloadHashMatch": true,
+      "onchainCalldataMatch": true,
+      "reputationTx": "0x2028920a369e16750b60878053b6e59651fcc310c273146a22ef4703fd7c8898"
+    },
+    {
+      "slug": "mfx-cautious-g2-i11",
+      "erc8004AgentId": "9257",
+      "recomputedFitness": 0,
+      "publishedFitness": 0,
+      "recomputedScore": 50,
+      "publishedScore": 50,
+      "fitnessMatch": true,
+      "payloadHashMatch": true,
+      "onchainCalldataMatch": true,
+      "reputationTx": "0xe8237903b480f5bf84fca688776c435ce15fc4c873275ce3cef122245efd9be5"
+    },
+    {
+      "slug": "ay-balanced-g2-i13",
+      "erc8004AgentId": "9260",
+      "recomputedFitness": 0.02294459382914441,
+      "publishedFitness": 0.02294459382914441,
+      "recomputedScore": 61,
+      "publishedScore": 61,
+      "fitnessMatch": true,
+      "payloadHashMatch": true,
+      "onchainCalldataMatch": true,
+      "reputationTx": "0xe42758ebf62ef35c4dc9bb784e607786b2fbd75fa8f00116fca33d6e54727d92"
+    },
+    {
+      "slug": "mfx-cautious-g2-i14",
+      "erc8004AgentId": "9262",
+      "recomputedFitness": 0,
+      "publishedFitness": 0,
+      "recomputedScore": 50,
+      "publishedScore": 50,
+      "fitnessMatch": true,
+      "payloadHashMatch": true,
+      "onchainCalldataMatch": true,
+      "reputationTx": "0xd2b6e3369022a27277f666a28d6a222274c663767a404d80da8331a3b4fe1f6e"
+    },
+    {
+      "slug": "ay-balanced-g3-i30",
+      "erc8004AgentId": "9280",
+      "recomputedFitness": -24.538391539455123,
+      "publishedFitness": -24.538391539455123,
+      "recomputedScore": 0,
+      "publishedScore": 0,
+      "fitnessMatch": true,
+      "payloadHashMatch": true,
+      "onchainCalldataMatch": true,
+      "reputationTx": "0x8f4e6332d56e6f55fd14722236053bb0b0797c6e23ed5c0365d6a29c64a2c9c0"
+    },
+    {
+      "slug": "ay-balanced-g4-i31",
+      "erc8004AgentId": "9283",
+      "recomputedFitness": 0.022958955862650596,
+      "publishedFitness": 0.022958955862650596,
+      "recomputedScore": 61,
+      "publishedScore": 61,
+      "fitnessMatch": true,
+      "payloadHashMatch": true,
+      "onchainCalldataMatch": true,
+      "reputationTx": "0x4fbc93e95da84ccba2499e43705af4446b9fd42b7d1b2158a928af7b1e596af9"
+    },
+    {
+      "slug": "ay-balanced-g4-i39",
+      "erc8004AgentId": "9291",
+      "recomputedFitness": -28.338480506097657,
+      "publishedFitness": -28.338480506097657,
+      "recomputedScore": 0,
+      "publishedScore": 0,
+      "fitnessMatch": true,
+      "payloadHashMatch": true,
+      "onchainCalldataMatch": true,
+      "reputationTx": "0xf3ce85d5df56eb03e0212ed8c7391b6186d37f35c561af4ee4dbb90a418c9aa3"
+    },
+    {
+      "slug": "ay-balanced-g4-i46",
+      "erc8004AgentId": "9298",
+      "recomputedFitness": 0.024394877626443094,
+      "publishedFitness": 0.024394877626443094,
+      "recomputedScore": 62,
+      "publishedScore": 62,
+      "fitnessMatch": true,
+      "payloadHashMatch": true,
+      "onchainCalldataMatch": true,
+      "reputationTx": "0x7fd2032bc99f7d9f2524d23104e9c5779479fc0e950514f0cafb3f5115262525"
+    }
+  ]
+}

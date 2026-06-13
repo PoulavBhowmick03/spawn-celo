@@ -103,5 +103,235 @@
     "agentId": "9269",
     "address": "0x2A8B4bE7e4724F540dC4D009BC122fAbe96e8088",
     "txHash": "0x31bf540a846e8821e5a12d13d8320e363c262e5644f660a9869f26eb89229568"
+  },
+  "ay-chaser-g2-i20": {
+    "agentId": "9270",
+    "address": "0xD0c576Eca355167a54361B814573D91e41Ef85a3",
+    "txHash": "0xc1e7329a7620612f7c3a776d136fb8d8fe0271a23877eb82d8622fe5d3722ed0"
+  },
+  "ay-chaser-g2-i21": {
+    "agentId": "9271",
+    "address": "0x8Adf51B8A03F547D0E7cF3a1AAF06A95c86Bb4bc",
+    "txHash": "0xe65b1de4ad0b5d49eb7b4c011638cedc858da6e5c7803a40d406b0605e52a3c6"
+  },
+  "ay-chaser-g2-i22": {
+    "agentId": "9272",
+    "address": "0x9fEa6770458a4A45fE5d2295F55cDd7FBC84A623",
+    "txHash": "0x13a71fbcd2f497ae3cc9b24886d1bde5e1603ec57f1ad3ce27278326e57f1a3e"
+  },
+  "ay-chaser-g2-i23": {
+    "agentId": "9273",
+    "address": "0x4039DCcd23e0f500090072ca048450B2F54C5B69",
+    "txHash": "0xc329e0aab8871dd98dbbfa80b218dda6ecc7b8374caea65d07e22a89096be7c8"
+  },
+  "ay-balanced-g3-i24": {
+    "agentId": "9276",
+    "address": "0xC1D36D1628CAfDbF3a1899e2C53a4d60D969942F",
+    "txHash": "0x6cb7e8867ee9bc9583ceb9e03e2f03a32c955391001f45edb96c132d0ab4efcd"
+  },
+  "ay-balanced-g3-i25": {
+    "agentId": "9277",
+    "address": "0xF352EB099EC6dA449bfC64a89700F5AF30022b30",
+    "txHash": "0x130d9c0254b3105e8c09a284d750e375aff934e71bc9d65885aede7b68b2e224"
+  },
+  "ay-balanced-g2-i26": {
+    "agentId": "9278",
+    "address": "0x74f176aDA6894A12a77A9B49297Ef32e96Cc7fb1",
+    "txHash": "0xb12ad7f51af74a24602dd130b46c0e2e57f45deb45f41796b3068ebb7dcba985"
+  },
+  "ay-balanced-g2-i27": {
+    "agentId": "9279",
+    "address": "0x8AF540Fe91c0b853532Ca582B0DF1Fb4beD34E91",
+    "txHash": "0x360cae172973056ac881f0bc054b5f6b04af5e060b0e006ed4384f54d389a017"
+  },
+  "ay-balanced-g3-i30": {
+    "agentId": "9280",
+    "address": "0x26dbA8A064f6195538D31AF45d3037F021f739fA",
+    "txHash": "0xb5f015fcd491ed3e525645987e75defa9310757e3f14941fdc2017217f1cd9fa"
+  },
+  "ay-balanced-g3-i28": {
+    "agentId": "9281",
+    "address": "0x81616E49F57654590CCF52c4759F7BeCF0f0DD91",
+    "txHash": "0xb3237c96771366f1d5da212ded28a912e37be7d7d90aa176d30d82a8a9684fc3"
+  },
+  "ay-balanced-g3-i29": {
+    "agentId": "9282",
+    "address": "0x4706c63DfA5155e0a69966E1C3Af8F9177f4391c",
+    "txHash": "0x0186deed48c446fd0fd740b54d7caad5a535aa86966a2d0c388d3187a637eee4"
+  },
+  "ay-balanced-g4-i31": {
+    "agentId": "9283",
+    "address": "0x5845c5150d22EdA9030EcFF86430B0000EE8Bf40",
+    "txHash": "0xc35c422bda34c2c814f7d50e6c96cc25c825cf2df95885c72b3496e7bd7adbf7"
+  },
+  "ay-balanced-g4-i32": {
+    "agentId": "9284",
+    "address": "0xB861BDae70D09d59872508fa99CF1c0e12840b40",
+    "txHash": "0x9ad1f540b221f377943a89e653ecdc5c66dcc0210c943054da35b30b84fdb7bb"
+  },
+  "ay-balanced-g4-i33": {
+    "agentId": "9285",
+    "address": "0x05D0eD0a59980EfE05bF85A2027BD4EB641a84ca",
+    "txHash": "0x0899e7edaa4e7226a2c7d0d7afa4687d5970b1dff672beb2a19bdafe655ddc7c"
+  },
+  "ay-balanced-g3-i34": {
+    "agentId": "9286",
+    "address": "0x792AD5cFcf1f9b337A987a165C11464355673dfF",
+    "txHash": "0x23d4c009e68ba229273c4351fd9273c5d3ed7d165665d43dac0c52db343788af"
+  },
+  "ay-balanced-g3-i35": {
+    "agentId": "9287",
+    "address": "0x79f3DD2A846372F3f99875928F9Bd979A05FBCa0",
+    "txHash": "0x17f6956cb6bdaab7349d25635165a5b2cfed5deff45ac66f8433573e332a5489"
+  },
+  "ay-balanced-g4-i36": {
+    "agentId": "9288",
+    "address": "0xB62A12F616A4f8FFCce199280413209cD31B8A0F",
+    "txHash": "0x16f5bde2061c20534b11e40832cce2e1a616e83f2c6844d102caac80894e5464"
+  },
+  "ay-balanced-g4-i37": {
+    "agentId": "9289",
+    "address": "0x68086c612bfc763818C701cED71c5ede1a9bEC68",
+    "txHash": "0x47ce8ebb54a7a8bee03bf1e98929a2e34553e9c9371575fcd88f4131feb80825"
+  },
+  "ay-balanced-g4-i38": {
+    "agentId": "9290",
+    "address": "0xE8Dff07D60fe24e337b8cc61311D952667061b61",
+    "txHash": "0x4802bbc4934a59989e9c757849012fa28067f57a29702f7884a574c666282109"
+  },
+  "ay-balanced-g4-i39": {
+    "agentId": "9291",
+    "address": "0x3A9bc300dd0C5FcA07C30af825D4a153D9cA0923",
+    "txHash": "0x1829fa8c9a1bdb75fbee4a43e95b950f86ef5c354bf60be6a37c6a4cca1fa585"
+  },
+  "ay-balanced-g4-i40": {
+    "agentId": "9292",
+    "address": "0xcB61850969172AB40839E2e1326E84927cAC9352",
+    "txHash": "0x4e15382e25cbfa4a383f0279676d76fad4a38cdc0c5a66060d63a1ba190ae8b5"
+  },
+  "ay-balanced-g4-i41": {
+    "agentId": "9293",
+    "address": "0x03312E5669C79801849260888bc43ae651600dbA",
+    "txHash": "0x9ccd7d1390e73ebb77027fb7854cab1f5865fff08b0c9199ebbb9b4aba643f0f"
+  },
+  "ay-balanced-g4-i42": {
+    "agentId": "9294",
+    "address": "0xe7171D709F484024Db0Cd825144d4da15755CC91",
+    "txHash": "0xcbf97c5370b2ce334f468adaa489ada360b1ec6b20907d50a4542cee75db46c6"
+  },
+  "ay-balanced-g5-i43": {
+    "agentId": "9295",
+    "address": "0xBa1Df75ea2a9C8184bEBd2f80CA3fD6e467EfbB4",
+    "txHash": "0x9ae33f1c54c4022fce7ef45cff5ede57e3dc639b5faf69f3a39ce7e3b4c86c42"
+  },
+  "ay-balanced-g5-i44": {
+    "agentId": "9296",
+    "address": "0x631697394cbEa40df0FaDA7207DEef5a58E7c6d7",
+    "txHash": "0x36e480e6759b86484f9ca24eff9de3194cb7efda4868e380fd216d01093bc0c9"
+  },
+  "ay-balanced-g4-i45": {
+    "agentId": "9297",
+    "address": "0xddcF704AFd21b375449688Eb3136B364C848daf1",
+    "txHash": "0x68154cee360848b77c1cbdd8904425d50852541e8966f0848e33705b44e42c16"
+  },
+  "ay-balanced-g4-i46": {
+    "agentId": "9298",
+    "address": "0xCAaD35247AFfc65Dd7F0FA74c9778Eb80cF8266E",
+    "txHash": "0x112b290673b034205f3c61601fdf1ddf341d03eed41e03993708d7002704c504"
+  },
+  "ay-balanced-g4-i47": {
+    "agentId": "9301",
+    "address": "0xf423Cc8536AC56C925609D0D59eF08Fa0946eB66",
+    "txHash": "0x018749c54a11852a55d371e08ce1f910bcdff5cbac78a761aaf561c97605d246"
+  },
+  "ay-balanced-g4-i48": {
+    "agentId": "9302",
+    "address": "0x5cb51eCb8FA14dfFE1A5d650CE756Fd6C9cc97A7",
+    "txHash": "0x91c8e82aff965277c68b9136bbbebc2c96f0c935468f72e84355f6898114c9ad"
+  },
+  "ay-balanced-g4-i49": {
+    "agentId": "9303",
+    "address": "0x993b1C24AF1E6deE8A951FBD1BF77AaAbFBb69cf",
+    "txHash": "0x541ea79d51aa22149a664be85a8e6c1fe2a3a7c682354314061020e0c3a5e719"
+  },
+  "ay-balanced-g4-i50": {
+    "agentId": "9304",
+    "address": "0x6a8500c6a594639ce752026e9341155368555C5E",
+    "txHash": "0x5d61de53d96f32c55689d4b9cd9d3dcef7cb6e29ba75ce8bc0aaea3f0dea2546"
+  },
+  "ay-balanced-g5-i51": {
+    "agentId": "9305",
+    "address": "0x9dA8045C1F4298574e8e2Ca0e899f78d7409e872",
+    "txHash": "0x197ca67979697113ea3a426b146371a4660625537cb9c6cd858582e6df0b5aff"
+  },
+  "ay-balanced-g5-i52": {
+    "agentId": "9306",
+    "address": "0x023e966bCe733e4577E5FFeaF2Dc458Ff0e586df",
+    "txHash": "0xd61933b6eeec1cbe4b4033efd8ad527698cc7b824df1eece89a1303f365a5534"
+  },
+  "ay-balanced-g4-i53": {
+    "agentId": "9307",
+    "address": "0xd93bb4191887FcF3B5f08857678120A1c69704E4",
+    "txHash": "0x2a7843b20245ed8f50cabb051a94b5bafa5132561edaca04c39dd759827dc1ea"
+  },
+  "ay-balanced-g4-i54": {
+    "agentId": "9309",
+    "address": "0x70C613581753a6A5A68221F69906775B567D8e17",
+    "txHash": "0x27e96496c7a405a69b68d90cb099015181d60356d1ada5abcffebb2b3a1458d5"
+  },
+  "ay-balanced-g5-i55": {
+    "agentId": "9310",
+    "address": "0x28150b28e7e398B8159953F571c3B5F755438ac2",
+    "txHash": "0xea8f50520ef59854f895960ace9c5efe3cb4a162f3092b13acebd9e4dd53a1a5"
+  },
+  "ay-balanced-g5-i56": {
+    "agentId": "9311",
+    "address": "0xDE35E3AF5CEb9C1075De26cbB1796e879A099E16",
+    "txHash": "0xc3d67033c934f2ca133bfbbf3c3d99581d31ea9756b06fd88b0e2799d6419fef"
+  },
+  "ay-balanced-g4-i57": {
+    "agentId": "9312",
+    "address": "0x9A17D08eA7DcCb646764cC471E52b7B4D0903b51",
+    "txHash": "0x97f8ef8e7690cbe23bdde77fc2c31883e5a243b421b9ea1b3b266ae54a327e4d"
+  },
+  "ay-balanced-g4-i58": {
+    "agentId": "9314",
+    "address": "0x9C5120e24d97C0041101CD19aaFa78A6426dF0ab",
+    "txHash": "0x4692b36494fe1769850e04a4577c5ead2c53aadc18c38776043c50be015e7697"
+  },
+  "ay-balanced-g5-i59": {
+    "agentId": "9315",
+    "address": "0xCE25386e56e78037e5995f296fBa9b88C3021e49",
+    "txHash": "0xd8d1f1c25fa7712e5bc53a0f14cedc2dce65f63c36de5488b199b5a61ce5178a"
+  },
+  "ay-balanced-g5-i60": {
+    "agentId": "9316",
+    "address": "0xAD4e293af3E7f07528aA642B469eAc42CA210D80",
+    "txHash": "0x788b882753a70ef76ba334d107c14d5722e17e246b1fc8e3a440329bea2018ef"
+  },
+  "ay-balanced-g6-i61": {
+    "agentId": "9317",
+    "address": "0xAf03608776cC380FC7a03B0342E4e8e6538a3fF5",
+    "txHash": "0x1d8938e6bbe4880395aff58bfd1c851dc134489d373dd44cbc36e34e9073f1a2"
+  },
+  "ay-balanced-g6-i62": {
+    "agentId": "9318",
+    "address": "0xe56055D52C16AC568D5f0f820b47c37d84f02167",
+    "txHash": "0x85a2a965e6d2cf95a1154f75ae7b8a5ccfee880e8c0e23f31eddb5b18accbd10"
+  },
+  "ay-balanced-g6-i63": {
+    "agentId": "9319",
+    "address": "0x90c44120290D63B8a7246a2561D07038a0b08262",
+    "txHash": "0x2eb2260b3852243ddb2c8c3257c4fa08e7501ec0b15b9d6ddaf0386bce26eabd"
+  },
+  "ay-balanced-g6-i64": {
+    "agentId": "9320",
+    "address": "0x660eE4c155214c73C1674ac9Ec3F3e8aCBfc52fd",
+    "txHash": "0xa781bb345b24a61aef3e681a19047a3ee5104bfbc4d7d81bccd5e863534bb5c7"
+  },
+  "patron-ae5731-i67": {
+    "agentId": "9321",
+    "address": "0xf206688449A41D4f1dE229982c04A4a78A9d7AF8",
+    "txHash": "0x65c4a790672f2d16e05d58d97e0ad828a2803c9bada37b4f67919cf9d2f3f04a"
   }
 }
