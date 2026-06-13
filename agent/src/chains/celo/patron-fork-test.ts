@@ -98,9 +98,11 @@ async function main() {
     ],
   };
 
-  // initialize the scan cursor (first call returns nothing, sets fromBlock=now)
-  let detected = await detectPatronDeposits(state);
-  assert(detected.length === 0 && state.patronScanFromBlock !== undefined, "first detect sets scan cursor, returns nothing");
+  // set the scan cursor to the current head for a deterministic test (in
+  // production the first run instead uses a bounded look-back; that path is
+  // exercised by the mainnet verification, not here)
+  state.patronScanFromBlock = (await celoPublicClient.getBlockNumber({ cacheTime: 0 })).toString();
+  let detected: Awaited<ReturnType<typeof detectPatronDeposits>>;
 
   // --- 1. a SWARM wallet sends cUSD to the treasury (this is exactly what a
   //        cull-unwind looks like) — it must NOT be seen as a patron, even

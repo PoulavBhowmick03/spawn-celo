@@ -31,6 +31,12 @@ export const MIN_PATRON_USD = 1.0;
 const SIGNAL_ORACLE_HD_INDEX = 30;
 /** forno caps eth_getLogs ranges; stay well under it. */
 const MAX_LOG_RANGE = 9000n;
+/** On the very first run (no cursor yet), look back this far so a deposit made
+ *  right after a deploy is caught at the next epoch boundary without manual
+ *  intervention. ~3.3h of Celo blocks — comfortably more than one epoch gap,
+ *  and still days after the historical treasury-setup transfers (which are
+ *  excluded by the swarm-wallet + broker filters regardless). */
+const FIRST_RUN_LOOKBACK = 12_000n;
 
 /** Protocol contracts that move cUSD into the treasury for non-sponsorship
  *  reasons (Mento broker/pools, fee adapters). Defence in depth on top of the
@@ -77,14 +83,15 @@ export async function detectPatronDeposits(state: SwarmState): Promise<PatronDep
   // the scan window always covers freshly-mined deposit blocks
   const head = await celoPublicClient.getBlockNumber({ cacheTime: 0 });
 
-  // First run: start watching from here. Never look backwards — that is what
-  // guarantees historical setup transfers are out of scope.
-  if (state.patronScanFromBlock === undefined) {
-    state.patronScanFromBlock = head.toString();
-    return [];
-  }
-
-  let from = BigInt(state.patronScanFromBlock);
+  // First run: scan a bounded recent window so a just-made deposit is caught
+  // without manual intervention. The window is far newer than the historical
+  // treasury setup, and swarm/broker senders are excluded anyway.
+  let from =
+    state.patronScanFromBlock === undefined
+      ? head > FIRST_RUN_LOOKBACK
+        ? head - FIRST_RUN_LOOKBACK
+        : 0n
+      : BigInt(state.patronScanFromBlock);
   if (from > head) {
     state.patronScanFromBlock = head.toString();
     return [];
