@@ -298,5 +298,10 @@
     "agentId": "9314",
     "address": "0x9C5120e24d97C0041101CD19aaFa78A6426dF0ab",
     "txHash": "0x4692b36494fe1769850e04a4577c5ead2c53aadc18c38776043c50be015e7697"
+  },
+  "ay-balanced-g5-i59": {
+    "agentId": "9315",
+    "address": "0xCE25386e56e78037e5995f296fBa9b88C3021e49",
+    "txHash": "0xd8d1f1c25fa7712e5bc53a0f14cedc2dce65f63c36de5488b199b5a61ce5178a"
   }
 }
