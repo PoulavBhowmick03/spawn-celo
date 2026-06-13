@@ -328,5 +328,10 @@
     "agentId": "9320",
     "address": "0x660eE4c155214c73C1674ac9Ec3F3e8aCBfc52fd",
     "txHash": "0xa781bb345b24a61aef3e681a19047a3ee5104bfbc4d7d81bccd5e863534bb5c7"
+  },
+  "patron-ae5731-i67": {
+    "agentId": "9321",
+    "address": "0xf206688449A41D4f1dE229982c04A4a78A9d7AF8",
+    "txHash": "0x65c4a790672f2d16e05d58d97e0ad828a2803c9bada37b4f67919cf9d2f3f04a"
   }
 }
