@@ -1,0 +1,130 @@
+{
+  "epoch": 35,
+  "verifiedAt": "2026-06-13T08:58:09.209Z",
+  "swarmMedian": 0.023613893033702767,
+  "verified": 10,
+  "total": 10,
+  "method": "fitness=annualize((V_end-net_flow)/V_start)-gas_penalty recomputed from the published epoch report; score=clamp(round(50+500*(fitness-median)),0,100); keccak256(logged payload) checked against the logged feedbackHash; agentId+score+feedbackHash decoded from the onchain giveFeedback calldata via eth_getTransactionByHash",
+  "rows": [
+    {
+      "slug": "ay-balanced-g2-i13",
+      "erc8004AgentId": "9260",
+      "recomputedFitness": 0.02418097356562048,
+      "publishedFitness": 0.02418097356562048,
+      "recomputedScore": 50,
+      "publishedScore": 50,
+      "fitnessMatch": true,
+      "payloadHashMatch": true,
+      "onchainCalldataMatch": true,
+      "reputationTx": "0x20474496b63bf9f33edce768848296f652e1755ffc3e5a4973469d2e4fa4fc68"
+    },
+    {
+      "slug": "ay-balanced-g3-i30",
+      "erc8004AgentId": "9280",
+      "recomputedFitness": 0.02444182245134181,
+      "publishedFitness": 0.02444182245134181,
+      "recomputedScore": 50,
+      "publishedScore": 50,
+      "fitnessMatch": true,
+      "payloadHashMatch": true,
+      "onchainCalldataMatch": true,
+      "reputationTx": "0x69faeddeebe2be3a406a73b950e8a99ebe7ac0da9ed8aa6bb8898c5594efb31d"
+    },
+    {
+      "slug": "ay-balanced-g4-i31",
+      "erc8004AgentId": "9283",
+      "recomputedFitness": 0.023043909671775574,
+      "publishedFitness": 0.023043909671775574,
+      "recomputedScore": 50,
+      "publishedScore": 50,
+      "fitnessMatch": true,
+      "payloadHashMatch": true,
+      "onchainCalldataMatch": true,
+      "reputationTx": "0xffea4848fe752317ef225745ba55d728b9551d6e52fd2884a38eef0c10f0d325"
+    },
+    {
+      "slug": "ay-balanced-g4-i46",
+      "erc8004AgentId": "9298",
+      "recomputedFitness": 0.023044824692975557,
+      "publishedFitness": 0.023044824692975557,
+      "recomputedScore": 50,
+      "publishedScore": 50,
+      "fitnessMatch": true,
+      "payloadHashMatch": true,
+      "onchainCalldataMatch": true,
+      "reputationTx": "0x32aaf07c12925c298169c32fdb1548bb9ef6e5dbbc47a0b9e7214b52de8095a5"
+    },
+    {
+      "slug": "ay-balanced-g4-i48",
+      "erc8004AgentId": "9302",
+      "recomputedFitness": 0.023046812501785054,
+      "publishedFitness": 0.023046812501785054,
+      "recomputedScore": 50,
+      "publishedScore": 50,
+      "fitnessMatch": true,
+      "payloadHashMatch": true,
+      "onchainCalldataMatch": true,
+      "reputationTx": "0x9f0eda5013a68c02f6712fb1ef0dc36114929ddfcd41669c924eaba5b04589b6"
+    },
+    {
+      "slug": "ay-balanced-g4-i49",
+      "erc8004AgentId": "9303",
+      "recomputedFitness": 0.024487057148390307,
+      "publishedFitness": 0.024487057148390307,
+      "recomputedScore": 50,
+      "publishedScore": 50,
+      "fitnessMatch": true,
+      "payloadHashMatch": true,
+      "onchainCalldataMatch": true,
+      "reputationTx": "0xa075e6c0e3a59ee7046afd1921de13f9a5e3126bb71bf897b5057e2198e5df7e"
+    },
+    {
+      "slug": "ay-balanced-g5-i55",
+      "erc8004AgentId": "9310",
+      "recomputedFitness": 0.024488194465268218,
+      "publishedFitness": 0.024488194465268218,
+      "recomputedScore": 50,
+      "publishedScore": 50,
+      "fitnessMatch": true,
+      "payloadHashMatch": true,
+      "onchainCalldataMatch": true,
+      "reputationTx": "0x613a17de47fb97aa50019b7640158d26db060d08b4c3e76a13d0a5360269e931"
+    },
+    {
+      "slug": "ay-balanced-g5-i59",
+      "erc8004AgentId": "9315",
+      "recomputedFitness": 0.02448919301998872,
+      "publishedFitness": 0.02448919301998872,
+      "recomputedScore": 50,
+      "publishedScore": 50,
+      "fitnessMatch": true,
+      "payloadHashMatch": true,
+      "onchainCalldataMatch": true,
+      "reputationTx": "0x300f973478be6d8544e1d08710f622fb22690be0ea50f7893098f9243fa190f0"
+    },
+    {
+      "slug": "ay-balanced-g6-i65",
+      "erc8004AgentId": "9322",
+      "recomputedFitness": -26.649880041021035,
+      "publishedFitness": -26.649880041021035,
+      "recomputedScore": 0,
+      "publishedScore": 0,
+      "fitnessMatch": true,
+      "payloadHashMatch": true,
+      "onchainCalldataMatch": true,
+      "reputationTx": "0xc366bffe542ee4406101bb70c318fb53a316a39e40d0401142e66802378aba0b"
+    },
+    {
+      "slug": "ay-balanced-g6-i66",
+      "erc8004AgentId": "9323",
+      "recomputedFitness": -26.654003527911758,
+      "publishedFitness": -26.654003527911758,
+      "recomputedScore": 0,
+      "publishedScore": 0,
+      "fitnessMatch": true,
+      "payloadHashMatch": true,
+      "onchainCalldataMatch": true,
+      "reputationTx": "0x45ae4099811cb389da678099a0165436c3cbd323484596592f15ab03a0c565b3"
+    }
+  ]
+}
